@@ -63,15 +63,17 @@ a{color:var(--blue)}
 </style></head>
 <body><div class="wrap">
 <h1>🐈 家猫カードジェネレーター</h1>
-<p class="sub">8問の診断であなたの「家猫度」を可視化。結果はカードと八角形レーダーで表示します。猫図鑑も収録。</p>
+<p class="sub">5つの問い＋応援する国（サッカーユニフォーム）で、あなたの「家猫度」カードが完成。結果はカードとマッピングで表示。猫図鑑も収録。</p>
 <div class="tabs">
-  <div class="tab on" data-t="oct">🐾 家猫度診断</div>
+  <div class="tab on" data-t="quiz">🐾 家猫度診断</div>
   <div class="tab" data-t="zukan">📚 猫図鑑</div>
 </div>
 
-<div class="panel" id="p-quiz">
+<div class="panel on" id="p-quiz">
+  <p class="sub">🐾①〜⑤の5問に答え、🏆で応援する国を選ぶと、あなたの家猫カードが完成します（国の選択は任意）。</p>
   <div class="prog"><i id="pb"></i></div>
   <div id="qs"></div>
+  <div id="q9q"></div>
   <div class="center"><button class="go" id="submit" disabled>カードを生成する</button><div id="hint" class="sub" style="margin-top:8px">あと 5 問</div></div>
   <div id="res" style="margin-top:18px"></div>
 </div>
@@ -89,10 +91,11 @@ a{color:var(--blue)}
   <div class="grid" id="aiGrid"></div>
 </div>
 
-<div class="panel on" id="p-oct">
+<div class="panel" id="p-oct">
   <p class="sub">自律の8側面で家猫化度を測ります（各設問は🐾肉球番号）。数値が高いほど、その領域で自律を手放している状態です。答えると結果（カード＋八角形レーダー＋最寄りタイプ）が表示されます。</p>
   <div class="prog"><i id="pb8"></i></div>
   <div id="qs8"></div>
+  <div id="q9"></div>
   <div class="center"><button class="go" id="submit8" disabled>8軸プロファイルを生成</button><div id="hint8" class="sub" style="margin-top:8px">あと 8 問</div></div>
   <div id="res8" style="margin-top:18px"></div>
 </div>
@@ -132,7 +135,20 @@ function rgb(c){return 'rgb('+c[0]+','+c[1]+','+c[2]+')';}
 function dark(c,f){return [Math.round(c[0]*f),Math.round(c[1]*f),Math.round(c[2]*f)];}
 function rng(seed){let s=seed*9301+49297;return function(){s=(s*9301+49297)%233280;return s/233280;};}
 
-function catSVG(x,y,seed){
+// ワールドカップ仕様：各国の配色キット（ロゴ無し・版権セーフ）
+var KITS={
+ jp:{name:'日本',base:'#16307a',trim:'#ffffff'},
+ br:{name:'ブラジル',base:'#f4d000',trim:'#1ca84f'},
+ fr:{name:'フランス',base:'#1e3a8c',trim:'#e23b3b'},
+ de:{name:'ドイツ',base:'#f4f4f4',trim:'#141414'},
+ uy:{name:'ウルグアイ',base:'#5aa6e6',trim:'#0a2a5e'},
+ ar:{name:'アルゼンチン',base:'#ffffff',trim:'#74acdf',stripes:true,stripeCol:'#74acdf'},
+ nl:{name:'オランダ',base:'#f36c21',trim:'#ffffff'},
+ es:{name:'スペイン',base:'#c8202e',trim:'#f4d000'},
+ se:{name:'スウェーデン',base:'#f4d000',trim:'#1b53a8'}
+};
+
+function catSVG(x,y,seed,kitKey){
   seed=seed||1;
   const nx=clamp((x-1)/9,0,1);      // 0 public .. 1 private
   const ny=clamp((y-1)/9,0,1);      // 0 feral .. 1 housecat
@@ -154,13 +170,30 @@ function catSVG(x,y,seed){
   const notch=ny<0.32?1:0;
   let s='<svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">';
 
-  // bust / shoulders
-  s+='<path d="M40,300 C40,250 95,228 150,228 C205,228 260,250 260,300 Z" fill="'+rgb(furD)+'" stroke="'+ink+'" stroke-width="4"/>';
-  // collar/accessory band for housecat
-  if(ny>0.5){
-    const cw=lerp(0,1,smooth((ny-0.5)/0.5));
-    s+='<path d="M104,243 Q150,262 196,243" fill="none" stroke="'+rgb(mix([200,70,90],[120,90,200],nx))+'" stroke-width="'+(7*cw+2)+'" stroke-linecap="round"/>';
-    s+='<circle cx="150" cy="256" r="'+(5*cw+1.5)+'" fill="#ffd84a" stroke="'+ink+'" stroke-width="2"/>';
+  // bust / shoulders（kit があればユニフォーム）
+  const kit = kitKey && KITS[kitKey];
+  const BUST='M40,300 C40,250 95,228 150,228 C205,228 260,250 260,300 Z';
+  if(kit){
+    s+='<path d="'+BUST+'" fill="'+kit.base+'" stroke="'+ink+'" stroke-width="4"/>';
+    if(kit.stripes){
+      const cid='jc'+seed;
+      s+='<clipPath id="'+cid+'"><path d="'+BUST+'"/></clipPath>';
+      s+='<g clip-path="url(#'+cid+')">';
+      for(let xx=56;xx<264;xx+=30){s+='<rect x="'+xx+'" y="224" width="15" height="84" fill="'+kit.stripeCol+'"/>';}
+      s+='</g>';
+      s+='<path d="'+BUST+'" fill="none" stroke="'+ink+'" stroke-width="4"/>';
+    }
+    // V-neck collar + sleeve trim
+    s+='<path d="M126,232 L150,251 L174,232" fill="none" stroke="'+kit.trim+'" stroke-width="6" stroke-linejoin="round"/>';
+    s+='<path d="M52,260 Q82,236 112,232" fill="none" stroke="'+kit.trim+'" stroke-width="5"/>';
+    s+='<path d="M248,260 Q218,236 188,232" fill="none" stroke="'+kit.trim+'" stroke-width="5"/>';
+  } else {
+    s+='<path d="'+BUST+'" fill="'+rgb(furD)+'" stroke="'+ink+'" stroke-width="4"/>';
+    if(ny>0.5){
+      const cw=lerp(0,1,smooth((ny-0.5)/0.5));
+      s+='<path d="M104,243 Q150,262 196,243" fill="none" stroke="'+rgb(mix([200,70,90],[120,90,200],nx))+'" stroke-width="'+(7*cw+2)+'" stroke-linecap="round"/>';
+      s+='<circle cx="150" cy="256" r="'+(5*cw+1.5)+'" fill="#ffd84a" stroke="'+ink+'" stroke-width="2"/>';
+    }
   }
 
   // ears (outer)
@@ -257,7 +290,7 @@ function catSVG(x,y,seed){
   }
 
   // X accessory: public=necktie / private=earbud
-  if(nx<0.4){ const o=((0.4-nx)/0.4).toFixed(2);
+  if(!kit && nx<0.4){ const o=((0.4-nx)/0.4).toFixed(2);
     s+='<g opacity="'+o+'"><path d="M150,235 l-9,8 l9,26 l9,-26 z" fill="#22366b" stroke="'+ink+'" stroke-width="2.5" stroke-linejoin="round"/>'
       +'<path d="M141,235 l9,7 l9,-7" fill="#2c4a8f" stroke="'+ink+'" stroke-width="2"/></g>';
   }
@@ -293,8 +326,8 @@ function octaRadar(scores,labels){
   }
   s+='</svg>';return s;
 }
-if(typeof module!=='undefined'&&module.exports){module.exports={catSVG:catSVG,octaRadar:octaRadar};}
-root.catSVG=catSVG; root.octaRadar=octaRadar;
+if(typeof module!=='undefined'&&module.exports){module.exports={catSVG:catSVG,octaRadar:octaRadar,KITS:KITS};}
+root.catSVG=catSVG; root.octaRadar=octaRadar; root.KITS=KITS;
 })(typeof window!=='undefined'?window:globalThis);
 
 </script>
@@ -303,6 +336,7 @@ const TYPES_FALLBACK=[{"no": 1, "cluster": "経済・労働", "name": "パラサ
 const QUESTIONS=[{"q": "Q1. 生活の基盤（お金・住まい）は？", "opts": [["A", "基本は自力。足りない分だけ行政の制度を「使う」感覚"], ["B", "年金・給付・公的扶助など、公のお金がないと立ち行かない"], ["C", "基本は自力。市場のサービスは「道具」として選んで使う"], ["D", "家族の扶養・投資益・サブスク等、民間の仕組みに生活を委ねている"]]}, {"q": "Q2. 困ったとき、最初に頼るのは？", "opts": [["A", "まず自分で動くが、行政窓口や公的支援も視野に入れる"], ["B", "とりあえず「お上（役所・行政）が何とかすべき」と思う"], ["C", "まず自分で動き、必要なら民間サービス・専門家を選んで使う"], ["D", "アプリ・企業・家族にまるごとお任せ。自分で動く発想は薄い"]]}, {"q": "Q3. 日々の選択（買う・見る・決める）は？", "opts": [["A", "自分で決める。制度や公共の枠組みは前提として受け入れる"], ["B", "決められた制度・前例・お達しに従っておけば安心"], ["C", "自分で調べて決める。おすすめは参考程度"], ["D", "アルゴリズムのおすすめや人の勧めに、ほぼ従う"]]}, {"q": "Q4. 自由な時間と行動の主導権は？", "opts": [["A", "自分で配分する。地域・制度など公共の場にも関わる"], ["B", "制度や所属組織の予定に沿って動くのが基本で、その方が楽"], ["C", "自分で配分する。サービスは効率化の道具として使う"], ["D", "通知・配信・レコメンドに反応して一日が過ぎがち"]]}, {"q": "Q5. 今の暮らしの「快適さ」について", "opts": [["A", "制度に頼る自分に、時々「これでいいのか」と葛藤する"], ["B", "守られている安心が一番。抜け出す必要は感じない"], ["C", "便利さに乗りつつ「依存しすぎかも」と点検することがある"], ["D", "今が快適で満足。手放しているものを考えたことはない"]]}], QUAD={"halfP": {"name": "半野良（公）", "light": "#E2EFDA", "banner": "#5a7d3a", "desc": "公的な仕組みに頼る場面はあるが、自覚と葛藤が残り、自分で動く余地を持っている状態。"}, "cage": {"name": "公営の檻", "light": "#D9E1F2", "banner": "#3a5a8c", "desc": "行政・制度・所属組織に深く守られ、安心と引き換えに「自分たちで担う・決める」力を手放しがちな状態。"}, "halfV": {"name": "半野良（私）", "light": "#FFF2CC", "banner": "#b58f2a", "desc": "市場やテックの便利さに乗りつつも、依存しすぎていないか点検し、選ぶ主導権を保っている状態。"}, "house": {"name": "ハイテク室内飼い", "light": "#FCE4D6", "banner": "#b5663a", "desc": "市場・プラットフォーム・家族の快適な仕組みに全面的に身を委ね、手放しているものに無自覚になりやすい状態。"}};
 const IMG_BASE='images/'; // 生成画像を置くフォルダ（無ければSVGにフォールバック）
 const SLEV=['','Very Low','Low','Medium','High','Very High'];
+const PAW=['🐾①','🐾②','🐾③','🐾④','🐾⑤','🐾⑥','🐾⑦','🐾⑧'];
 function quadKey(x,y){const p=x>=5.5,d=y>=5.5;return d?(p?'house':'cage'):(p?'halfV':'halfP');}
 function stats(x,y){
   const nx=(x-1)/9, ny=(y-1)/9;
@@ -341,7 +375,7 @@ function cardHTML(o){
   // o: {title, catname, desc, x, y, seed}
   const k=quadKey(o.x,o.y), q=QUAD[k];
   const st=stats(o.x,o.y);
-  const svg=catSVG(o.x,o.y,o.seed||1);
+  const svg=catSVG(o.x,o.y,o.seed||1,o.kit||'');
   const catBox = o.catImg
     ? '<img class="catimg" src="'+o.catImg+'" alt="" onerror="this.style.display=\'none\';this.parentNode.querySelector(\'.fb\').style.display=\'block\'"><span class="fb" style="display:none">'+svg+'</span>'
     : svg;
@@ -368,10 +402,21 @@ function buildZukan(){
     zg.appendChild(div);
   });
 }
+var curDetail=null;
+function dcardHTML(t,kit){
+  return cardHTML({title:t.catname,catname:t.name,desc:(t.catch||'')+'（'+(t.cluster||'')+'）',x:+t.x,y:+t.y,seed:t.no,catImg:kit?'':IMG_BASE+'cat_'+String(t.no).padStart(2,'0')+'.png',kit:kit||''})+'<div class="gno center">No.'+t.no+'　X'+t.x+'・Y'+t.y+(kit&&KITS[kit]?'　｜　🏆'+KITS[kit].name:'')+'</div>';
+}
+function kitBar(){var b='<div style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 2px"><span class="sub" style="width:100%;margin:0">🏆 ユニフォーム着せ替え（ワールドカップ仕様）</span>';
+  b+='<button class="ghost" style="padding:5px 10px" onclick="setKit(\'\')">なし</button>';
+  Object.keys(KITS).forEach(function(k){b+='<button class="ghost" style="padding:5px 10px" onclick="setKit(\''+k+'\')">'+KITS[k].name+'</button>';});
+  return b+'</div>';}
+function setKit(k){if(!curDetail)return;var el=document.getElementById('dcard');if(el)el.innerHTML=dcardHTML(curDetail,k);}
+window.setKit=setKit;
 function showDetail(t){
+  curDetail=t;
   const k=quadKey(+t.x,+t.y),q=QUAD[k];
   let h='<div class="dwrap"><button class="dx" onclick="closeDetail()">×</button><div class="resultgrid">';
-  h+='<div>'+cardHTML({title:t.catname,catname:t.name,desc:(t.catch||'')+'（'+(t.cluster||'')+'）',x:+t.x,y:+t.y,seed:t.no,catImg:IMG_BASE+'cat_'+String(t.no).padStart(2,'0')+'.png'})+'<div class="gno center">No.'+t.no+'　X'+t.x+'・Y'+t.y+'</div></div>';
+  h+='<div><div id="dcard">'+dcardHTML(t,'')+'</div>'+kitBar()+'</div>';
   h+='<div class="advice" style="min-width:280px"><div class="box"><span class="chip" style="background:'+q.banner+'">'+q.name+'</span>'
     +'<h3 style="margin:.4em 0 .2em;color:var(--navy)">'+esc(t.name)+'<span style="color:var(--blue)">（'+esc(t.catname)+'）</span></h3>'
     +'<div class="kv">'+esc(t.catch||'')+'</div>'
@@ -382,7 +427,7 @@ function showDetail(t){
     +'<div class="kv"><b>🌿 またたび策（改善策）：</b>'+esc(t.kaizen||'')+'</div>'
     +'<div class="kv"><b>⚠ 副作用・リスク：</b>'+esc(t.side||'')+'</div>'
     +'<div class="kv" style="font-size:.82rem"><b>📚 出典：</b>'+esc(t.source||'')+(t.url?' ／ <a href="'+t.url+'" target="_blank" rel="noopener">引用元</a>':'')+'</div></div>';
-  h+='</div></div>';
+  h+='</div></div></div>';
   const m=document.getElementById('detailModal'); m.querySelector('.dinner').innerHTML=h; m.classList.add('on');
 }
 function closeDetail(){document.getElementById('detailModal').classList.remove('on');}
@@ -401,7 +446,7 @@ const answers=new Array(QUESTIONS.length).fill(null);
 const qs=document.getElementById('qs');
 QUESTIONS.forEach((q,qi)=>{
   const c=document.createElement('div');c.className='qcard';
-  c.innerHTML='<div class="qtitle">'+q.q+'</div>';
+  c.innerHTML='<div class="qtitle"><span class="pawno">'+PAW[qi]+'</span> '+q.q.replace(/^Q\d+\.\s*/,'')+'</div>';
   q.opts.forEach(([k,t])=>{
     const l=document.createElement('label');l.className='opt';
     l.innerHTML='<input type="radio" name="q'+qi+'" value="'+k+'"><span class="txt">'+t+'</span>';
@@ -420,7 +465,8 @@ document.getElementById('submit').addEventListener('click',()=>{
   const ranked=TYPES.map(t=>({t,d:Math.hypot(t.x-x,t.y-y)})).sort((a,b)=>a.d-b.d);
   const near=ranked[0].t, near2=ranked.slice(1,3).map(r=>r.t);
   let h='<div class="resultgrid">';
-  h+='<div>'+cardHTML({title:q.name,catname:'あなたの家猫度',desc:q.desc,x:x,y:y,seed:Math.round(x*7+y*13)})+'<div class="gno center">X（飼い主）='+x.toFixed(1)+'・Y（家猫度）='+y.toFixed(1)+'</div></div>';
+  var cnq=(KITS[ans9q.v]&&KITS[ans9q.v].name)||'なし';
+  h+='<div>'+cardHTML({title:q.name,catname:'あなたの家猫度',desc:q.desc,x:x,y:y,seed:Math.round(x*7+y*13),kit:ans9q.v})+'<div class="gno center">X（飼い主）='+x.toFixed(1)+'・Y（家猫度）='+y.toFixed(1)+'　｜　🏆応援:'+cnq+'</div></div>';
   h+='<div class="advice">';
   h+='<div class="box"><span class="chip" style="background:'+q.banner+'">'+q.name+'</span><p style="margin:.5em 0 0">'+q.desc+'</p>'
     +'<div class="kv" style="color:var(--muted)">回答内訳 A:'+c.A+' B:'+c.B+' C:'+c.C+' D:'+c.D+'</div></div>';
@@ -478,7 +524,6 @@ window.setDepth=setDepth;
 // ---- 8軸診断 ----
 const AX8=["経済自立", "意思決定", "依存先", "自覚", "つながり", "生活技能", "情報主権", "参加"], Q8=[{"q": "お金の出どころは？", "opts": [["自分の労働・事業収入だけで成り立つ", 1, ""], ["おおむね自力、一部に手当・補助", 4, ""], ["半分以上を年金・給付・家族・運用に頼る", 7, ""], ["生活費はほぼ他者（公的給付・家族・投資）に依存", 10, ""]]}, {"q": "大きな選択（進路・購入・生き方）は？", "opts": [["自分で調べて自分で決める", 1, ""], ["助言を聞きつつ最後は自分で決める", 4, ""], ["人やおすすめに沿うことが多い", 7, ""], ["だいたい誰か・AI・前例に委ねる", 10, ""]]}, {"q": "暮らしを支える主な「飼い主」は？", "opts": [["特定の飼い主はいない／自力", 2, ""], ["国・行政・制度（公的）", 7, "pub"], ["市場・プラットフォーム・企業（私的）", 8, "priv"], ["家族・身近な私的関係（私的）", 8, "priv"]]}, {"q": "今の暮らしへの向き合い方は？", "opts": [["何に依存し何を手放したか自覚的で、よく問い直す", 1, ""], ["ときどき違和感を覚え、点検する", 4, ""], ["あまり意識しない", 7, ""], ["快適で満たされ、考えたことがない", 10, ""]]}, {"q": "人とのつながりは？", "opts": [["多様なつながりがあり、頼り頼られる", 1, ""], ["必要な関係は保っている", 4, ""], ["付き合いは最小限", 7, ""], ["ほぼ孤立、関係はサービスで代替", 10, ""]]}, {"q": "衣食住・移動など生活の基本は？", "opts": [["自炊・修理など自前でこなせる", 1, ""], ["おおむね自分、一部は外注", 4, ""], ["多くを購入・外注・配達で済ます", 7, ""], ["ほぼ全て他者・サービス任せ", 10, ""]]}, {"q": "情報や時間の使い方は？", "opts": [["自分で情報源を選び、注意を配る", 1, ""], ["おおむね主体的、時々流される", 4, ""], ["おすすめ・通知に沿って動きがち", 7, ""], ["アルゴリズム・通知にほぼ支配される", 10, ""]]}, {"q": "社会・地域・組織との関わりは？", "opts": [["担い手として関与し、声を上げる", 1, ""], ["機会があれば参加する", 4, ""], ["受益のみで基本は傍観", 7, ""], ["無関心・お任せ・要求のみ", 10, ""]]}];
 const ans8=new Array(Q8.length).fill(null);
-const PAW=['🐾①','🐾②','🐾③','🐾④','🐾⑤','🐾⑥','🐾⑦','🐾⑧'];
 const qs8=document.getElementById('qs8');
 Q8.forEach((q,qi)=>{
   const c=document.createElement('div');c.className='qcard';
@@ -491,6 +536,21 @@ Q8.forEach((q,qi)=>{
   });
   qs8.appendChild(c);
 });
+// 特別問題：応援する国（サッカーユニフォーム）
+var ans9={v:''}, ans9q={v:''};
+function countryChooser(hostId,ansObj){var host=document.getElementById(hostId);if(!host)return;
+  var c=document.createElement('div');c.className='qcard';
+  c.innerHTML='<div class="qtitle"><span class="pawno">🏆</span> 特別問題　応援する国は？（サッカーユニフォーム・任意）</div>';
+  var wrap=document.createElement('div');wrap.style.cssText='display:flex;flex-wrap:wrap;gap:8px';
+  var list=[['','着せない']].concat(Object.keys(KITS).map(function(k){return [k,KITS[k].name];}));
+  list.forEach(function(p){var b=document.createElement('button');b.type='button';b.className='ghost';b.textContent=p[1];b.style.padding='8px 14px';
+    if(p[0]==='')b.style.background='#e8f0ff';
+    b.onclick=function(){ansObj.v=p[0];Array.prototype.forEach.call(wrap.children,function(x){x.style.background='#fff';});b.style.background='#e8f0ff';};
+    wrap.appendChild(b);});
+  c.appendChild(wrap);host.appendChild(c);
+}
+countryChooser('q9',ans9);
+countryChooser('q9q',ans9q);
 function upd8(){const done=ans8.filter(a=>a!==null).length;document.getElementById('pb8').style.width=(done/Q8.length*100)+'%';
   document.getElementById('submit8').disabled=done<Q8.length;
   document.getElementById('hint8').textContent=done<Q8.length?('あと '+(Q8.length-done)+' 問'):'準備OK！';}
@@ -505,7 +565,8 @@ document.getElementById('submit8').addEventListener('click',()=>{
   const worst=scores.map((s,i)=>[s,i]).sort((a,b)=>b[0]-a[0]).slice(0,3).map(p=>AX8[p[1]]+'（'+p[0]+'）').join(' ・ ');
   let h='<div class="resultgrid">';
   h+='<div style="max-width:420px">'+octaRadar(scores,AX8)+'<div class="gno center">総合家猫度（平均）= '+mean.toFixed(1)+' / 10</div></div>';
-  h+='<div>'+cardHTML({title:q.name,catname:'あなたの8軸プロファイル',desc:q.desc,x:x,y:y,seed:Math.round(x*7+y*13)})+'<div class="gno center">依存先X='+x+'・総合Y='+y+'</div></div>';
+  var cn=(KITS[ans9.v]&&KITS[ans9.v].name)||'なし';
+  h+='<div>'+cardHTML({title:q.name,catname:'あなたの8軸プロファイル',desc:q.desc,x:x,y:y,seed:Math.round(x*7+y*13),kit:ans9.v})+'<div class="gno center">依存先X='+x+'・総合Y='+y+'　｜　🏆応援:'+cn+'</div></div>';
   h+='</div>';
   h+='<div class="advice" style="max-width:780px;margin:14px auto 0">';
   h+='<div class="box"><b>家猫化が進んでいる軸 TOP3：</b>'+worst+'<div class="kv" style="color:var(--muted)">この領域から自律を取り戻すのが効果的です。</div></div>';
