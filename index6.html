@@ -84,7 +84,7 @@ a{color:var(--blue)}
 </div>
 
 <div class="panel on" id="p-quiz">
-  <p class="sub">🐾①〜⑤の5問に答え、🏆で応援する国を選ぶと、あなたの家猫カードが完成。<b>隠れ特技</b>と<b>地域での活かし方</b>も判明します（国の選択は任意）。</p>
+  <p class="sub">🐾①〜⑤の5問に答え、🏆で応援する国を選ぶと、あなたの家猫カードが完成します（国の選択は任意）。</p>
   <div class="prog"><i id="pb"></i></div>
   <div id="qs"></div>
   <div id="q9q"></div>
@@ -484,33 +484,9 @@ function copyText(t){try{if(navigator.clipboard)navigator.clipboard.writeText(t)
 function shareCaption(d){
   return '【私の家猫 取説カード】\n私は「'+d.quad+'」── '+d.typeName+'（'+d.catName+'）でした🐾\n'
     +'ご機嫌の取り方（チュール）：'+d.churu+'\n'
-    +(d.skill?'隠れ特技：'+d.skill+'\n':'')
     +(d.kitName?'応援国：'+d.kitName+' ⚽\n':'')
-    +'#家猫度診断 #私の取説 #隠れ特技 #家猫カード';
+    +'#家猫度診断 #私の取説 #家猫カード';
 }
-// ---- 隠れ特技・スキル（5問の回答から自動算出）----
-var SKILLS={
- digital:{n:'デジタル活用力',d:'情報やツールを使いこなすのが得意。',c:'回覧のデジタル化・SNS広報・参加フォーム作りで「参加のしやすさ」を上げられます。'},
- organize:{n:'段取り・運営力',d:'物事を整理して前に進める力。',c:'イベントや会議の裏方・進行役、ムリのない当番制づくりが向いています。'},
- connect:{n:'橋渡し・調整力',d:'人と人をやわらかくつなぐ力。',c:'新住民や世代間のつなぎ役、相談の窓口として活躍できます。'},
- insight:{n:'目利き・探究力',d:'調べて見極めるのが得意。',c:'地域課題の可視化・データ整理、助成金や他地域の事例リサーチに最適。'},
- care:{n:'おもてなし・気配り力',d:'場の居心地を整える力。',c:'託児付き・お茶会など「来やすい場」づくり、初参加のフォローで力を発揮。'},
- grit:{n:'自走・継続力',d:'自分のペースでコツコツ続ける力。',c:'小さな活動を細く長く担う、見守りや定点的な活動の継ぎ手になれます。'}
-};
-function hiddenSkill(ans,x,y){
-  var s={digital:0,organize:0,connect:0,insight:0,care:0,grit:0};
-  var A=ans[0],B=ans[1],C=ans[2],D=ans[3],E=ans[4];
-  if(A==='D')s.digital++; if(C==='D')s.digital+=2; if(C==='C')s.digital++;
-  if(D==='A')s.organize++; if(D==='C')s.organize++; if(B==='A')s.organize++;
-  if(A==='B')s.connect++; if(B==='B')s.connect++; if(E==='A')s.connect++;
-  if(C==='A')s.insight++; if(C==='C')s.insight++; if(B==='A')s.insight++;
-  if(A==='D')s.care++; if(E==='D')s.care++; if(E==='C')s.care++;
-  if(A==='A'||A==='C')s.grit++; if(D==='A')s.grit++; if(E==='C')s.grit++;
-  s.digital+=x/40; s.connect+=(10-x)/40; s.grit+=y/60; s.care+=y/60;
-  var best='grit',bv=-1;Object.keys(s).forEach(function(k){if(s[k]>bv){bv=s[k];best=k;}});
-  return SKILLS[best];
-}
-window.hiddenSkill=hiddenSkill;
 function makeBlob(o,cb){var svg=cardSVGFull(o);var url=URL.createObjectURL(new Blob([svg],{type:'image/svg+xml;charset=utf-8'}));
   var img=new Image();img.onload=function(){var sc=2,c=document.createElement('canvas');c.width=440*sc;c.height=620*sc;var ctx=c.getContext('2d');ctx.scale(sc,sc);ctx.drawImage(img,0,0,440,620);URL.revokeObjectURL(url);c.toBlob(function(b){cb(b);},'image/png');};
   img.onerror=function(){URL.revokeObjectURL(url);cb(null);};img.src=url;}
@@ -631,13 +607,9 @@ document.getElementById('submit').addEventListener('click',()=>{
   h+='<div class="kv"><b>🌿 またたび策（改善策）：</b>'+esc(near.kaizen)+'</div>';
   h+='<div class="kv"><b>⚠ 副作用・リスク：</b>'+esc(near.side)+'</div>';
   h+='<div class="kv" style="font-size:.82rem"><b>📚 出典：</b>'+esc(near.source)+' ／ <a href="'+near.url+'" target="_blank" rel="noopener">引用元</a></div></div>';
-  var skill=hiddenSkill(answers,x,y);
-  h+='<div class="box" style="background:#fff7e6;border-color:#e6c200"><h3 style="margin:.1em 0;color:#9a6b00">🎁 あなたの隠れ特技：'+esc(skill.n)+'</h3>'
-    +'<div class="kv">'+esc(skill.d)+'</div>'
-    +'<div class="kv"><b>🌿 地域での活かし方（またたび）：</b>'+esc(skill.c)+'</div></div>';
   h+='<div class="box"><b>近いタイプ</b><div class="kv" style="color:var(--muted)">'+near2.map(t=>esc(t.name)+'（'+esc(t.catname)+'）').join('　／　')+'</div></div>';
   window.lastO={title:q.name,sub:'あなたの家猫度',desc:(near?near.name+'タイプに近い':q.desc),x:+x.toFixed(1),y:+y.toFixed(1),seed:Math.round(x*7+y*13),kit:ans9q.v,holo:holo,footer:'X'+x.toFixed(1)+'・Y'+y.toFixed(1)+(KITS[ans9q.v]?'　🏆'+KITS[ans9q.v].name:'')};
-  window.lastD={quad:q.name,typeName:(near?near.name:''),catName:(near?near.catname:''),churu:(near?near.churu:''),skill:skill.n,kitName:(KITS[ans9q.v]?KITS[ans9q.v].name:'')};
+  window.lastD={quad:q.name,typeName:(near?near.name:''),catName:(near?near.catname:''),churu:(near?near.churu:''),kitName:(KITS[ans9q.v]?KITS[ans9q.v].name:'')};
   h+=shareRow('window.lastO','window.lastD','家猫カード');
   h+='<div class="center" style="margin-top:6px"><button class="ghost" onclick="restart()">もう一度</button></div>';
   h+='</div></div>';
