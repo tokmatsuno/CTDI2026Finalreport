@@ -73,12 +73,6 @@ button.ghost{font:inherit;font-weight:700;border:1.5px solid var(--navy);border-
 .snsbtn.x{background:#000;color:#fff;border-color:#000}
 .snsbtn.fb{background:#1877F2;color:#fff;border-color:#1877F2}
 .snsbtn.ig{background:linear-gradient(45deg,#feda75,#fa7e1e,#d62976,#962fbf,#4f5bd5);color:#fff;border:none}
-.meter{margin:10px auto 2px;max-width:320px}
-.meterrow{display:flex;justify-content:space-between;font-size:.78rem;font-weight:700;color:#3a3a3a;margin-bottom:5px}
-.metertrack{position:relative;height:16px;border-radius:9px;background:linear-gradient(90deg,#66c28a 0%,#a9d16b 30%,#ffd98a 62%,#f0a06a 100%);box-shadow:inset 0 1px 2px rgba(0,0,0,.15)}
-.metertrack .tick{position:absolute;top:0;bottom:0;width:1px;background:rgba(255,255,255,.5)}
-.meterdot{position:absolute;top:50%;transform:translate(-50%,-50%);width:22px;height:22px;border-radius:50%;background:#fff;border:3px solid #1F3864;box-shadow:0 1px 4px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;font-size:11px}
-.mval{text-align:center;font-size:.8rem;color:var(--muted);margin-top:5px}
 @media(max-width:520px){
  .wrap{padding:12px 8px 72px}
  h1{font-size:1.2rem}
@@ -102,7 +96,6 @@ button.ghost{font:inherit;font-weight:700;border:1.5px solid var(--navy);border-
 a{color:var(--blue)}
 </style></head>
 <body><div class="wrap">
-<div style="font-size:.72rem;color:var(--muted);letter-spacing:.04em;margin-bottom:2px">v2.8.02</div>
 <h1>🐈 家猫カードジェネレーター</h1>
 <p class="sub">5つの問い＋応援する国（サッカーユニフォーム）で、あなたの「家猫度」カードが完成。結果はカードとマッピングで表示。猫図鑑も収録。</p>
 <div class="tabs">
@@ -547,13 +540,6 @@ function persona(x,y){var genki=y<=4.2,mattari=y>=6.4,priv=x>=5.5;
  return priv?{n:'かしこ便利 バランス猫',t:'便利さも自分らしさも、いいとこ取り。',g:'状況に合わせて動ける柔軟さ'}
    :{n:'きまぐれ バランス猫',t:'気分でオン・オフ。自分のリズムを大事に。',g:'肩の力が抜けたほどよさ'};}
 window.persona=persona;
-// そとねこ⇔いえねこ度の直感メーター
-function meterHTML(y){var p=Math.max(2,Math.min(98,(y-1)/9*100));
-  var t='';[10,25,50,75,90].forEach(function(v){t+='<div class="tick" style="left:'+v+'%"></div>';});
-  return '<div class="meter"><div class="meterrow"><span>🌿 そとねこ<br><span style="font-weight:400;color:#666">元気・自由</span></span><span style="text-align:right">いえねこ 🏠<br><span style="font-weight:400;color:#666">おうち大好き</span></span></div>'
-    +'<div class="metertrack">'+t+'<div class="meterdot" style="left:'+p.toFixed(0)+'%">🐾</div></div>'
-    +'<div class="mval">そとねこ⇔いえねこ度：<b>'+y.toFixed(1)+'</b> / 10</div></div>';}
-window.meterHTML=meterHTML;
 function makeBlob(o,cb){var svg=cardSVGFull(o);var url=URL.createObjectURL(new Blob([svg],{type:'image/svg+xml;charset=utf-8'}));
   var img=new Image();img.onload=function(){var sc=2,c=document.createElement('canvas');c.width=440*sc;c.height=620*sc;var ctx=c.getContext('2d');ctx.scale(sc,sc);ctx.drawImage(img,0,0,440,620);URL.revokeObjectURL(url);c.toBlob(function(b){cb(b);},'image/png');};
   img.onerror=function(){URL.revokeObjectURL(url);cb(null);};img.src=url;}
@@ -665,7 +651,7 @@ document.getElementById('submit').addEventListener('click',()=>{
   var cnq=(KITS[ans9q.v]&&KITS[ans9q.v].name)||'なし';
   var holo=Math.random()<0.1;
   var per=persona(x,y);
-  h+='<div>'+cardHTML({title:per.n,catname:'あなたのねこタイプ',desc:per.t,x:x,y:y,seed:Math.round(x*7+y*13),kit:ans9q.v,holo:holo})+(holo?'<div class="gno center"><b style="color:#c0392b">✨ 特別なキラキラカード！(1/10) ✨</b></div>':'')+meterHTML(y)+'<div class="gno center">🏆 応援：'+cnq+'</div></div>';
+  h+='<div>'+cardHTML({title:per.n,catname:'あなたのねこタイプ',desc:per.t,x:x,y:y,seed:Math.round(x*7+y*13),kit:ans9q.v,holo:holo})+'<div class="gno center">'+(holo?'<b style="color:#c0392b">✨ 特別なキラキラカード！(1/10) ✨</b><br>':'')+'そとねこ⇔いえねこ度 '+y.toFixed(1)+'／10　｜　🏆応援:'+cnq+'</div></div>';
   h+='<div class="advice">';
   h+='<div class="box" style="background:#eafaf0;border-color:#7ac79a"><h3 style="margin:.1em 0;color:#1b7a4a">あなたは「'+esc(per.n)+'」！</h3><p style="margin:.2em 0 0">'+esc(per.t)+'</p><div class="kv"><b>いいところ：</b>'+esc(per.g)+'</div></div>';
   h+='<div class="box"><h3 style="margin:.1em 0;color:var(--navy)">🐾 近いのは：'+esc(near.name)+'（'+esc(near.catname)+'）</h3>';
