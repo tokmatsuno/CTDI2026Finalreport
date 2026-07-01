@@ -79,17 +79,6 @@ button.ghost{font:inherit;font-weight:700;border:1.5px solid var(--navy);border-
 .metertrack .tick{position:absolute;top:0;bottom:0;width:1px;background:rgba(255,255,255,.5)}
 .meterdot{position:absolute;top:50%;transform:translate(-50%,-50%);width:22px;height:22px;border-radius:50%;background:#fff;border:3px solid #1F3864;box-shadow:0 1px 4px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;font-size:11px}
 .mval{text-align:center;font-size:.8rem;color:var(--muted);margin-top:5px}
-.teaser{text-align:center;padding:28px 8px}
-.tspin{width:40px;height:40px;border:4px solid #dfe4ee;border-top-color:#1F3864;border-radius:50%;margin:0 auto 14px;animation:spin 1s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.tmsg{font-weight:700;color:#1F3864;line-height:1.6}
-.tmsg span{font-weight:400;color:#666;font-size:.9rem}
-.tcards{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:18px}
-.tcard{width:112px;text-align:center;animation:tfade .5s ease}
-@keyframes tfade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-.tcard .tcat{width:100px;height:100px;margin:0 auto;background:#fff;border:2px solid #e2c9a0;border-radius:12px;overflow:hidden}
-.tcard .tcat svg{width:100px;height:100px}
-.tname{font-size:.72rem;font-weight:700;color:#1F3864;margin-top:4px;line-height:1.3}
 @media(max-width:520px){
  .wrap{padding:12px 8px 72px}
  h1{font-size:1.2rem}
@@ -113,7 +102,7 @@ button.ghost{font:inherit;font-weight:700;border:1.5px solid var(--navy);border-
 a{color:var(--blue)}
 </style></head>
 <body><div class="wrap">
-<div style="font-size:.72rem;color:var(--muted);letter-spacing:.04em;margin-bottom:2px">v3.1.0</div>
+<div style="font-size:.72rem;color:var(--muted);letter-spacing:.04em;margin-bottom:2px">v2.8.02</div>
 <h1>🐈 家猫カードジェネレーター</h1>
 <p class="sub">5つの問い＋応援する国（サッカーユニフォーム）で、あなたの「家猫度」カードが完成。結果はカードとマッピングで表示。猫図鑑も収録。</p>
 <div class="tabs">
@@ -565,11 +554,6 @@ function meterHTML(y){var p=Math.max(2,Math.min(98,(y-1)/9*100));
     +'<div class="metertrack">'+t+'<div class="meterdot" style="left:'+p.toFixed(0)+'%">🐾</div></div>'
     +'<div class="mval">そとねこ⇔いえねこ度：<b>'+y.toFixed(1)+'</b> / 10</div></div>';}
 window.meterHTML=meterHTML;
-// 生成前の「準備中」演出：溜まっている猫からランダム3匹
-function teaserCards(){var pool=TYPES.slice(),pick=[];for(var i=0;i<3&&pool.length;i++){pick.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]);}
-  return pick.map(function(t){return '<div class="tcard"><div class="tcat">'+catSVG(+t.x,+t.y,t.no,'')+'</div><div class="tname">'+esc(t.catname)+'</div></div>';}).join('');}
-function teaserHTML(){return '<div class="teaser"><div class="tspin"></div><div class="tmsg">🐾 あなたのねこを準備中…<br><span>ほかにも、こんな猫たちがいますよ</span></div><div id="teaserCards" class="tcards">'+teaserCards()+'</div></div>';}
-window.teaserCards=teaserCards;window.teaserHTML=teaserHTML;
 function makeBlob(o,cb){var svg=cardSVGFull(o);var url=URL.createObjectURL(new Blob([svg],{type:'image/svg+xml;charset=utf-8'}));
   var img=new Image();img.onload=function(){var sc=2,c=document.createElement('canvas');c.width=440*sc;c.height=620*sc;var ctx=c.getContext('2d');ctx.scale(sc,sc);ctx.drawImage(img,0,0,440,620);URL.revokeObjectURL(url);c.toBlob(function(b){cb(b);},'image/png');};
   img.onerror=function(){URL.revokeObjectURL(url);cb(null);};img.src=url;}
@@ -636,7 +620,7 @@ function showDetail(t){
     +'<div class="kv"><b>家猫化のポイント：</b>'+esc(t.point||'')+'</div></div>';
   h+='<div class="box">'
     +'<div class="kv"><b>🍶 ごきげんチュール（こう誘うと動きやすい）：</b>'+esc(t.churu||'')+'</div>'
-    +'<div class="kv"><b>🪜 キャットタワー（好きな居場所）：</b>'+esc(t.tower||'')+'</div>'
+    +'<div class="kv"><b>🪜 いごこちタワー（好きな居場所）：</b>'+esc(t.tower||'')+'</div>'
     +'<div class="kv"><b>🌿 またたび（いっしょにできそうなこと）：</b>'+esc(t.kaizen||'')+'</div>'
     +'<div class="kv"><b>🐾 そっと気をつけたいこと：</b>'+esc(t.side||'')+'</div>'
     +'<div class="kv" style="font-size:.82rem"><b>📚 出典：</b>'+esc(t.source||'')+(t.url?' ／ <a href="'+t.url+'" target="_blank" rel="noopener">引用元</a>':'')+'</div></div>';
@@ -686,33 +670,25 @@ document.getElementById('submit').addEventListener('click',()=>{
   h+='<div class="box" style="background:#eafaf0;border-color:#7ac79a"><h3 style="margin:.1em 0;color:#1b7a4a">あなたは「'+esc(per.n)+'」！</h3><p style="margin:.2em 0 0">'+esc(per.t)+'</p><div class="kv"><b>いいところ：</b>'+esc(per.g)+'</div></div>';
   h+='<div class="box"><h3 style="margin:.1em 0;color:var(--navy)">🐾 近いのは：'+esc(near.name)+'（'+esc(near.catname)+'）</h3>';
   h+='<div class="kv"><b>🍶 ごきげんチュール（こう誘うと動きやすい）：</b>'+esc(near.churu)+'</div>';
-  h+='<div class="kv"><b>🪜 キャットタワー（好きな居場所）：</b>'+esc(near.tower)+'</div>';
+  h+='<div class="kv"><b>🪜 いごこちタワー（好きな居場所）：</b>'+esc(near.tower)+'</div>';
   h+='<div class="kv"><b>🌿 またたび（いっしょにできそうなこと）：</b>'+esc(near.kaizen)+'</div>';
   h+='<div class="kv"><b>🐾 そっと気をつけたいこと：</b>'+esc(near.side)+'</div>';
   h+='<div class="kv" style="font-size:.82rem"><b>📚 出典：</b>'+esc(near.source)+' ／ <a href="'+near.url+'" target="_blank" rel="noopener">引用元</a></div></div>';
   var skill=hiddenSkill(answers,x,y);
   h+='<div class="box" style="background:#fff7e6;border-color:#e6c200"><h3 style="margin:.1em 0;color:#9a6b00">🎁 あなたの隠れ特技：'+esc(skill.n)+'</h3>'
     +'<div class="kv">'+esc(skill.d)+'</div>'
-    +'<div class="kv"><b>🏙 地域での役割：</b>'+esc(skill.c)+'</div></div>';
+    +'<div class="kv"><b>🌿 地域での活かし方（またたび）：</b>'+esc(skill.c)+'</div></div>';
   h+='<div class="box"><b>近いタイプ</b><div class="kv" style="color:var(--muted)">'+near2.map(t=>esc(t.name)+'（'+esc(t.catname)+'）').join('　／　')+'</div></div>';
   window.lastO={title:per.n,sub:'あなたのねこタイプ',desc:per.t,x:+x.toFixed(1),y:+y.toFixed(1),seed:Math.round(x*7+y*13),kit:ans9q.v,holo:holo,footer:'そとねこ⇔いえねこ度 '+y.toFixed(1)+(KITS[ans9q.v]?'　🏆'+KITS[ans9q.v].name:'')};
   window.lastD={quad:per.n,typeName:(near?near.name:''),catName:(near?near.catname:''),churu:(near?near.churu:''),skill:skill.n,kitName:(KITS[ans9q.v]?KITS[ans9q.v].name:'')};
   h+=shareRow('window.lastO','window.lastD','家猫カード');
   h+='<div class="center" style="margin-top:6px"><button class="ghost" onclick="restart()">もう一度</button></div>';
   h+='</div></div>';
-  var res=document.getElementById('res');
-  res.innerHTML=teaserHTML();
-  res.scrollIntoView({behavior:'smooth'});
-  var _iv=setInterval(function(){var g=document.getElementById('teaserCards');if(g)g.innerHTML=teaserCards();},1300);
-  document.getElementById('submit').disabled=true;
-  setTimeout(function(){clearInterval(_iv);
-    res.innerHTML=h;
-    res.insertAdjacentHTML('beforeend','<div class="sub center" id="lognote2" style="margin-top:8px"></div>');
-    logResult({mode:'2軸',x:+x.toFixed(2),y:+y.toFixed(2),quad:q.name,answers:answers.join(''),cntA:c.A,cntB:c.B,cntC:c.C,cntD:c.D,nearestNo:near.no,nearestName:near.name});
-    logNote('lognote2');
-    document.getElementById('submit').disabled=false;
-    res.scrollIntoView({behavior:'smooth'});
-  },5000);
+  document.getElementById('res').innerHTML=h;
+  document.getElementById('res').insertAdjacentHTML('beforeend','<div class="sub center" id="lognote2" style="margin-top:8px"></div>');
+  logResult({mode:'2軸',x:+x.toFixed(2),y:+y.toFixed(2),quad:q.name,answers:answers.join(''),cntA:c.A,cntB:c.B,cntC:c.C,cntD:c.D,nearestNo:near.no,nearestName:near.name});
+  logNote('lognote2');
+  document.getElementById('res').scrollIntoView({behavior:'smooth'});
 });
 function restart(){answers.fill(null);document.querySelectorAll('#qs input').forEach(i=>i.checked=false);document.querySelectorAll('#qs .opt').forEach(o=>o.classList.remove('sel'));document.getElementById('res').innerHTML='';upd();window.scrollTo({top:0,behavior:'smooth'});}
 window.restart=restart;
@@ -802,7 +778,7 @@ document.getElementById('submit8').addEventListener('click',()=>{
   h+='<div class="box"><span class="chip" style="background:'+q.banner+'">'+q.name+'</span> <span style="color:var(--muted)">回答スコア合計 '+scores.reduce((a,b)=>a+b,0)+'/80</span>';
   h+='<h3 style="margin:.4em 0 .2em;color:var(--navy)">🐾 近いのは：'+esc(near.name)+'（'+esc(near.catname)+'）</h3>';
   h+='<div class="kv"><b>🍶 ごきげんチュール（こう誘うと動きやすい）：</b>'+esc(near.churu)+'</div>';
-  h+='<div class="kv"><b>🪜 キャットタワー（好きな居場所）：</b>'+esc(near.tower)+'</div>';
+  h+='<div class="kv"><b>🪜 いごこちタワー（好きな居場所）：</b>'+esc(near.tower)+'</div>';
   h+='<div class="kv"><b>🌿 またたび（いっしょにできそうなこと）：</b>'+esc(near.kaizen)+'</div>';
   h+='<div class="kv"><b>🐾 そっと気をつけたいこと：</b>'+esc(near.side)+'</div>';
   h+='<div class="kv" style="font-size:.82rem"><b>📚 出典：</b>'+esc(near.source)+' ／ <a href="'+near.url+'" target="_blank" rel="noopener">引用元</a></div></div>';
