@@ -324,7 +324,7 @@ root.catSVG=catSVG; root.octaRadar=octaRadar; root.KITS=KITS;
 <script>
 var QUAD={"halfP": {"name": "半野良（公）", "light": "#E2EFDA", "banner": "#5a7d3a"}, "cage": {"name": "公営の檻", "light": "#D9E1F2", "banner": "#3a5a8c"}, "halfV": {"name": "半野良（私）", "light": "#FFF2CC", "banner": "#b58f2a"}, "house": {"name": "ハイテク室内飼い", "light": "#FCE4D6", "banner": "#b5663a"}};
 var RECORDS=[];
-const SHARED_API="https://script.google.com/macros/s/AKfycbxRpYhB5mTB5O9zZ_VthkBvSwTLdOnGjeY6u6eZH_bw2tC0HLTTbDNd4-LhfjUfX7K2/exec";  // ← index.html と同じ共有API /exec URL（全員の猫を表示）
+const SHARED_API="";  // ← index.html と同じ共有API /exec URL を貼ると、全員の猫が表示されます（下部設定でも可）
 function quadKey(x,y){var p=x>=5.5,d=y>=5.5;return d?(p?'house':'cage'):(p?'halfV':'halfP');}
 function srcUrl(){try{return localStorage.getItem('catmap_src')||(SHARED_API?SHARED_API+(SHARED_API.indexOf('?')<0?'?':'&')+'what=cats':'')||'';}catch(e){return SHARED_API?SHARED_API+'?what=cats':'';}}
 function getLocal(){try{return JSON.parse(localStorage.getItem('catmap_stock')||'[]');}catch(e){return [];}}
