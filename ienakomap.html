@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>家猫マップ — この地区にどんな猫がいる？</title>
+<style>
+:root{--navy:#1F3864;--blue:#2E5496;--line:#d7cdb8;--muted:#777;color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Hiragino Sans","Yu Gothic",Meiryo,system-ui,sans-serif;color:#222;background:#f4efe4;line-height:1.6}
+.wrap{max-width:960px;margin:0 auto;padding:18px 14px 70px}
+.ver{font-size:.72rem;color:#999}
+h1{font-size:1.4rem;color:var(--navy);margin:.1em 0}
+.lead{color:#555;font-size:.92rem;margin:.2em 0 14px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+button,.btn{font:inherit;font-weight:700;border:1.5px solid var(--navy);border-radius:8px;padding:7px 13px;background:#fff;color:var(--navy);cursor:pointer}
+button.pri{background:var(--navy);color:#fff}
+.stat{display:flex;flex-wrap:wrap;gap:10px;margin:8px 0 16px}
+.chip{background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:.9rem;min-width:120px}
+.chip b{display:block;font-size:1.3rem;color:var(--navy)}
+.maparea{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;text-align:center}
+.qcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:16px}
+.qcard{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;gap:10px;align-items:flex-start}
+.qcard .qcat{width:64px;height:64px;flex:0 0 64px;background:#faf7f0;border:1px solid #eadfc6;border-radius:10px;overflow:hidden}
+.qcard .qcat svg{width:64px;height:64px}
+.qcard h3{margin:.1em 0;font-size:1rem}
+.qcard .pct{font-size:1.5rem;font-weight:800}
+.qcard .tp{font-size:.8rem;color:#555;margin-top:2px}
+.rank{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin-top:16px}
+.rank ol{margin:.3em 0;padding-left:1.4em}
+.rank li{margin:2px 0}
+.rank .n{color:var(--muted);font-size:.85rem}
+details{margin-top:14px}
+summary{cursor:pointer;color:var(--blue);font-weight:700}
+.setbox{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:8px}
+input[type=text]{width:100%;padding:9px;border:1px solid var(--line);border-radius:8px;font-size:.9rem;margin-top:4px}
+.note{color:var(--muted);font-size:.82rem}
+.empty{color:#a33;padding:20px;text-align:center}
+</style></head>
+<body><div class="wrap">
+<div class="ver">家猫マップ v1.0.0</div>
+<h1>🗺 家猫マップ</h1>
+<p class="lead">診断で生まれた猫たちを、<b>飼い主（公的⇔私的）</b>×<b>家猫度（半野良⇔純血家猫）</b>の2軸にプロット。この地区にどんな猫が多いかが見えます。</p>
+
+<div class="bar">
+  <button class="pri" onclick="reloadAll()">🔄 再読込</button>
+  <button onclick="exportJSON()">⬇ この端末のストックを書き出す(JSON)</button>
+  <label class="btn" style="display:inline-block">⬆ JSONを読み込む<input type="file" id="impFile" accept=".json,application/json" style="display:none" onchange="importJSON(this)"></label>
+  <button onclick="clearLocal()">🗑 この端末のストックを消す</button>
+</div>
+
+<div class="stat" id="stat"></div>
+<div class="maparea"><div id="mapHost"></div></div>
+<div class="qcards" id="qcards"></div>
+<div class="rank" id="rank"></div>
+
+<p class="note" style="margin-top:14px">全員の結果は共有サーバーに自動で集約されます（この端末で生成した猫もすぐ表示）。設定は不要です。※プライバシー：座標・タイプ・時刻のみを扱い、個人を特定する情報は含みません。</p>
+</div>
+
+<script>
+// 2軸パラメトリック猫顔ジェネレーター
+// x: 1(公的)..10(私的)   y: 1(半野良)..10(純血家猫)
+(function(root){
+function lerp(a,b,t){return a+(b-a)*t;}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+function smooth(t){t=clamp(t,0,1);return t*t*(3-2*t);}
+function mix(c1,c2,t){return [Math.round(lerp(c1[0],c2[0],t)),Math.round(lerp(c1[1],c2[1],t)),Math.round(lerp(c1[2],c2[2],t))];}
+function rgb(c){return 'rgb('+c[0]+','+c[1]+','+c[2]+')';}
+function dark(c,f){return [Math.round(c[0]*f),Math.round(c[1]*f),Math.round(c[2]*f)];}
+function rng(seed){let s=seed*9301+49297;return function(){s=(s*9301+49297)%233280;return s/233280;};}
+
+// 2026 W杯 出場48か国（国旗絵文字＋配色キット・ロゴ無し版権セーフ）
+var KITS={
+ ca:{name:'カナダ',flag:'🇨🇦',base:'#d52b1e',trim:'#ffffff'},
+ mx:{name:'メキシコ',flag:'🇲🇽',base:'#137a3e',trim:'#ffffff'},
+ us:{name:'アメリカ',flag:'🇺🇸',base:'#1c3a8c',trim:'#ffffff'},
+ jp:{name:'日本',flag:'🇯🇵',base:'#16307a',trim:'#ffffff'},
+ nz:{name:'ニュージーランド',flag:'🇳🇿',base:'#f2f2f2',trim:'#111111'},
+ ir:{name:'イラン',flag:'🇮🇷',base:'#f2f2f2',trim:'#1aa44a'},
+ ar:{name:'アルゼンチン',flag:'🇦🇷',base:'#ffffff',trim:'#74acdf',stripes:true,stripeCol:'#74acdf'},
+ uz:{name:'ウズベキスタン',flag:'🇺🇿',base:'#1f6fc0',trim:'#ffffff'},
+ jo:{name:'ヨルダン',flag:'🇯🇴',base:'#c8202e',trim:'#ffffff'},
+ kr:{name:'韓国',flag:'🇰🇷',base:'#d4012d',trim:'#ffffff'},
+ au:{name:'オーストラリア',flag:'🇦🇺',base:'#f4c20d',trim:'#1b7a3c'},
+ br:{name:'ブラジル',flag:'🇧🇷',base:'#f4d000',trim:'#1ca84f'},
+ ec:{name:'エクアドル',flag:'🇪🇨',base:'#ffd400',trim:'#1f3a8c'},
+ py:{name:'パラグアイ',flag:'🇵🇾',base:'#ffffff',trim:'#d4012d',stripes:true,stripeCol:'#d4012d'},
+ uy:{name:'ウルグアイ',flag:'🇺🇾',base:'#5aa6e6',trim:'#0a2a5e'},
+ co:{name:'コロンビア',flag:'🇨🇴',base:'#ffcd00',trim:'#1f3a8c'},
+ ma:{name:'モロッコ',flag:'🇲🇦',base:'#c1272d',trim:'#1b7a3c'},
+ tn:{name:'チュニジア',flag:'🇹🇳',base:'#e70013',trim:'#ffffff'},
+ eg:{name:'エジプト',flag:'🇪🇬',base:'#c8102e',trim:'#ffffff'},
+ dz:{name:'アルジェリア',flag:'🇩🇿',base:'#f2f2f2',trim:'#1b7a3c'},
+ gh:{name:'ガーナ',flag:'🇬🇭',base:'#f2f2f2',trim:'#d4012d'},
+ cv:{name:'カーボベルデ',flag:'🇨🇻',base:'#1f4ea1',trim:'#ffffff'},
+ qa:{name:'カタール',flag:'🇶🇦',base:'#8a1538',trim:'#ffffff'},
+ sa:{name:'サウジアラビア',flag:'🇸🇦',base:'#1b7a3c',trim:'#ffffff'},
+ sn:{name:'セネガル',flag:'🇸🇳',base:'#f2f2f2',trim:'#1b7a3c'},
+ za:{name:'南アフリカ',flag:'🇿🇦',base:'#1b7a3c',trim:'#f4c20d'},
+ ci:{name:'コートジボワール',flag:'🇨🇮',base:'#f36c21',trim:'#1b7a3c'},
+ eng:{name:'イングランド',flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',base:'#f4f4f4',trim:'#16307a'},
+ fr:{name:'フランス',flag:'🇫🇷',base:'#1e3a8c',trim:'#e23b3b'},
+ hr:{name:'クロアチア',flag:'🇭🇷',base:'#ffffff',trim:'#d4012d',stripes:true,stripeCol:'#d4012d'},
+ pt:{name:'ポルトガル',flag:'🇵🇹',base:'#c8102e',trim:'#1b7a3c'},
+ no:{name:'ノルウェー',flag:'🇳🇴',base:'#c8102e',trim:'#16307a'},
+ de:{name:'ドイツ',flag:'🇩🇪',base:'#f4f4f4',trim:'#141414'},
+ nl:{name:'オランダ',flag:'🇳🇱',base:'#f36c21',trim:'#ffffff'},
+ ch:{name:'スイス',flag:'🇨🇭',base:'#d52b1e',trim:'#ffffff'},
+ sct:{name:'スコットランド',flag:'🏴󠁧󠁢󠁳󠁣󠁴󠁿',base:'#1c3a6e',trim:'#ffffff'},
+ es:{name:'スペイン',flag:'🇪🇸',base:'#c8202e',trim:'#f4d000'},
+ at:{name:'オーストリア',flag:'🇦🇹',base:'#c8102e',trim:'#ffffff'},
+ be:{name:'ベルギー',flag:'🇧🇪',base:'#c8102e',trim:'#f4d000'},
+ pa:{name:'パナマ',flag:'🇵🇦',base:'#c8102e',trim:'#16307a'},
+ cw:{name:'キュラソー',flag:'🇨🇼',base:'#1f4ea1',trim:'#ffd400'},
+ ht:{name:'ハイチ',flag:'🇭🇹',base:'#1f4ea1',trim:'#d4012d'},
+ ba:{name:'ボスニア・ヘルツェゴビナ',flag:'🇧🇦',base:'#1f4ea1',trim:'#ffd400'},
+ se:{name:'スウェーデン',flag:'🇸🇪',base:'#f4d000',trim:'#1b53a8'},
+ tr:{name:'トルコ',flag:'🇹🇷',base:'#e30a17',trim:'#ffffff'},
+ cz:{name:'チェコ',flag:'🇨🇿',base:'#d7141a',trim:'#ffffff'},
+ cd:{name:'コンゴ民主共和国',flag:'🇨🇩',base:'#1f6fc0',trim:'#ffd400'},
+ iq:{name:'イラク',flag:'🇮🇶',base:'#f2f2f2',trim:'#1b7a3c'}
+};
+
+function catSVG(x,y,seed,kitKey){
+  seed=seed||1;
+  const nx=clamp((x-1)/9,0,1);      // 0 public .. 1 private
+  const ny=clamp((y-1)/9,0,1);      // 0 feral .. 1 housecat
+  const r=rng(seed);
+  // ---- palette (X: public cool grey -> private warm cream) ----
+  const PUB=[150,160,174], PRV=[226,184,128];
+  const fur=mix(PUB,PRV,nx);
+  const furD=dark(fur,0.80);                 // markings / shadow
+  const white=[249,247,241];                 // muzzle / chest
+  const patch=[150,110,72];                  // calico brown patch
+  const ink='#2b2b2b';
+  const innerEar=[246,198,198], earSh=[224,150,150], nose=[232,150,150];
+  const cx=150;
+  const kit = kitKey && KITS[kitKey];
+  const gid='hg'+seed, iid='ir'+seed, eid='eg'+seed;
+  const irisCol=mix([120,166,92],[214,150,66],nx); // greenish -> amber
+  let s='<svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">';
+  s+='<defs><radialGradient id="'+gid+'" cx="40%" cy="34%" r="76%">'
+    +'<stop offset="0%" stop-color="'+rgb(mix(fur,[255,255,255],0.26))+'"/>'
+    +'<stop offset="60%" stop-color="'+rgb(fur)+'"/>'
+    +'<stop offset="100%" stop-color="'+rgb(dark(fur,0.84))+'"/></radialGradient>'
+    +'<radialGradient id="'+iid+'" cx="40%" cy="34%" r="66%"><stop offset="0%" stop-color="'+rgb(mix(irisCol,[255,255,255],0.55))+'"/><stop offset="52%" stop-color="'+rgb(irisCol)+'"/><stop offset="100%" stop-color="'+rgb(dark(irisCol,0.58))+'"/></radialGradient>'
+    +'<radialGradient id="'+eid+'" cx="50%" cy="30%" r="75%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#eef1f6"/></radialGradient></defs>';
+
+  // ===== bust / shoulders (kit = uniform) =====
+  const BUST='M36,300 C36,248 92,224 150,224 C208,224 264,248 264,300 Z';
+  if(kit){
+    s+='<path d="'+BUST+'" fill="'+kit.base+'" stroke="'+ink+'" stroke-width="5"/>';
+    if(kit.stripes){
+      const cid='jc'+seed;
+      s+='<clipPath id="'+cid+'"><path d="'+BUST+'"/></clipPath><g clip-path="url(#'+cid+')">';
+      for(let xx=52;xx<268;xx+=30){s+='<rect x="'+xx+'" y="220" width="15" height="88" fill="'+kit.stripeCol+'"/>';}
+      s+='</g><path d="'+BUST+'" fill="none" stroke="'+ink+'" stroke-width="5"/>';
+    }
+    s+='<path d="M124,228 L150,250 L176,228" fill="none" stroke="'+kit.trim+'" stroke-width="7" stroke-linejoin="round"/>';
+    s+='<path d="M48,262 Q80,232 112,228" fill="none" stroke="'+kit.trim+'" stroke-width="6"/>';
+    s+='<path d="M252,262 Q220,232 188,228" fill="none" stroke="'+kit.trim+'" stroke-width="6"/>';
+  } else {
+    s+='<path d="'+BUST+'" fill="'+rgb(fur)+'" stroke="'+ink+'" stroke-width="5"/>';
+    // white chest bib
+    s+='<path d="M150,232 C176,236 188,262 184,300 L116,300 C112,262 124,236 150,232 Z" fill="'+rgb(white)+'"/>';
+    if(ny>0.55){ // collar+bell for housecat
+      const cw=smooth((ny-0.55)/0.45);
+      s+='<path d="M112,240 Q150,260 188,240" fill="none" stroke="'+rgb(mix([210,70,90],[120,90,200],nx))+'" stroke-width="'+(6*cw+2)+'" stroke-linecap="round"/>';
+      s+='<circle cx="150" cy="254" r="'+(5*cw+1.5)+'" fill="#ffd84a" stroke="'+ink+'" stroke-width="2"/>';
+    }
+  }
+
+  // ===== ears =====
+  const earUp=lerp(8,18,1-ny); // feral ears more upright/pointed
+  function ear(side){
+    const baseO=cx+side*92, baseI=cx+side*38;
+    const apexX=cx+side*(74+earUp), apexY=14-earUp;
+    let p='<path d="M'+baseO+',104 Q'+(cx+side*100)+',58 '+apexX+','+apexY+' Q'+(cx+side*58)+',46 '+baseI+',74 Z" fill="'+rgb(fur)+'" stroke="'+ink+'" stroke-width="5" stroke-linejoin="round"/>';
+    p+='<path d="M'+(cx+side*80)+',92 Q'+(cx+side*86)+',64 '+(cx+side*68)+',34 Q'+(cx+side*50)+',56 '+(cx+side*44)+',78 Z" fill="'+rgb(innerEar)+'"/>';
+    return p;
+  }
+  s+=ear(-1)+ear(1);
+
+  // ===== head =====
+  const HEAD='M150,44 C232,44 250,104 248,150 C246,200 206,232 150,232 C94,232 54,200 52,150 C50,104 68,44 150,44 Z';
+  s+='<path d="'+HEAD+'" fill="url(#'+gid+')" stroke="'+ink+'" stroke-width="5" stroke-linejoin="round"/>';
+
+  // ===== coat markings (clipped to head) =====
+  const cidH='hd'+seed;
+  s+='<clipPath id="'+cidH+'"><path d="'+HEAD+'"/></clipPath><g clip-path="url(#'+cidH+')">';
+  const style=seed%3; // 0 calico, 1 tabby, 2 plain+white
+  if(style===0){ // calico: brown patch over one upper side + ear-side
+    const sd=(seed%2)?1:-1;
+    s+='<path d="M'+cx+',44 C'+(cx+sd*70)+',44 '+(cx+sd*100)+',70 '+(cx+sd*96)+',120 C'+(cx+sd*70)+',150 '+(cx+sd*30)+',120 '+cx+',92 Z" fill="'+rgb(patch)+'"/>';
+    s+='<ellipse cx="'+(cx-sd*70)+'" cy="186" rx="34" ry="26" fill="'+rgb(patch)+'" opacity="0.9"/>';
+  } else if(style===1){ // tabby stripes (forehead + cheeks)
+    s+='<g stroke="'+rgb(furD)+'" stroke-width="7" stroke-linecap="round" fill="none">';
+    s+='<path d="M150,52 L150,86"/><path d="M132,56 Q126,72 122,90"/><path d="M168,56 Q174,72 178,90"/>';
+    s+='<path d="M60,150 q22,6 40,2"/><path d="M60,170 q24,6 42,0"/>';
+    s+='<path d="M240,150 q-22,6 -40,2"/><path d="M240,170 q-24,6 -42,0"/>';
+    s+='</g>';
+  }
+  // soft lower shading
+  s+='<path d="M52,150 C70,222 230,222 248,150 C246,210 206,236 150,236 C94,236 54,210 52,150 Z" fill="'+rgb(furD)+'" opacity="0.16"/>';
+  s+='</g>';
+
+  // forehead white blaze for calico/plain
+  if(style!==1){ s+='<path d="M150,150 C140,120 140,92 150,78 C160,92 160,120 150,150 Z" fill="'+rgb(white)+'" opacity="0.9"/>'; }
+
+  // ===== muzzle (white) + blush cheeks =====
+  s+='<ellipse cx="150" cy="180" rx="54" ry="40" fill="'+rgb(white)+'"/>';
+  s+='<ellipse cx="92" cy="176" rx="17" ry="10" fill="#f29b9b" opacity="0.32"/>';
+  s+='<ellipse cx="208" cy="176" rx="17" ry="10" fill="#f29b9b" opacity="0.32"/>';
+
+  // ===== eyes (big, friendly, glossy) =====
+  const eyeDX=46, eyeY=148, eyeRx=21, eyeRy=24;
+  const pr=lerp(8,11,ny);                            // pupil bigger when housecat
+  const lidF=ny<0.4?((0.4-ny)/0.4):0;                // feral upper-lid
+  function eye(side){
+    const ex=cx+side*eyeDX; let p='';
+    p+='<ellipse cx="'+ex+'" cy="'+eyeY+'" rx="'+eyeRx+'" ry="'+eyeRy+'" fill="url(#'+eid+')" stroke="'+ink+'" stroke-width="4"/>';
+    p+='<circle cx="'+ex+'" cy="'+(eyeY+1.5)+'" r="'+(eyeRy-2)+'" fill="url(#'+iid+')"/>';
+    p+='<circle cx="'+ex+'" cy="'+(eyeY+1.5)+'" r="'+(eyeRy-2)+'" fill="none" stroke="'+rgb(dark(irisCol,0.6))+'" stroke-width="2.4"/>';
+    p+='<circle cx="'+ex+'" cy="'+(eyeY+2.5)+'" r="'+pr+'" fill="#141414"/>';
+    p+='<circle cx="'+(ex-5.5)+'" cy="'+(eyeY-6.5)+'" r="5.2" fill="#fff"/>';
+    p+='<circle cx="'+(ex+6)+'" cy="'+(eyeY+7)+'" r="2.6" fill="#fff" opacity="0.9"/>';
+    p+='<path d="M'+(ex-eyeRx+3)+','+(eyeY+eyeRy-4)+' Q'+ex+','+(eyeY+eyeRy+2)+' '+(ex+eyeRx-3)+','+(eyeY+eyeRy-4)+'" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity="0.5"/>';
+    p+='<path d="M'+(ex-eyeRx+2)+','+(eyeY-eyeRy+5)+' Q'+ex+','+(eyeY-eyeRy-2)+' '+(ex+eyeRx-2)+','+(eyeY-eyeRy+5)+'" fill="none" stroke="'+ink+'" stroke-width="2.6" stroke-linecap="round" opacity="0.55"/>';
+    if(lidF>0){ p+='<path d="M'+(ex-eyeRx-1)+','+(eyeY-eyeRy*0.5)+' Q'+ex+','+(eyeY-eyeRy-3*lidF)+' '+(ex+eyeRx+1)+','+(eyeY-eyeRy*0.5)+' L'+(ex+eyeRx+1)+','+(eyeY-eyeRy)+' L'+(ex-eyeRx-1)+','+(eyeY-eyeRy)+' Z" fill="'+rgb(fur)+'" opacity="'+(0.55*lidF).toFixed(2)+'"/>'; }
+    return p;
+  }
+  s+=eye(-1)+eye(1);
+
+  // ===== nose + mouth =====
+  const ny0=170;
+  s+='<path d="M139,'+ny0+' Q150,'+(ny0-4)+' 161,'+ny0+' Q156,'+(ny0+9)+' 150,'+(ny0+11)+' Q144,'+(ny0+9)+' 139,'+ny0+' Z" fill="'+rgb(nose)+'" stroke="'+ink+'" stroke-width="2.5" stroke-linejoin="round"/>';
+  s+='<ellipse cx="146" cy="'+(ny0+1)+'" rx="3" ry="2" fill="#fff" opacity="0.55"/>';
+  const m=lerp(7,15,ny);
+  s+='<path d="M150,'+(ny0+11)+' L150,'+(ny0+17)+'" stroke="'+ink+'" stroke-width="3"/>';
+  s+='<path d="M150,'+(ny0+17)+' Q'+(cx-15)+','+(ny0+17+m)+' '+(cx-26)+','+(ny0+11)+'" fill="none" stroke="'+ink+'" stroke-width="3" stroke-linecap="round"/>';
+  s+='<path d="M150,'+(ny0+17)+' Q'+(cx+15)+','+(ny0+17+m)+' '+(cx+26)+','+(ny0+11)+'" fill="none" stroke="'+ink+'" stroke-width="3" stroke-linecap="round"/>';
+
+  // ===== whiskers =====
+  s+='<g stroke="'+ink+'" stroke-width="2" stroke-linecap="round" opacity="0.75">';
+  for(let i=0;i<3;i++){const wy=170+i*9;
+    s+='<path d="M'+(cx-30)+','+wy+' q-28,'+(i*5-5)+' -50,'+(i*6-3)+'"/>';
+    s+='<path d="M'+(cx+30)+','+wy+' q28,'+(i*5-5)+' 50,'+(i*6-3)+'"/>';
+  }
+  s+='</g>';
+  s+='</svg>';
+  return s;
+}
+// 八角形レーダー（8軸）scores:0-10[8], labels:string[8]
+function octaRadar(scores,labels){
+  const W=420,H=380,cx=210,cy=188,R=120;
+  const ang=i=>-Math.PI/2+i*Math.PI/4;
+  const pt=(v,i)=>[cx+R*v/10*Math.cos(ang(i)), cy+R*v/10*Math.sin(ang(i))];
+  const poly=v=>{let p='';for(let i=0;i<8;i++){const q=pt(v,i);p+=(i?' L':'M')+q[0].toFixed(1)+','+q[1].toFixed(1);}return p+' Z';};
+  let s='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg"><style>text{font-family:\'Noto Sans CJK JP\',sans-serif;}</style>';
+  s+='<rect width="'+W+'" height="'+H+'" fill="#ffffff"/>';
+  // grid rings
+  [2,4,6,8,10].forEach(r=>{s+='<path d="'+poly(r)+'" fill="none" stroke="'+(r===10?'#9aa6bd':'#e1e6f0')+'" stroke-width="'+(r===10?2:1)+'"/>';});
+  // spokes
+  for(let i=0;i<8;i++){const q=pt(10,i);s+='<line x1="'+cx+'" y1="'+cy+'" x2="'+q[0].toFixed(1)+'" y2="'+q[1].toFixed(1)+'" stroke="#e1e6f0" stroke-width="1"/>';}
+  // data polygon
+  s+='<path d="'+poly(0)+'" fill="none"/>';
+  let dp='';for(let i=0;i<8;i++){const q=pt(scores[i],i);dp+=(i?' L':'M')+q[0].toFixed(1)+','+q[1].toFixed(1);}dp+=' Z';
+  s+='<path d="'+dp+'" fill="rgba(192,0,0,.20)" stroke="#C00000" stroke-width="2.5" stroke-linejoin="round"/>';
+  for(let i=0;i<8;i++){const q=pt(scores[i],i);s+='<circle cx="'+q[0].toFixed(1)+'" cy="'+q[1].toFixed(1)+'" r="3.5" fill="#C00000"/>';}
+  // labels
+  for(let i=0;i<8;i++){const a=ang(i),lx=cx+(R+26)*Math.cos(a),ly=cy+(R+26)*Math.sin(a);
+    let anc='middle'; if(Math.cos(a)>0.4)anc='start'; else if(Math.cos(a)<-0.4)anc='end';
+    s+='<text x="'+lx.toFixed(1)+'" y="'+(ly+4).toFixed(1)+'" text-anchor="'+anc+'" font-size="12.5" font-weight="bold" fill="#1F3864">'+labels[i]+'</text>';
+    s+='<text x="'+lx.toFixed(1)+'" y="'+(ly+19).toFixed(1)+'" text-anchor="'+anc+'" font-size="11" fill="#C00000">'+scores[i].toFixed(0)+'</text>';
+  }
+  s+='</svg>';return s;
+}
+// 「あなたのまち」の象徴を描く背景（viewBox 0 0 300 210 前提の内側SVG）
+var REGIONS={
+ fuji:{name:'富士・山あるまち'},city:{name:'都会・タワー'},sea:{name:'海辺のまち'},
+ sato:{name:'里山・田園'},castle:{name:'城下町'},north:{name:'北国・雪'}
+};
+function regionBG(key){
+ if(key==='fuji')return '<rect width="300" height="210" fill="#cfeaf5"/><circle cx="248" cy="42" r="19" fill="#fff2bf"/>'
+   +'<path d="M20,178 L150,58 L280,178 Z" fill="#8ea9c9"/><path d="M116,96 L150,58 L184,96 Q150,80 116,96 Z" fill="#fff"/>'
+   +'<rect y="176" width="300" height="34" fill="#bcd3a6"/>'
+   +'<g stroke="#c0392b" stroke-width="7" stroke-linecap="round"><path d="M42,205 V150"/><path d="M92,205 V150"/></g><rect x="30" y="140" width="74" height="9" rx="2" fill="#c0392b"/><rect x="34" y="152" width="66" height="7" fill="#a52a20"/>';
+ if(key==='city')return '<rect width="300" height="210" fill="#dce8f3"/>'
+   +'<g fill="#9fb2c9"><rect x="14" y="120" width="34" height="90"/><rect x="56" y="90" width="30" height="120"/><rect x="150" y="110" width="34" height="100"/><rect x="196" y="80" width="30" height="130"/><rect x="234" y="128" width="34" height="82"/></g>'
+   +'<g fill="#7f93ad"><rect x="98" y="52" width="40" height="158"/></g><path d="M108,52 L118,20 L128,52 Z" fill="#7f93ad"/>'
+   +'<g fill="#eef4fb" opacity="0.8"><rect x="104" y="70" width="8" height="10"/><rect x="120" y="70" width="8" height="10"/><rect x="104" y="92" width="8" height="10"/><rect x="120" y="92" width="8" height="10"/></g>';
+ if(key==='sea')return '<rect width="300" height="210" fill="#d7edf6"/><circle cx="60" cy="46" r="17" fill="#fff2bf"/>'
+   +'<rect y="150" width="300" height="60" fill="#7ec5df"/><path d="M0,158 q20,8 40,0 t40,0 t40,0 t40,0 t40,0 t40,0 t40,0" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.6"/>'
+   +'<rect x="228" y="96" width="22" height="72" fill="#f2f2f2" stroke="#c9c9c9"/><g fill="#d94b4b"><rect x="228" y="104" width="22" height="10"/><rect x="228" y="126" width="22" height="10"/></g><rect x="224" y="88" width="30" height="10" fill="#c9c9c9"/><circle cx="239" cy="84" r="6" fill="#ffe08a"/>';
+ if(key==='sato')return '<rect width="300" height="210" fill="#dff0f6"/>'
+   +'<path d="M0,120 Q80,86 160,116 T300,110 V210 H0 Z" fill="#a9cf86"/><path d="M0,150 Q90,124 180,150 T300,146 V210 H0 Z" fill="#8bbe6a"/>'
+   +'<g stroke="#6fa551" stroke-width="2" opacity="0.7"><path d="M0,168 q150,-12 300,0 M0,182 q150,-12 300,0 M0,196 q150,-12 300,0"/></g>'
+   +'<g><rect x="30" y="120" width="40" height="26" fill="#f0e6d2" stroke="#7a6a4a" stroke-width="2"/><path d="M26,120 L50,102 L74,120 Z" fill="#9a6b4a" stroke="#7a6a4a" stroke-width="2"/></g>';
+ if(key==='castle')return '<rect width="300" height="210" fill="#f6dbe6"/><circle cx="250" cy="46" r="18" fill="#ffe3ef"/>'
+   +'<rect y="176" width="300" height="34" fill="#b9c7a0"/>'
+   +'<g fill="#5b6b86" stroke="#3a4763" stroke-width="2"><rect x="126" y="120" width="48" height="56"/><rect x="134" y="96" width="32" height="26"/><rect x="140" y="74" width="20" height="24"/></g>'
+   +'<g fill="#39465f"><path d="M120,120 h60 l-10,-10 h-40 z"/><path d="M130,96 h40 l-8,-9 h-24 z"/><path d="M138,74 h24 l-6,-8 h-12 z"/></g>'
+   +'<g fill="#ff9ec4" opacity="0.85"><circle cx="40" cy="60" r="5"/><circle cx="70" cy="90" r="4"/><circle cx="240" cy="120" r="5"/><circle cx="270" cy="150" r="4"/><circle cx="30" cy="130" r="4"/></g>';
+ if(key==='north')return '<rect width="300" height="210" fill="#e7f1f7"/>'
+   +'<path d="M0,150 L70,80 L140,150 Z" fill="#cdd8e2"/><path d="M110,150 L190,70 L270,150 Z" fill="#dbe4ec"/>'
+   +'<path d="M40,120 L70,80 L96,116 Q70,104 40,120 Z" fill="#fff"/><path d="M158,110 L190,70 L220,108 Q190,96 158,110 Z" fill="#fff"/>'
+   +'<rect y="150" width="300" height="60" fill="#f3f7fb"/>'
+   +'<g><rect x="40" y="150" width="46" height="28" fill="#c98a6a" stroke="#7a5238" stroke-width="2"/><path d="M34,150 L63,124 L92,150 Z" fill="#8a5a3a" stroke="#7a5238" stroke-width="2"/><path d="M34,150 L63,124 L92,150" fill="#fff" opacity="0.6"/></g>'
+   +'<g fill="#ffffff"><circle cx="120" cy="60" r="3"/><circle cx="220" cy="90" r="3"/><circle cx="90" cy="120" r="3"/><circle cx="260" cy="140" r="3"/><circle cx="160" cy="170" r="3"/></g>';
+ return '';
+}
+if(typeof module!=='undefined'&&module.exports){module.exports={catSVG:catSVG,octaRadar:octaRadar,KITS:KITS,regionBG:regionBG,REGIONS:REGIONS};}
+root.regionBG=regionBG; root.REGIONS=REGIONS;
+root.catSVG=catSVG; root.octaRadar=octaRadar; root.KITS=KITS;
+})(typeof window!=='undefined'?window:globalThis);
+
+</script>
+<script>
+var QUAD={"halfP": {"name": "半野良（公）", "light": "#E2EFDA", "banner": "#5a7d3a"}, "cage": {"name": "公営の檻", "light": "#D9E1F2", "banner": "#3a5a8c"}, "halfV": {"name": "半野良（私）", "light": "#FFF2CC", "banner": "#b58f2a"}, "house": {"name": "ハイテク室内飼い", "light": "#FCE4D6", "banner": "#b5663a"}};
+var RECORDS=[];
+const SHARED_API="https://script.google.com/macros/s/AKfycbxRpYhB5mTB5O9zZ_VthkBvSwTLdOnGjeY6u6eZH_bw2tC0HLTTbDNd4-LhfjUfX7K2/exec";  // ← index.html と同じ共有API /exec URL（全員の猫を表示）
+function quadKey(x,y){var p=x>=5.5,d=y>=5.5;return d?(p?'house':'cage'):(p?'halfV':'halfP');}
+function srcUrl(){return SHARED_API?SHARED_API+(SHARED_API.indexOf('?')<0?'?':'&')+'what=cats':'';}
+function getLocal(){try{return JSON.parse(localStorage.getItem('catmap_stock')||'[]');}catch(e){return [];}}
+function num(v){var n=parseFloat(v);return isFinite(n)?n:null;}
+
+function parseCSV(text){var rows=[],row=[],cur='',q=false;for(var i=0;i<text.length;i++){var c=text[i];if(q){if(c==='"'){if(text[i+1]==='"'){cur+='"';i++;}else q=false;}else cur+=c;}else{if(c==='"')q=true;else if(c===','){row.push(cur);cur='';}else if(c==='\n'){row.push(cur);rows.push(row);row=[];cur='';}else if(c==='\r'){}else cur+=c;}}if(cur!==''||row.length){row.push(cur);rows.push(row);}return rows;}
+function norm(o){
+  var x=num(o.x!=null?o.x:o.X), y=num(o.y!=null?o.y:o.Y);
+  if(x==null||y==null)return null;
+  return {x:x,y:y,typeName:o.typeName||o.nearestName||o.name||'',catname:o.catname||o.catName||'',persona:o.persona||o.quad||'',kit:o.kit||'',ts:o.ts||''};
+}
+function parseRemote(text){
+  text=(text||'').replace(/^﻿/,'').trim(); if(!text)return [];
+  if(text[0]==='{'||text[0]==='['){
+    var out=[];
+    if(text[0]==='['){try{JSON.parse(text).forEach(function(o){var r=norm(o);if(r)out.push(r);});return out;}catch(e){}}
+    text.split('\n').forEach(function(ln){ln=ln.trim();if(!ln)return;try{var r=norm(JSON.parse(ln));if(r)out.push(r);}catch(e){}});
+    return out;
+  }
+  var rows=parseCSV(text).filter(function(r){return r.some(function(c){return c!=='';});});
+  if(rows.length<2)return [];
+  var head=rows[0].map(function(h){return (h||'').trim();});
+  var out2=[];
+  for(var i=1;i<rows.length;i++){var o={};head.forEach(function(k,j){o[k]=(rows[i][j]||'').trim();});var r=norm(o);if(r)out2.push(r);}
+  return out2;
+}
+function fetchText(url){return fetch(url,{cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.text();});}
+
+function reloadAll(){
+  var recs=[];
+  getLocal().forEach(function(o){var r=norm(o);if(r)recs.push(r);});
+  var jobs=[];
+  var u=srcUrl();
+  if(u)jobs.push(fetchText(u).then(function(t){parseRemote(t).forEach(function(r){recs.push(r);});}).catch(function(){}));
+  jobs.push(fetchText('data/results.jsonl').then(function(t){parseRemote(t).forEach(function(r){recs.push(r);});}).catch(function(){}));
+  Promise.all(jobs).then(function(){RECORDS=recs;render();});
+}
+
+function render(){
+  var S=Math.min(560, Math.max(320, (document.querySelector('.maparea').clientWidth-28)));
+  var pad=46, inner=S-2*pad;
+  function px(x){return pad+(x-1)/9*inner;}
+  function py(y){return S-pad-(y-1)/9*inner;}
+  var qc={halfP:0,cage:0,halfV:0,house:0};
+  var qsum={halfP:{sx:0,sy:0},cage:{sx:0,sy:0},halfV:{sx:0,sy:0},house:{sx:0,sy:0}};
+  var typeCount={};
+  RECORDS.forEach(function(r){var k=quadKey(r.x,r.y);qc[k]++;qsum[k].sx+=r.x;qsum[k].sy+=r.y;if(r.typeName)typeCount[r.typeName]=(typeCount[r.typeName]||0)+1;});
+  var N=RECORDS.length;
+
+  var s='<svg viewBox="0 0 '+S+' '+S+'" width="'+S+'" height="'+S+'" xmlns="http://www.w3.org/2000/svg" style="max-width:100%">';
+  var midx=px(5.5), midy=py(5.5);
+  s+='<rect x="'+pad+'" y="'+pad+'" width="'+(midx-pad)+'" height="'+(midy-pad)+'" fill="'+QUAD.cage.light+'"/>';
+  s+='<rect x="'+midx+'" y="'+pad+'" width="'+(pad+inner-midx)+'" height="'+(midy-pad)+'" fill="'+QUAD.house.light+'"/>';
+  s+='<rect x="'+pad+'" y="'+midy+'" width="'+(midx-pad)+'" height="'+(pad+inner-midy)+'" fill="'+QUAD.halfP.light+'"/>';
+  s+='<rect x="'+midx+'" y="'+midy+'" width="'+(pad+inner-midx)+'" height="'+(pad+inner-midy)+'" fill="'+QUAD.halfV.light+'"/>';
+  s+='<text x="'+(pad+6)+'" y="'+(pad+16)+'" font-size="11" fill="#3a5a8c" font-weight="bold">公営の檻</text>';
+  s+='<text x="'+(pad+inner-6)+'" y="'+(pad+16)+'" font-size="11" fill="#b5663a" font-weight="bold" text-anchor="end">ハイテク室内飼い</text>';
+  s+='<text x="'+(pad+6)+'" y="'+(pad+inner-8)+'" font-size="11" fill="#5a7d3a" font-weight="bold">半野良（公）</text>';
+  s+='<text x="'+(pad+inner-6)+'" y="'+(pad+inner-8)+'" font-size="11" fill="#b58f2a" font-weight="bold" text-anchor="end">半野良（私）</text>';
+  s+='<g stroke="#cfd6e0" stroke-width="1">';
+  for(var g=1;g<=10;g++){s+='<line x1="'+px(g)+'" y1="'+pad+'" x2="'+px(g)+'" y2="'+(pad+inner)+'"/>';s+='<line x1="'+pad+'" y1="'+py(g)+'" x2="'+(pad+inner)+'" y2="'+py(g)+'"/>';}
+  s+='</g>';
+  s+='<line x1="'+midx+'" y1="'+pad+'" x2="'+midx+'" y2="'+(pad+inner)+'" stroke="#8894a6" stroke-width="1.5" stroke-dasharray="5 4"/>';
+  s+='<line x1="'+pad+'" y1="'+midy+'" x2="'+(pad+inner)+'" y2="'+midy+'" stroke="#8894a6" stroke-width="1.5" stroke-dasharray="5 4"/>';
+  s+='<rect x="'+pad+'" y="'+pad+'" width="'+inner+'" height="'+inner+'" fill="none" stroke="#333" stroke-width="2"/>';
+  function jit(i,m){var v=Math.sin(i*12.9898)*43758.5453;v=v-Math.floor(v);return (v-0.5)*2*m;}
+  RECORDS.forEach(function(r,i){var k=quadKey(r.x,r.y);var cx=px(r.x)+jit(i+1,7),cy=py(r.y)+jit(i+7,7);
+    s+='<circle cx="'+cx.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="5.2" fill="'+QUAD[k].banner+'" fill-opacity="0.75" stroke="#fff" stroke-width="1"><title>'+esc(r.typeName)+(r.catname?'（'+esc(r.catname)+'）':'')+'  X'+r.x+' Y'+r.y+'</title></circle>';});
+  s+='<text x="'+(pad+inner/2)+'" y="'+(S-10)+'" text-anchor="middle" font-size="13" font-weight="bold" fill="#333">飼い主：公的 ←〜→ 私的</text>';
+  s+='<text transform="translate(14,'+(pad+inner/2)+') rotate(-90)" text-anchor="middle" font-size="13" font-weight="bold" fill="#333">家猫度：半野良 ←〜→ 純血家猫</text>';
+  s+='</svg>';
+  document.getElementById('mapHost').innerHTML = N? s : s+'<div class="empty">まだ猫がいません。診断アプリで猫を生成すると、ここに溜まっていきます🐾</div>';
+
+  var avgx=N?(RECORDS.reduce(function(a,r){return a+r.x;},0)/N):0;
+  var avgy=N?(RECORDS.reduce(function(a,r){return a+r.y;},0)/N):0;
+  var st='<div class="chip">合計<b>'+N+' 匹</b></div>';
+  st+='<div class="chip">平均の位置<b>X '+avgx.toFixed(1)+' / Y '+avgy.toFixed(1)+'</b></div>';
+  var domK=Object.keys(qc).sort(function(a,b){return qc[b]-qc[a];})[0];
+  st+='<div class="chip">いちばん多い象限<b style="font-size:1.05rem">'+(N?QUAD[domK].name:'—')+'</b></div>';
+  document.getElementById('stat').innerHTML=st;
+
+  var order=['cage','house','halfP','halfV'];
+  var qh='';
+  order.forEach(function(k){var c=qc[k],pct=N?Math.round(c/N*100):0;
+    var cx=c?qsum[k].sx/c:(k==='cage'?3:k==='house'?8:k==='halfP'?3:8);
+    var cy=c?qsum[k].sy/c:(k==='cage'||k==='house'?8:3);
+    var tc={};RECORDS.forEach(function(r){if(quadKey(r.x,r.y)===k&&r.typeName)tc[r.typeName]=(tc[r.typeName]||0)+1;});
+    var top=Object.keys(tc).sort(function(a,b){return tc[b]-tc[a];}).slice(0,2).map(function(t){return esc(t)+'('+tc[t]+')';}).join('、')||'—';
+    qh+='<div class="qcard"><div class="qcat">'+catSVG(cx,cy,Math.round(cx*7+cy*13),'')+'</div>'
+      +'<div><h3 style="color:'+QUAD[k].banner+'">'+QUAD[k].name+'</h3>'
+      +'<div class="pct" style="color:'+QUAD[k].banner+'">'+pct+'%<span style="font-size:.9rem;color:#666"> ／ '+c+'匹</span></div>'
+      +'<div class="tp">多いタイプ：'+top+'</div></div></div>';
+  });
+  document.getElementById('qcards').innerHTML=qh;
+
+  var tks=Object.keys(typeCount).sort(function(a,b){return typeCount[b]-typeCount[a];}).slice(0,10);
+  var rh='<b>この地区に多い家猫タイプ TOP10</b>';
+  if(tks.length){rh+='<ol>';tks.forEach(function(t){rh+='<li>'+esc(t)+' <span class="n">'+typeCount[t]+'匹</span></li>';});rh+='</ol>';}
+  else rh+='<div class="note" style="margin-top:6px">データがたまるとランキングが出ます。</div>';
+  document.getElementById('rank').innerHTML=rh;
+}
+
+function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function exportJSON(){var a=getLocal();var blob=new Blob([JSON.stringify(a,null,2)],{type:'application/json'});var u=URL.createObjectURL(blob);var el=document.createElement('a');el.href=u;el.download='iemeko_stock.json';document.body.appendChild(el);el.click();setTimeout(function(){el.remove();URL.revokeObjectURL(u);},100);}
+function importJSON(inp){var f=inp.files&&inp.files[0];if(!f)return;var rd=new FileReader();rd.onload=function(){try{var arr=JSON.parse(rd.result);if(!Array.isArray(arr))throw 0;var cur=getLocal();localStorage.setItem('catmap_stock',JSON.stringify(cur.concat(arr).slice(-3000)));reloadAll();alert('読み込みました（'+arr.length+'件を追加）');}catch(e){alert('JSONを読み込めませんでした。');}};rd.readAsText(f);}
+function clearLocal(){if(confirm('この端末に保存された猫のストックを消します。よろしいですか？（共有データには影響しません）')){localStorage.removeItem('catmap_stock');reloadAll();}}
+window.reloadAll=reloadAll;window.exportJSON=exportJSON;window.importJSON=importJSON;window.clearLocal=clearLocal;
+window.addEventListener('resize',function(){clearTimeout(window._rz);window._rz=setTimeout(render,200);});
+reloadAll();
+</script>
+</body></html>
