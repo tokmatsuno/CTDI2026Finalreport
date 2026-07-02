@@ -272,15 +272,12 @@ function catSVG(x,y,seed,kitKey){
   const innerEar=[246,198,198], earSh=[224,150,150], nose=[232,150,150];
   const cx=150;
   const kit = kitKey && KITS[kitKey];
-  const gid='hg'+seed, iid='ir'+seed, eid='eg'+seed;
-  const irisCol=mix([120,166,92],[214,150,66],nx); // greenish -> amber
+  const gid='hg'+seed;
   let s='<svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">';
-  s+='<defs><radialGradient id="'+gid+'" cx="40%" cy="34%" r="76%">'
-    +'<stop offset="0%" stop-color="'+rgb(mix(fur,[255,255,255],0.26))+'"/>'
-    +'<stop offset="60%" stop-color="'+rgb(fur)+'"/>'
-    +'<stop offset="100%" stop-color="'+rgb(dark(fur,0.84))+'"/></radialGradient>'
-    +'<radialGradient id="'+iid+'" cx="40%" cy="34%" r="66%"><stop offset="0%" stop-color="'+rgb(mix(irisCol,[255,255,255],0.55))+'"/><stop offset="52%" stop-color="'+rgb(irisCol)+'"/><stop offset="100%" stop-color="'+rgb(dark(irisCol,0.58))+'"/></radialGradient>'
-    +'<radialGradient id="'+eid+'" cx="50%" cy="30%" r="75%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#eef1f6"/></radialGradient></defs>';
+  s+='<defs><radialGradient id="'+gid+'" cx="42%" cy="36%" r="74%">'
+    +'<stop offset="0%" stop-color="'+rgb(mix(fur,[255,255,255],0.20))+'"/>'
+    +'<stop offset="68%" stop-color="'+rgb(fur)+'"/>'
+    +'<stop offset="100%" stop-color="'+rgb(dark(fur,0.88))+'"/></radialGradient></defs>';
 
   // ===== bust / shoulders (kit = uniform) =====
   const BUST='M36,300 C36,248 92,224 150,224 C208,224 264,248 264,300 Z';
@@ -319,16 +316,7 @@ function catSVG(x,y,seed,kitKey){
 
   // ===== head =====
   const HEAD='M150,44 C232,44 250,104 248,150 C246,200 206,232 150,232 C94,232 54,200 52,150 C50,104 68,44 150,44 Z';
-  // ふんわり毛のふち（頬まわりの毛束）
-  s+='<g fill="'+rgb(fur)+'" stroke="'+ink+'" stroke-width="3.5" stroke-linejoin="round">';
-  s+='<path d="M56,132 q-14,10 -12,26 q11,-3 16,-12 z"/><path d="M60,166 q-15,7 -16,22 q13,-1 19,-11 z"/>';
-  s+='<path d="M244,132 q14,10 12,26 q-11,-3 -16,-12 z"/><path d="M240,166 q15,7 16,22 q-13,-1 -19,-11 z"/>';
-  s+='</g>';
   s+='<path d="'+HEAD+'" fill="url(#'+gid+')" stroke="'+ink+'" stroke-width="5" stroke-linejoin="round"/>';
-  // 頬の毛束（上に重ねる）
-  s+='<g fill="url(#'+gid+')" stroke="'+ink+'" stroke-width="3" stroke-linejoin="round" opacity="0.98">';
-  s+='<path d="M60,150 q-13,9 -8,24 q11,-4 14,-14 z"/><path d="M240,150 q13,9 8,24 q-11,-4 -14,-14 z"/>';
-  s+='</g>';
 
   // ===== coat markings (clipped to head) =====
   const cidH='hd'+seed;
@@ -357,20 +345,20 @@ function catSVG(x,y,seed,kitKey){
   s+='<ellipse cx="92" cy="176" rx="17" ry="10" fill="#f29b9b" opacity="0.32"/>';
   s+='<ellipse cx="208" cy="176" rx="17" ry="10" fill="#f29b9b" opacity="0.32"/>';
 
-  // ===== eyes (big, friendly, glossy) =====
+  // ===== eyes (big, friendly) =====
   const eyeDX=46, eyeY=148, eyeRx=21, eyeRy=24;
+  const irisCol=mix([138,170,96],[208,150,72],nx); // greenish -> amber
   const pr=lerp(8,11,ny);                            // pupil bigger when housecat
   const lidF=ny<0.4?((0.4-ny)/0.4):0;                // feral upper-lid
   function eye(side){
     const ex=cx+side*eyeDX; let p='';
-    p+='<ellipse cx="'+ex+'" cy="'+eyeY+'" rx="'+eyeRx+'" ry="'+eyeRy+'" fill="url(#'+eid+')" stroke="'+ink+'" stroke-width="4"/>';
-    p+='<circle cx="'+ex+'" cy="'+(eyeY+1.5)+'" r="'+(eyeRy-2)+'" fill="url(#'+iid+')"/>';
-    p+='<circle cx="'+ex+'" cy="'+(eyeY+1.5)+'" r="'+(eyeRy-2)+'" fill="none" stroke="'+rgb(dark(irisCol,0.6))+'" stroke-width="2.4"/>';
-    p+='<circle cx="'+ex+'" cy="'+(eyeY+2.5)+'" r="'+pr+'" fill="#141414"/>';
-    p+='<circle cx="'+(ex-5.5)+'" cy="'+(eyeY-6.5)+'" r="5.2" fill="#fff"/>';
-    p+='<circle cx="'+(ex+6)+'" cy="'+(eyeY+7)+'" r="2.6" fill="#fff" opacity="0.9"/>';
-    p+='<path d="M'+(ex-eyeRx+3)+','+(eyeY+eyeRy-4)+' Q'+ex+','+(eyeY+eyeRy+2)+' '+(ex+eyeRx-3)+','+(eyeY+eyeRy-4)+'" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity="0.5"/>';
-    p+='<path d="M'+(ex-eyeRx+2)+','+(eyeY-eyeRy+5)+' Q'+ex+','+(eyeY-eyeRy-2)+' '+(ex+eyeRx-2)+','+(eyeY-eyeRy+5)+'" fill="none" stroke="'+ink+'" stroke-width="2.6" stroke-linecap="round" opacity="0.55"/>';
+    p+='<ellipse cx="'+ex+'" cy="'+eyeY+'" rx="'+eyeRx+'" ry="'+eyeRy+'" fill="#fff" stroke="'+ink+'" stroke-width="4"/>';
+    p+='<circle cx="'+ex+'" cy="'+(eyeY+1.5)+'" r="'+(eyeRy-2)+'" fill="'+rgb(irisCol)+'"/>';
+    p+='<circle cx="'+ex+'" cy="'+(eyeY+1.5)+'" r="'+(eyeRy-2)+'" fill="none" stroke="'+rgb(dark(irisCol,0.68))+'" stroke-width="2"/>';
+    p+='<circle cx="'+ex+'" cy="'+(eyeY+2.5)+'" r="'+pr+'" fill="#161616"/>';
+    p+='<circle cx="'+(ex-5)+'" cy="'+(eyeY-6)+'" r="4.8" fill="#fff"/>';
+    p+='<circle cx="'+(ex+6)+'" cy="'+(eyeY+7)+'" r="2.4" fill="#fff" opacity="0.85"/>';
+    p+='<path d="M'+(ex-eyeRx+2)+','+(eyeY-eyeRy+5)+' Q'+ex+','+(eyeY-eyeRy-2)+' '+(ex+eyeRx-2)+','+(eyeY-eyeRy+5)+'" fill="none" stroke="'+ink+'" stroke-width="2.4" stroke-linecap="round" opacity="0.5"/>';
     if(lidF>0){ p+='<path d="M'+(ex-eyeRx-1)+','+(eyeY-eyeRy*0.5)+' Q'+ex+','+(eyeY-eyeRy-3*lidF)+' '+(ex+eyeRx+1)+','+(eyeY-eyeRy*0.5)+' L'+(ex+eyeRx+1)+','+(eyeY-eyeRy)+' L'+(ex-eyeRx-1)+','+(eyeY-eyeRy)+' Z" fill="'+rgb(fur)+'" opacity="'+(0.55*lidF).toFixed(2)+'"/>'; }
     return p;
   }
@@ -420,42 +408,7 @@ function octaRadar(scores,labels){
   }
   s+='</svg>';return s;
 }
-// 「あなたのまち」の象徴を描く背景（viewBox 0 0 300 210 前提の内側SVG）
-var REGIONS={
- fuji:{name:'富士・山あるまち'},city:{name:'都会・タワー'},sea:{name:'海辺のまち'},
- sato:{name:'里山・田園'},castle:{name:'城下町'},north:{name:'北国・雪'}
-};
-function regionBG(key){
- if(key==='fuji')return '<rect width="300" height="210" fill="#cfeaf5"/><circle cx="248" cy="42" r="19" fill="#fff2bf"/>'
-   +'<path d="M20,178 L150,58 L280,178 Z" fill="#8ea9c9"/><path d="M116,96 L150,58 L184,96 Q150,80 116,96 Z" fill="#fff"/>'
-   +'<rect y="176" width="300" height="34" fill="#bcd3a6"/>'
-   +'<g stroke="#c0392b" stroke-width="7" stroke-linecap="round"><path d="M42,205 V150"/><path d="M92,205 V150"/></g><rect x="30" y="140" width="74" height="9" rx="2" fill="#c0392b"/><rect x="34" y="152" width="66" height="7" fill="#a52a20"/>';
- if(key==='city')return '<rect width="300" height="210" fill="#dce8f3"/>'
-   +'<g fill="#9fb2c9"><rect x="14" y="120" width="34" height="90"/><rect x="56" y="90" width="30" height="120"/><rect x="150" y="110" width="34" height="100"/><rect x="196" y="80" width="30" height="130"/><rect x="234" y="128" width="34" height="82"/></g>'
-   +'<g fill="#7f93ad"><rect x="98" y="52" width="40" height="158"/></g><path d="M108,52 L118,20 L128,52 Z" fill="#7f93ad"/>'
-   +'<g fill="#eef4fb" opacity="0.8"><rect x="104" y="70" width="8" height="10"/><rect x="120" y="70" width="8" height="10"/><rect x="104" y="92" width="8" height="10"/><rect x="120" y="92" width="8" height="10"/></g>';
- if(key==='sea')return '<rect width="300" height="210" fill="#d7edf6"/><circle cx="60" cy="46" r="17" fill="#fff2bf"/>'
-   +'<rect y="150" width="300" height="60" fill="#7ec5df"/><path d="M0,158 q20,8 40,0 t40,0 t40,0 t40,0 t40,0 t40,0 t40,0" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.6"/>'
-   +'<rect x="228" y="96" width="22" height="72" fill="#f2f2f2" stroke="#c9c9c9"/><g fill="#d94b4b"><rect x="228" y="104" width="22" height="10"/><rect x="228" y="126" width="22" height="10"/></g><rect x="224" y="88" width="30" height="10" fill="#c9c9c9"/><circle cx="239" cy="84" r="6" fill="#ffe08a"/>';
- if(key==='sato')return '<rect width="300" height="210" fill="#dff0f6"/>'
-   +'<path d="M0,120 Q80,86 160,116 T300,110 V210 H0 Z" fill="#a9cf86"/><path d="M0,150 Q90,124 180,150 T300,146 V210 H0 Z" fill="#8bbe6a"/>'
-   +'<g stroke="#6fa551" stroke-width="2" opacity="0.7"><path d="M0,168 q150,-12 300,0 M0,182 q150,-12 300,0 M0,196 q150,-12 300,0"/></g>'
-   +'<g><rect x="30" y="120" width="40" height="26" fill="#f0e6d2" stroke="#7a6a4a" stroke-width="2"/><path d="M26,120 L50,102 L74,120 Z" fill="#9a6b4a" stroke="#7a6a4a" stroke-width="2"/></g>';
- if(key==='castle')return '<rect width="300" height="210" fill="#f6dbe6"/><circle cx="250" cy="46" r="18" fill="#ffe3ef"/>'
-   +'<rect y="176" width="300" height="34" fill="#b9c7a0"/>'
-   +'<g fill="#5b6b86" stroke="#3a4763" stroke-width="2"><rect x="126" y="120" width="48" height="56"/><rect x="134" y="96" width="32" height="26"/><rect x="140" y="74" width="20" height="24"/></g>'
-   +'<g fill="#39465f"><path d="M120,120 h60 l-10,-10 h-40 z"/><path d="M130,96 h40 l-8,-9 h-24 z"/><path d="M138,74 h24 l-6,-8 h-12 z"/></g>'
-   +'<g fill="#ff9ec4" opacity="0.85"><circle cx="40" cy="60" r="5"/><circle cx="70" cy="90" r="4"/><circle cx="240" cy="120" r="5"/><circle cx="270" cy="150" r="4"/><circle cx="30" cy="130" r="4"/></g>';
- if(key==='north')return '<rect width="300" height="210" fill="#e7f1f7"/>'
-   +'<path d="M0,150 L70,80 L140,150 Z" fill="#cdd8e2"/><path d="M110,150 L190,70 L270,150 Z" fill="#dbe4ec"/>'
-   +'<path d="M40,120 L70,80 L96,116 Q70,104 40,120 Z" fill="#fff"/><path d="M158,110 L190,70 L220,108 Q190,96 158,110 Z" fill="#fff"/>'
-   +'<rect y="150" width="300" height="60" fill="#f3f7fb"/>'
-   +'<g><rect x="40" y="150" width="46" height="28" fill="#c98a6a" stroke="#7a5238" stroke-width="2"/><path d="M34,150 L63,124 L92,150 Z" fill="#8a5a3a" stroke="#7a5238" stroke-width="2"/><path d="M34,150 L63,124 L92,150" fill="#fff" opacity="0.6"/></g>'
-   +'<g fill="#ffffff"><circle cx="120" cy="60" r="3"/><circle cx="220" cy="90" r="3"/><circle cx="90" cy="120" r="3"/><circle cx="260" cy="140" r="3"/><circle cx="160" cy="170" r="3"/></g>';
- return '';
-}
-if(typeof module!=='undefined'&&module.exports){module.exports={catSVG:catSVG,octaRadar:octaRadar,KITS:KITS,regionBG:regionBG,REGIONS:REGIONS};}
-root.regionBG=regionBG; root.REGIONS=REGIONS;
+if(typeof module!=='undefined'&&module.exports){module.exports={catSVG:catSVG,octaRadar:octaRadar,KITS:KITS};}
 root.catSVG=catSVG; root.octaRadar=octaRadar; root.KITS=KITS;
 })(typeof window!=='undefined'?window:globalThis);
 
