@@ -319,7 +319,16 @@ function catSVG(x,y,seed,kitKey){
 
   // ===== head =====
   const HEAD='M150,44 C232,44 250,104 248,150 C246,200 206,232 150,232 C94,232 54,200 52,150 C50,104 68,44 150,44 Z';
+  // ふんわり毛のふち（頬まわりの毛束）
+  s+='<g fill="'+rgb(fur)+'" stroke="'+ink+'" stroke-width="3.5" stroke-linejoin="round">';
+  s+='<path d="M56,132 q-14,10 -12,26 q11,-3 16,-12 z"/><path d="M60,166 q-15,7 -16,22 q13,-1 19,-11 z"/>';
+  s+='<path d="M244,132 q14,10 12,26 q-11,-3 -16,-12 z"/><path d="M240,166 q15,7 16,22 q-13,-1 -19,-11 z"/>';
+  s+='</g>';
   s+='<path d="'+HEAD+'" fill="url(#'+gid+')" stroke="'+ink+'" stroke-width="5" stroke-linejoin="round"/>';
+  // 頬の毛束（上に重ねる）
+  s+='<g fill="url(#'+gid+')" stroke="'+ink+'" stroke-width="3" stroke-linejoin="round" opacity="0.98">';
+  s+='<path d="M60,150 q-13,9 -8,24 q11,-4 14,-14 z"/><path d="M240,150 q13,9 8,24 q-11,-4 -14,-14 z"/>';
+  s+='</g>';
 
   // ===== coat markings (clipped to head) =====
   const cidH='hd'+seed;
