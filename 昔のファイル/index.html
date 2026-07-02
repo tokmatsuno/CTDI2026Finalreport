@@ -211,20 +211,6 @@ a{color:var(--blue)}
     <div style="margin-top:8px"><button class="ghost" onclick="saveSite()">保存</button> <button class="ghost" onclick="clearSite()">クリア</button> <span id="siteStat" class="sub"></span></div>
   </div>
 </details>
-<details style="margin-top:10px">
-  <summary style="cursor:pointer;color:var(--blue);font-weight:700">🗣 みんなで共有（共有API）設定</summary>
-  <div style="background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-top:8px;max-width:680px">
-    <p class="sub" style="margin-top:0">この<b>共有APIのURL</b>を入れると、<b>端末が違っても</b>：診断で生まれた猫が全員の「🗺 家猫マップ」に表示され、「🌿 またたび会議」の投票・アイデアも全員で共有されます。手順は同梱の「家猫_共有API_セットアップ手順.md」を参照。</p>
-    <div style="margin:4px 0"><b class="sub" style="color:var(--navy)">ニックネーム（任意・空欄なら「名無しねこ」）：</b></div>
-    <input id="nickInput" type="text" placeholder="例）まつのねこ" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:8px;font-size:.9rem">
-    <div style="margin:8px 0 0"><b class="sub" style="color:var(--navy)">共有API URL（GASの /exec・必須）：</b></div>
-    <input id="dcInput" type="text" placeholder="https://script.google.com/macros/s/……/exec" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:8px;font-size:.9rem;margin-top:4px">
-    <div style="margin:8px 0 0"><b class="sub" style="color:var(--navy)">Discordチャンネルの表示URL（任意・「💬Discordで話す」ボタン用）：</b></div>
-    <input id="dcChanInput" type="text" placeholder="https://discord.com/channels/……" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:8px;font-size:.9rem;margin-top:4px">
-    <div style="margin-top:8px"><button class="ghost" onclick="saveDC()">保存</button> <button class="ghost" onclick="clearDC()">クリア</button> <span id="dcStat" class="sub"></span></div>
-    <p class="note" style="margin:8px 0 0">※ 全員が設定なしで使えるようにするには、公開する index.html と 家猫マップ.html の先頭付近 <code>const SHARED_API="";</code> に同じURLを貼るのが確実です（この画面の保存はブラウザごと・本人の確認用）。</p>
-  </div>
-</details>
 <p class="note" style="margin-top:14px">SNS共有について：スマホは「📱 シェア」でInstagram/X/Facebook/LINE等に画像付きで直接共有できます。パソコンや一部環境では、画像が自動保存されキャプションがコピーされるので、各SNSで画像を添付して貼り付けてください（Instagramはアプリからの投稿が必要です）。</p>
 <p class="note">本アプリは社会論・文明論の枠組みに基づく自己点検ツールです。特定個人や属性を断罪する意図はありません。猫の顔・座標・タイプは典型像に基づく相対的な表現です。</p>
 <div id="detailModal" class="modal" onclick="if(event.target===this)closeDetail()"><div class="dinner"></div></div>
@@ -720,9 +706,8 @@ function shareRow(oVar,dVar,fname){
 function saveSite(){try{localStorage.setItem('catlog_site',document.getElementById('siteInput').value.trim());document.getElementById('siteStat').textContent='✓ 保存しました';}catch(e){}}
 function clearSite(){try{localStorage.removeItem('catlog_site');document.getElementById('siteInput').value='';document.getElementById('siteStat').textContent='クリアしました';}catch(e){}}
 window.sharePNG=sharePNG;window.shareX=shareX;window.shareFB=shareFB;window.shareIG=shareIG;window.saveSite=saveSite;window.clearSite=clearSite;
-function saveDC(){try{localStorage.setItem('catlog_api',document.getElementById('dcInput').value.trim());localStorage.setItem('catlog_discord_chan',document.getElementById('dcChanInput').value.trim());localStorage.setItem('catlog_nick',document.getElementById('nickInput').value.trim());document.getElementById('dcStat').textContent='✓ 保存しました';loadMeeting();}catch(e){document.getElementById('dcStat').textContent='保存不可（この環境ではローカル保存ができません）';}}
-function clearDC(){try{localStorage.removeItem('catlog_api');localStorage.removeItem('catlog_discord');localStorage.removeItem('catlog_discord_chan');localStorage.removeItem('catlog_nick');document.getElementById('dcInput').value='';document.getElementById('dcChanInput').value='';document.getElementById('nickInput').value='';document.getElementById('dcStat').textContent='クリアしました';}catch(e){}}
-window.saveDC=saveDC;window.clearDC=clearDC;
+function mtSetNick(v){try{localStorage.setItem('catlog_nick',(v||'').trim());}catch(e){}}
+window.mtSetNick=mtSetNick;
 
 // ---- 猫図鑑（データソースから再構築・クリックで詳細展開）----
 function buildZukan(){
@@ -762,7 +747,7 @@ function buildRefs(){var host=document.getElementById('refsGrid');if(!host)retur
   host.innerHTML=h;}
 window.buildRefs=buildRefs;
 // ---- 共有API（全端末で家猫マップ／またたび会議を共有）----
-const SHARED_API="";  // ← GAS共有APIの /exec URL をここに貼ると、全員の端末で共有されます（下部設定でも可）
+const SHARED_API="https://script.google.com/macros/s/AKfycbxRpYhB5mTB5O9zZ_VthkBvSwTLdOnGjeY6u6eZH_bw2tC0HLTTbDNd4-LhfjUfX7K2/exec";  // ← GAS共有APIの /exec URL（全員の端末で共有）
 function apiUrl(){try{return SHARED_API||localStorage.getItem('catlog_api')||localStorage.getItem('catlog_discord')||'';}catch(e){return SHARED_API||'';}}
 function apiPost(p){var url=apiUrl();if(!url)return false;p.ts=new Date().toISOString();p.cid=clientId();try{fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=UTF-8'},body:JSON.stringify(p)});}catch(e){}return true;}
 window.apiUrl=apiUrl;window.apiPost=apiPost;
@@ -784,13 +769,13 @@ function mtIdeaList(no){var a=MEETING.ideas[no]||[];if(!a.length)return '';var l
 function mtVote(no,v){var t=mtType(no);if(!t)return;var ok=apiPost({kind:'vote',no:t.no,name:t.name,catname:t.catname,vote:v,nick:mtNick()});
   var vv=MEETING.votes[no]=MEETING.votes[no]||{};vv[v]=(vv[v]||0)+1;
   var tl=document.getElementById('mttally_'+no);if(tl)tl.innerHTML=mtTally(no);
-  var el=document.getElementById('mtstat_'+no);if(el)el.textContent=ok?'✓ 「'+v+'」を送信しました。全員の集計に反映されます🐾':'（共有先未設定：下部「🗣 みんなで共有（共有API）設定」でURLを登録してください）';
+  var el=document.getElementById('mtstat_'+no);if(el)el.textContent=ok?'✓ 「'+v+'」を送信しました。全員の集計に反映されます🐾':'（いまオフラインのようです。接続が戻ると送信されます）';
   loadMeeting().then(function(){var t2=document.getElementById('mttally_'+no);if(t2)t2.innerHTML=mtTally(no);});}
 function mtIdea(no){var t=mtType(no);if(!t)return;var ta=document.getElementById('mtidea_'+no);var txt=(ta&&ta.value||'').trim();if(!txt){alert('アイデアを入力してください');return;}
   var ok=apiPost({kind:'idea',no:t.no,name:t.name,catname:t.catname,idea:txt,nick:mtNick()});
   (MEETING.ideas[no]=MEETING.ideas[no]||[]).push({no:no,idea:txt,nick:mtNick()||'名無しねこ'});
   var lst=document.getElementById('mtideas_'+no);if(lst)lst.innerHTML=mtIdeaList(no);
-  var el=document.getElementById('mtstat_'+no);if(el)el.textContent=ok?'✓ アイデアを送信しました。ありがとう！全員に共有されます🌿':'（共有先未設定：下部「🗣 みんなで共有（共有API）設定」でURLを登録してください）';
+  var el=document.getElementById('mtstat_'+no);if(el)el.textContent=ok?'✓ アイデアを送信しました。ありがとう！全員に共有されます🌿':'（いまオフラインのようです。接続が戻ると送信されます）';
   if(ok&&ta)ta.value='';
   loadMeeting().then(function(){var l2=document.getElementById('mtideas_'+no);if(l2)l2.innerHTML=mtIdeaList(no);});}
 window.mtVote=mtVote;window.mtIdea=mtIdea;
@@ -813,6 +798,7 @@ function mtReviewHTML(t){
   if(chan)h+='<a class="ghost" style="text-decoration:none;line-height:1.9" href="'+chan+'" target="_blank" rel="noopener">💬 Discordで話す</a>';
   h+='</div>';
   h+='<div id="mtideas_'+t.no+'">'+mtIdeaList(t.no)+'</div>';
+  h+='<div style="margin-top:8px;font-size:.82rem;color:#666">お名前（任意）：<input type="text" value="'+esc(mtNick())+'" placeholder="名無しねこ" oninput="mtSetNick(this.value)" style="padding:4px 8px;border:1px solid var(--line);border-radius:6px;font:inherit;font-size:.85rem;width:12em"></div>';
   h+='<div id="mtstat_'+t.no+'" class="sub" style="margin-top:6px;color:#1b7a4a"></div>';
   h+='</div>';
   return h;
@@ -911,7 +897,7 @@ document.getElementById('submit').addEventListener('click',()=>{
       var stkN=stockLocal({x:+x.toFixed(2),y:+y.toFixed(2),quad:q.name,persona:per.n,nearestNo:near.no,typeName:near.name,catname:near.catname,kit:ans9q.v,holo:holo?1:0,ts:new Date().toISOString()});
       apiPost({kind:'cat',x:+x.toFixed(2),y:+y.toFixed(2),quad:q.name,typeName:near.name,catname:near.catname,persona:per.n,kit:ans9q.v,holo:holo?1:0});
       logNote('lognote2');
-      res.insertAdjacentHTML('beforeend','<div class="center" style="margin-top:6px"><span class="sub">🗺 この猫を地区マップに追加しました（この端末に '+stkN+' 匹）</span><br><a class="ghost" style="display:inline-block;margin-top:6px;text-decoration:none;line-height:1.9" href="家猫マップ.html" target="_blank" rel="noopener">🗺 みんなの家猫マップを見る</a></div>');
+      res.insertAdjacentHTML('beforeend','<div class="center" style="margin-top:6px"><span class="sub">🗺 この猫を地区マップに追加しました（この端末に '+stkN+' 匹）</span><br><a class="ghost" style="display:inline-block;margin-top:6px;text-decoration:none;line-height:1.9" href="ienakomap.html" target="_blank" rel="noopener">🗺 みんなの家猫マップを見る</a></div>');
       document.getElementById('submit').disabled=false;
       res.scrollIntoView({behavior:'smooth'});
     }
@@ -1027,7 +1013,7 @@ document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
   document.getElementById('p-'+t.dataset.t).classList.add('on');
 }));
 upd();
-(function(){var i=document.getElementById('epInput');if(i)i.value=cfg();var d=document.getElementById('dataInput');if(d)d.value=dataUrl();var su=document.getElementById('siteInput');if(su)su.value=siteUrl();var dc=document.getElementById('dcInput');if(dc)dc.value=apiUrl();var dcc=document.getElementById('dcChanInput');if(dcc)dcc.value=mtChan();var nk=document.getElementById('nickInput');if(nk)nk.value=mtNick();})();
+(function(){var i=document.getElementById('epInput');if(i)i.value=cfg();var d=document.getElementById('dataInput');if(d)d.value=dataUrl();var su=document.getElementById('siteInput');if(su)su.value=siteUrl();})();
 loadData().then(function(s){buildZukan();buildRefs();dataStatus(s);});
 loadMeeting();
 // ---- 起動時ローディング（三毛猫の猫時計・2秒カウントダウン）----
