@@ -204,20 +204,6 @@ a{color:var(--blue)}
     <div style="margin-top:8px"><button class="ghost" onclick="saveSite()">保存</button> <button class="ghost" onclick="clearSite()">クリア</button> <span id="siteStat" class="sub"></span></div>
   </div>
 </details>
-<details style="margin-top:10px">
-  <summary style="cursor:pointer;color:var(--blue);font-weight:700">🗣 またたび会議（Discord連携）設定</summary>
-  <div style="background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-top:8px;max-width:680px">
-    <p class="sub" style="margin-top:0">図鑑・診断結果の「🌿 またたび会議」で押した<b>投票</b>と<b>改善アイデア</b>を、チーム1のDiscordに<b>匿名</b>で送れます。DiscordのWebhookは中継（GAS）の中に隠すので、URLが漏れる心配はありません。設定手順は同梱の「家猫_Discord連携_セットアップ手順.md」を参照。</p>
-    <div style="margin:4px 0"><b class="sub" style="color:var(--navy)">ニックネーム（任意・空欄なら「名無しねこ」）：</b></div>
-    <input id="nickInput" type="text" placeholder="例）まつのねこ" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:8px;font-size:.9rem">
-    <div style="margin:8px 0 0"><b class="sub" style="color:var(--navy)">GAS中継URL（必須）：</b></div>
-    <input id="dcInput" type="text" placeholder="https://script.google.com/macros/s/……/exec" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:8px;font-size:.9rem;margin-top:4px">
-    <div style="margin:8px 0 0"><b class="sub" style="color:var(--navy)">Discordチャンネルの表示URL（任意・「💬Discordで話す」ボタン用）：</b></div>
-    <input id="dcChanInput" type="text" placeholder="https://discord.com/channels/……" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:8px;font-size:.9rem;margin-top:4px">
-    <div style="margin-top:8px"><button class="ghost" onclick="saveDC()">保存</button> <button class="ghost" onclick="clearDC()">クリア</button> <span id="dcStat" class="sub"></span></div>
-    <p class="note" style="margin:8px 0 0">※ 全員が使えるようにするには、公開する index.html の先頭付近 <code>const DISCORD_RELAY="";</code> にGAS中継URLを貼るのが確実です（この設定はブラウザごとの保存のため、主に本人の確認用）。</p>
-  </div>
-</details>
 <p class="note" style="margin-top:14px">SNS共有について：スマホは「📱 シェア」でInstagram/X/Facebook/LINE等に画像付きで直接共有できます。パソコンや一部環境では、画像が自動保存されキャプションがコピーされるので、各SNSで画像を添付して貼り付けてください（Instagramはアプリからの投稿が必要です）。</p>
 <p class="note">本アプリは社会論・文明論の枠組みに基づく自己点検ツールです。特定個人や属性を断罪する意図はありません。猫の顔・座標・タイプは典型像に基づく相対的な表現です。</p>
 <div id="detailModal" class="modal" onclick="if(event.target===this)closeDetail()"><div class="dinner"></div></div>
@@ -691,9 +677,6 @@ function shareRow(oVar,dVar,fname){
 function saveSite(){try{localStorage.setItem('catlog_site',document.getElementById('siteInput').value.trim());document.getElementById('siteStat').textContent='✓ 保存しました';}catch(e){}}
 function clearSite(){try{localStorage.removeItem('catlog_site');document.getElementById('siteInput').value='';document.getElementById('siteStat').textContent='クリアしました';}catch(e){}}
 window.sharePNG=sharePNG;window.shareX=shareX;window.shareFB=shareFB;window.shareIG=shareIG;window.saveSite=saveSite;window.clearSite=clearSite;
-function saveDC(){try{localStorage.setItem('catlog_discord',document.getElementById('dcInput').value.trim());localStorage.setItem('catlog_discord_chan',document.getElementById('dcChanInput').value.trim());localStorage.setItem('catlog_nick',document.getElementById('nickInput').value.trim());document.getElementById('dcStat').textContent='✓ 保存しました';}catch(e){document.getElementById('dcStat').textContent='保存不可（この環境ではローカル保存ができません）';}}
-function clearDC(){try{localStorage.removeItem('catlog_discord');localStorage.removeItem('catlog_discord_chan');localStorage.removeItem('catlog_nick');document.getElementById('dcInput').value='';document.getElementById('dcChanInput').value='';document.getElementById('nickInput').value='';document.getElementById('dcStat').textContent='クリアしました';}catch(e){}}
-window.saveDC=saveDC;window.clearDC=clearDC;
 
 // ---- 猫図鑑（データソースから再構築・クリックで詳細展開）----
 function buildZukan(){
@@ -732,38 +715,6 @@ function buildRefs(){var host=document.getElementById('refsGrid');if(!host)retur
     h+='</div>';});
   host.innerHTML=h;}
 window.buildRefs=buildRefs;
-// ---- またたび会議（Discord連携・投票＋改善アイデア）----
-const DISCORD_RELAY="";  // ← GASの中継URLをここに貼るか、ページ下部「🗣 またたび会議設定」で登録
-function mtCfg(){try{return localStorage.getItem('catlog_discord')||DISCORD_RELAY||'';}catch(e){return DISCORD_RELAY||'';}}
-function mtChan(){try{return localStorage.getItem('catlog_discord_chan')||'';}catch(e){return '';}}
-function mtNick(){try{return localStorage.getItem('catlog_nick')||'';}catch(e){return '';}}
-function mtPost(p){var url=mtCfg();p.ts=new Date().toISOString();p.app='家猫カードジェネレーター';if(!url)return false;try{fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=UTF-8'},body:JSON.stringify(p)});}catch(e){}return true;}
-function mtType(no){for(var i=0;i<TYPES.length;i++){if(+TYPES[i].no===+no)return TYPES[i];}return null;}
-function mtVote(no,v){var t=mtType(no);if(!t)return;var ok=mtPost({kind:'vote',no:t.no,name:t.name,catname:t.catname,churu:t.churu,vote:v,nick:mtNick()});var el=document.getElementById('mtstat_'+no);if(el)el.textContent=ok?'✓ 「'+v+'」を送信しました。Discordでみんなと話し合おう🐾':'（送信先未設定：ページ下部「🗣 またたび会議設定」でURLを登録してください）';}
-function mtIdea(no){var t=mtType(no);if(!t)return;var ta=document.getElementById('mtidea_'+no);var txt=(ta&&ta.value||'').trim();if(!txt){alert('アイデアを入力してください');return;}var ok=mtPost({kind:'idea',no:t.no,name:t.name,catname:t.catname,churu:t.churu,tower:t.tower,kaizen:t.kaizen,idea:txt,nick:mtNick()});var el=document.getElementById('mtstat_'+no);if(el)el.textContent=ok?'✓ アイデアを送信しました。ありがとう！Discordで続きを話そう🌿':'（送信先未設定：ページ下部「🗣 またたび会議設定」でURLを登録してください）';if(ok&&ta)ta.value='';}
-window.mtVote=mtVote;window.mtIdea=mtIdea;
-function mtReviewHTML(t){
-  var chan=mtChan();
-  var h='<div class="box" style="background:#f3f9ff;border-color:#9cc0e8">';
-  h+='<h3 style="margin:.1em 0;color:var(--navy)">🌿 またたび会議 <span class="sub" style="font-weight:400">— この子に本当に効く？</span></h3>';
-  h+='<div class="kv" style="color:#555;font-size:.85rem">今のチュール／またたびが合ってるか、投票とアイデアでみんなと見直そう。声はチーム1のDiscordに匿名で届きます。</div>';
-  h+='<div class="kv"><b>🍶 今のチュール：</b>'+esc(t.churu||'')+'</div>';
-  h+='<div class="kv"><b>🌿 今のまたたび：</b>'+esc(t.kaizen||'')+'</div>';
-  h+='<div style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0">';
-  h+='<button class="ghost" style="border-color:#2e9e5b;color:#1b7a4a" onclick="mtVote('+t.no+',\'👍効きそう\')">👍 効きそう</button>';
-  h+='<button class="ghost" style="border-color:#d6a400;color:#8a6b00" onclick="mtVote('+t.no+',\'🤔ピンとこない\')">🤔 ピンとこない</button>';
-  h+='<button class="ghost" style="border-color:#c0392b;color:#a53125" onclick="mtVote('+t.no+',\'🙅これは違うかも\')">🙅 これは違うかも</button>';
-  h+='</div>';
-  h+='<div class="kv" style="margin-top:4px"><b>💡 こんなまたたびはどう？</b></div>';
-  h+='<textarea id="mtidea_'+t.no+'" rows="2" placeholder="例）この子には◯◯の方が動きやすいかも" style="width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;font:inherit;box-sizing:border-box"></textarea>';
-  h+='<div style="margin-top:6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button class="ghost" onclick="mtIdea('+t.no+')">🌿 アイデアを送る</button>';
-  if(chan)h+='<a class="ghost" style="text-decoration:none;line-height:1.9" href="'+chan+'" target="_blank" rel="noopener">💬 Discordで話す</a>';
-  h+='</div>';
-  h+='<div id="mtstat_'+t.no+'" class="sub" style="margin-top:6px;color:#1b7a4a"></div>';
-  h+='</div>';
-  return h;
-}
-window.mtReviewHTML=mtReviewHTML;
 function showDetail(t){
   curDetail=t;curKit='';updateDetailShare();
   const k=quadKey(+t.x,+t.y),q=QUAD[k];
@@ -779,7 +730,6 @@ function showDetail(t){
     +'<div class="kv"><b>🌿 またたび（いっしょにできそうなこと）：</b>'+esc(t.kaizen||'')+'</div>'
     +'<div class="kv"><b>🐾 そっと気をつけたいこと：</b>'+esc(t.side||'')+'</div>'
     +'<div class="kv" style="font-size:.82rem"><b>📚 出典：</b>'+esc(t.source||'')+(t.url?' ／ <a href="'+t.url+'" target="_blank" rel="noopener">引用元</a>':'')+'</div></div>';
-  h+=mtReviewHTML(t);
   h+='</div></div></div>';
   const m=document.getElementById('detailModal'); m.querySelector('.dinner').innerHTML=h; m.classList.add('on');
 }
@@ -830,7 +780,6 @@ document.getElementById('submit').addEventListener('click',()=>{
   h+='<div class="kv"><b>🌿 またたび（いっしょにできそうなこと）：</b>'+esc(near.kaizen)+'</div>';
   h+='<div class="kv"><b>🐾 そっと気をつけたいこと：</b>'+esc(near.side)+'</div>';
   h+='<div class="kv" style="font-size:.82rem"><b>📚 出典：</b>'+esc(near.source)+' ／ <a href="'+near.url+'" target="_blank" rel="noopener">引用元</a></div></div>';
-  h+=mtReviewHTML(near);
   var skill=hiddenSkill(answers,x,y);
   h+='<div class="box" style="background:#fff7e6;border-color:#e6c200"><h3 style="margin:.1em 0;color:#9a6b00">🎁 あなたの隠れ特技：'+esc(skill.n)+'</h3>'
     +'<div class="kv">'+esc(skill.d)+'</div>'
@@ -970,7 +919,7 @@ document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
   document.getElementById('p-'+t.dataset.t).classList.add('on');
 }));
 upd();
-(function(){var i=document.getElementById('epInput');if(i)i.value=cfg();var d=document.getElementById('dataInput');if(d)d.value=dataUrl();var su=document.getElementById('siteInput');if(su)su.value=siteUrl();var dc=document.getElementById('dcInput');if(dc)dc.value=mtCfg();var dcc=document.getElementById('dcChanInput');if(dcc)dcc.value=mtChan();var nk=document.getElementById('nickInput');if(nk)nk.value=mtNick();})();
+(function(){var i=document.getElementById('epInput');if(i)i.value=cfg();var d=document.getElementById('dataInput');if(d)d.value=dataUrl();var su=document.getElementById('siteInput');if(su)su.value=siteUrl();})();
 loadData().then(function(s){buildZukan();buildRefs();dataStatus(s);});
 </script>
 </body></html>
