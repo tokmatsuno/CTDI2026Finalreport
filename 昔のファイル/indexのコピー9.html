@@ -3,20 +3,6 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>家猫カードジェネレーター ── 46タイプ図鑑＆診断</title>
 <style>
-
-/* ─── デバッグトースト（右下） ─── */
-.dbg-toast{position:fixed;right:14px;bottom:14px;z-index:9998;
-  max-width:340px;background:#1F3864;color:#fff;padding:10px 14px;
-  border-radius:10px;font-size:.82rem;line-height:1.5;
-  box-shadow:0 6px 18px rgba(0,0,0,.28);
-  transform:translateY(120%);opacity:0;transition:all .35s ease;
-  border-left:4px solid #FFD98A;font-family:inherit}
-.dbg-toast.on{transform:translateY(0);opacity:1}
-.dbg-toast.err{background:#7a1e2d;border-left-color:#ff9aa8}
-.dbg-toast.ok{background:#1b7a4a;border-left-color:#c8ffd8}
-.dbg-toast .cl{float:right;cursor:pointer;color:#FFD98A;font-weight:800;margin-left:8px;padding-left:6px}
-.dbg-toast pre{background:rgba(0,0,0,.28);padding:6px 8px;border-radius:6px;
-  font-size:.72rem;margin:4px 0 0;max-height:120px;overflow:auto;white-space:pre-wrap;word-break:break-all}
 :root{--navy:#1F3864;--blue:#2E5496;--ink:#222;--muted:#666;--line:#dce1ea;--bg:#eef1f7;}
 
 /* ─── 都市×猫 テーマ拡張（Brand v2） ─── */
@@ -345,7 +331,7 @@ a{color:var(--blue)}
   <div style="background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-top:8px;max-width:680px">
     <p class="sub" style="margin-top:0">診断結果を<b>匿名</b>でスプレッドシート＋Discordに蓄積・通知します（氏名・連絡先など個人情報は送信しません）。標準の共有APIは既に組み込み済みで、下の欄は<b>別のGASを試したい場合のみ</b>使用してください。</p>
     <input id="epInput" type="text" placeholder="https://script.google.com/macros/s/……/exec" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:8px;font-size:.9rem">
-    <div style="margin-top:8px"><button class="ghost" onclick="saveEp()">保存して有効化</button> <button class="ghost" onclick="clearEp()">無効化</button> <span id="epStat" class="sub"></span></div><div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)"><b class="sub" style="color:var(--navy)">🩺 API疎通テスト</b> <span class="sub">— 現在の SHARED_API が正しく動作するか確認します</span><div style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap"><button class="ghost" onclick="showApiUrl()">🔗 API URLを表示</button> <button class="ghost" style="border-color:#1b7a4a;color:#1b7a4a" onclick="diagnoseAPI()">🩺 疎通テスト実行</button></div>
+    <div style="margin-top:8px"><button class="ghost" onclick="saveEp()">保存して有効化</button> <button class="ghost" onclick="clearEp()">無効化</button> <span id="epStat" class="sub"></span></div>
     <p class="sub" style="margin-bottom:0">記録される項目：日時・診断モード(2軸/8軸)・各スコア・総合家猫度・象限・最寄りタイプ・端末ごとの匿名ID。送信は毎回自動です。</p>
   </div>
 </details>
@@ -665,20 +651,14 @@ function logResult(p, cardObj){
     var body=Object.assign({},p);
     if(dataUrl) body.image=dataUrl;
     var json=JSON.stringify(body);
-    var jsonKB=Math.round(json.length/1024);
-    var ok=false;var method='';
+    var ok=false;
     try{
+      // 手法1: sendBeacon（ブラウザが優先度高く送信保証。text/plain で CORSプリフライト回避）
       if(navigator.sendBeacon){
         var blob=new Blob([json],{type:'text/plain;charset=UTF-8'});
         ok=navigator.sendBeacon(url, blob);
-        method='sendBeacon';
       }
     }catch(e){}
-    if(window.toastMsg){
-      window.toastMsg(ok?'ok':'err',
-        (ok?'📡 送信OK: ':'⚠ 送信失敗: ')+method+' ('+jsonKB+'KB)',
-        (dataUrl?'画像添付あり':'画像なし')+'\nGASのcats/discordシートで反映を確認');
-    }
     // 手法2: sendBeacon が失敗（または未対応）ならfetch(no-cors, keepalive)
     if(!ok){
       try{
@@ -726,69 +706,6 @@ function logResult(p, cardObj){
 function logNote(id){const el=document.getElementById(id);if(!el)return;el.textContent='✓ この猫を街の記録に匿名で送信しました 🏙 Discordで語り合えます 🍶';}
 function saveEp(){try{const v=document.getElementById('epInput').value.trim();localStorage.setItem('catlog_endpoint',v);document.getElementById('epStat').textContent=v?'✓ 保存しました':'空です';}catch(e){document.getElementById('epStat').textContent='保存不可（この環境ではローカル保存ができません）';}}
 function clearEp(){try{localStorage.removeItem('catlog_endpoint');document.getElementById('epInput').value='';document.getElementById('epStat').textContent='無効化しました';}catch(e){}}
-
-// ═══ デバッグトースト & 送信診断（v3.4） ═══════════════════
-function toastMsg(kind, title, detail){
-  try{
-    var el=document.getElementById('_dbgToast');
-    if(!el){
-      el=document.createElement('div');el.id='_dbgToast';el.className='dbg-toast';
-      document.body.appendChild(el);
-    }
-    el.className='dbg-toast on '+(kind||'');
-    var body='<span class="cl" onclick="document.getElementById(\'_dbgToast\').classList.remove(\'on\')">×</span>';
-    body+='<b>'+title+'</b>';
-    if(detail){ body+='<pre>'+String(detail).replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</pre>'; }
-    el.innerHTML=body;
-    clearTimeout(window._dbgTid);
-    window._dbgTid=setTimeout(function(){el.classList.remove('on');},8000);
-  }catch(e){}
-}
-window.toastMsg=toastMsg;
-
-// GAS の疎通・機能を診断（ボタンから呼ぶ）
-function diagnoseAPI(){
-  var url=(typeof apiUrl==='function'&&apiUrl())||cfg();
-  if(!url){toastMsg('err','⚠ SHARED_API 未設定','index.html の SHARED_API 定数を確認してください');return;}
-  toastMsg('','🩺 API疎通テスト中…', url);
-  // Step 1: ping
-  fetch(url+(url.indexOf('?')<0?'?':'&')+'what=ping',{cache:'no-store'})
-    .then(function(r){return r.text().then(function(t){return {code:r.status,body:t};});})
-    .then(function(res){
-      if(res.code!==200){ toastMsg('err','① ping失敗 HTTP '+res.code, res.body.slice(0,300)); return; }
-      var pj={};try{pj=JSON.parse(res.body);}catch(_){}
-      toastMsg('ok','① ping成功', 'GAS応答: '+JSON.stringify(pj));
-      // Step 2: 実際に record を軽く叩いてみる（画像なし）
-      setTimeout(function(){
-        var testPayload={action:'record',mode:'DIAG',ts:new Date().toISOString(),cid:clientId(),
-          no:0,name:'DIAG_疎通確認',catname:'テスト猫',x:5,y:5,total:0,quad:'-',app:'diagnose'};
-        toastMsg('','② record 送信中…','name=DIAG_疎通確認');
-        // GET で叩く（画像なし record も GAS で受けられる）
-        var q=Object.keys(testPayload).map(function(k){return encodeURIComponent(k)+'='+encodeURIComponent(testPayload[k]);}).join('&');
-        fetch(url+(url.indexOf('?')<0?'?':'&')+q,{cache:'no-store'})
-          .then(function(r){return r.text().then(function(t){return {code:r.status,body:t};});})
-          .then(function(res2){
-            if(res2.code===200){
-              var rj={};try{rj=JSON.parse(res2.body);}catch(_){}
-              toastMsg('ok','② record 成功','GAS応答: '+JSON.stringify(rj)+'\nスプレッドシートの cats / discord シートを確認してください');
-            }else{
-              toastMsg('err','② record 失敗 HTTP '+res2.code, res2.body.slice(0,400));
-            }
-          })
-          .catch(function(e){ toastMsg('err','② record エラー', String(e)); });
-      },1200);
-    })
-    .catch(function(e){ toastMsg('err','① ping エラー（URLがGAS /exec でない？）', String(e)); });
-}
-window.diagnoseAPI=diagnoseAPI;
-
-// 現在のSHARED_APIを表示する
-function showApiUrl(){
-  var url=(typeof apiUrl==='function'&&apiUrl())||cfg();
-  toastMsg('','🔗 現在のSHARED_API', url||'(未設定)');
-}
-window.showApiUrl=showApiUrl;
-
 window.saveEp=saveEp;window.clearEp=clearEp;
 // ---- 家猫マップ用ストック（この端末にも保存し、別HTML「家猫マップ」で可視化）----
 function stockLocal(p){try{var a=JSON.parse(localStorage.getItem('catmap_stock')||'[]');a.push(p);if(a.length>3000)a=a.slice(-3000);localStorage.setItem('catmap_stock',JSON.stringify(a));return a.length;}catch(e){return 0;}}
@@ -1105,44 +1022,10 @@ window.buildRefs=buildRefs;
 const SHARED_API="https://script.google.com/macros/s/AKfycbzBaagdobV2ixb6GwVpAFDmCN4tOwmvAseuPq8OvXnZsoOcUJ5kwD8Ih11TOKjYSf8U/exec";  // ← 新GAS共有API（全員の端末で共有＋Discord連携）
 function apiUrl(){try{return SHARED_API||localStorage.getItem('catlog_api')||'';}catch(e){return SHARED_API||'';}}
 // 送受信はすべてGET（レスポンスを読める＝確実／CORSの事前確認が起きない）
-function apiSend(params){var url=apiUrl();if(!url){
-  if(window.toastMsg)window.toastMsg('err','⚠ SHARED_API 未設定','apiUrl() が空。index.html の SHARED_API 定数を確認');
-  return Promise.resolve({ok:false,error:'no url'});}
+function apiSend(params){var url=apiUrl();if(!url)return Promise.resolve({ok:false,error:'no url'});
   params.cid=clientId();params.ts=new Date().toISOString();
   var q=Object.keys(params).map(function(k){return encodeURIComponent(k)+'='+encodeURIComponent(params[k]==null?'':params[k]);}).join('&');
-  var fullUrl=url+(url.indexOf('?')<0?'?':'&')+q;
-  return fetch(fullUrl,{cache:'no-store'})
-    .then(function(r){
-      return r.text().then(function(text){
-        var status=r.status;
-        // JSON パース試行
-        try{
-          var j=JSON.parse(text);
-          if(!j.ok && window.toastMsg){
-            window.toastMsg('err','⚠ GAS が失敗を返しました (HTTP '+status+')','action='+(params.action||'?')+'\nGAS応答: '+text.slice(0,300));
-          }
-          return j;
-        }catch(pe){
-          // HTMLが返ってきた場合（Googleログイン画面など）
-          if(window.toastMsg){
-            var kind='err';
-            var t='⚠ GAS応答がJSONでない (HTTP '+status+')';
-            var d='action='+(params.action||'?')+'\n';
-            if(text.indexOf('<HTML')>=0||text.indexOf('<html')>=0){
-              d+='HTMLが返ってきています。GASデプロイの「アクセス:全員」を確認してください。';
-            }else{
-              d+='応答: '+text.slice(0,300);
-            }
-            window.toastMsg(kind,t,d);
-          }
-          return {ok:false,error:'not-json',status:status,body:text.slice(0,300)};
-        }
-      });
-    })
-    .catch(function(e){
-      if(window.toastMsg)window.toastMsg('err','⚠ ネットワークエラー','action='+(params.action||'?')+'\n'+String(e)+'\n\nGAS URL: '+url);
-      return {ok:false,error:String(e)};
-    });}
+  return fetch(url+(url.indexOf('?')<0?'?':'&')+q,{cache:'no-store'}).then(function(r){return r.json();}).catch(function(e){return {ok:false,error:String(e)};});}
 window.apiUrl=apiUrl;window.apiSend=apiSend;
 // 共有サーバの接続確認（画面下に状態表示）
 function checkApi(){var el=document.getElementById('apiStat');if(!el)return;
