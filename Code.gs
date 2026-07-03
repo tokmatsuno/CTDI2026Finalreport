@@ -1,15 +1,15 @@
 /**
- * 家猫アプリ 中継GAS ver.2
+ * 家猫アプリ 中継GAS ver.2.1（画像付き投稿対応）
  * ─────────────────────────────────────────────
  * ・全端末の診断結果／投票／アイデアをスプレッドシートに集約
- * ・Discordへ埋め込みメッセージ＋スレッド自動作成で送信
- * ・すべて doGet で受ける（CORSプリフライトを避ける）
+ * ・Discordへ埋め込みメッセージ＋家猫カード画像＋スレッド自動作成で送信
+ * ・書込系は doPost（画像Base64が大きいため）、参照系は doGet
  *
  * デプロイ手順:
  *   1) このコードをスプレッドシートに紐づいたスクリプトエディタに貼る
- *   2) 「デプロイ→新しいデプロイ→ウェブアプリ」
+ *   2) 「デプロイ→デプロイを管理→編集→新バージョン→デプロイ」
  *      ・実行ユーザ: 自分／アクセス: 全員
- *   3) 発行された /exec URL を index.html / ienekomap.html の SHARED_API に反映
+ *   3) 発行された /exec URL は既存のまま維持されます
  *
  * シート構成（初回自動作成）:
  *   cats     : 診断結果ログ
@@ -33,8 +33,8 @@ function doGet(e){
     if(what === 'meeting')  return _json(_readMeeting());
     if(what === 'ping')     return _json({ok:true, ts:new Date().toISOString()});
 
-    // 書込系
-    if(action === 'record') return _json(_recordCat(p));
+    // 書込系（軽量）
+    if(action === 'record') return _json(_recordCat(p, null));
     if(action === 'vote')   return _json(_recordVote(p));
     if(action === 'idea')   return _json(_recordIdea(p));
 
@@ -43,14 +43,31 @@ function doGet(e){
     return _json({ok:false, error:String(err && err.message || err)});
   }
 }
+
+// POST: 画像Base64付きの record を受ける
 function doPost(e){
-  // フォールバック：JSONボディをパラメータ扱いで転送
   try{
-    const body = e.postData && e.postData.contents ? JSON.parse(e.postData.contents) : {};
-    e.parameter = Object.assign({}, e.parameter || {}, body);
+    let body = {};
+    if(e && e.postData && e.postData.contents){
+      try{ body = JSON.parse(e.postData.contents); }catch(_){ body = {}; }
+    }
+    const p = Object.assign({}, e.parameter || {}, body);
+    const action = (p.action || '').toLowerCase();
+
+    if(action === 'record'){
+      // image (dataURL: "data:image/png;base64,....") を切り離す
+      const imgData = p.image || '';
+      const clean = Object.assign({}, p); delete clean.image;
+      return _json(_recordCat(clean, imgData));
+    }
+    if(action === 'vote')   return _json(_recordVote(p));
+    if(action === 'idea')   return _json(_recordIdea(p));
+
+    // フォールバック: doGet へ流す
+    e.parameter = p;
     return doGet(e);
   }catch(err){
-    return _json({ok:false, error:'bad json', detail:String(err)});
+    return _json({ok:false, error:'post error', detail:String(err && err.message || err)});
   }
 }
 
@@ -77,14 +94,20 @@ function _readMeeting(){
 }
 
 // ─── 書込 ───────────────────────────────────────
-function _recordCat(p){
+function _recordCat(p, imgData){
+  // 便宜: p.nearestNo / p.nearestName / p.catname を no/name/catname に流し込む
+  const no      = p.no || p.nearestNo || '';
+  const name    = p.name || p.nearestName || p.typeName || '';
+  const catname = p.catname || '';
+
   const sh = _sheet('cats', ['ts','cid','no','name','catname','x','y','score','quadrant','mode','extra']);
-  const row = [p.ts||new Date().toISOString(), p.cid||'', p.no||'', p.name||'', p.catname||'',
-               p.x||'', p.y||'', p.score||'', p.quadrant||'', p.mode||'', JSON.stringify(p)];
+  const row = [p.ts||new Date().toISOString(), p.cid||'', no, name, catname,
+               p.x||'', p.y||'', p.total||p.score||'', p.quad||p.quadrant||'', p.mode||'', JSON.stringify(p)];
   sh.appendRow(row);
-  // Discord通知（カード生成時）
-  _notifyDiscord_card(p);
-  return {ok:true};
+
+  // Discord通知（カード生成時。画像があれば multipart で添付）
+  _notifyDiscord_card(Object.assign({}, p, {no:no, name:name, catname:catname}), imgData);
+  return {ok:true, hasImage: !!imgData};
 }
 function _recordVote(p){
   const sh = _sheet('votes', ['ts','cid','no','name','catname','vote','nick']);
@@ -99,24 +122,31 @@ function _recordIdea(p){
   return {ok:true};
 }
 
-// ─── Discord送信（Embed＋スレッド自動作成） ──────
-function _notifyDiscord_card(p){
+// ─── Discord送信 ───────────────────────────────
+
+// カード生成通知：画像あれば multipart/form-data で添付
+function _notifyDiscord_card(p, imgData){
   const embed = {
     title: `🐾 ${p.name || '家猫'}（${p.catname || ''}）`,
-    description: `新しい家猫カードが生成されました\n**総合家猫度**: ${p.score || '—'}／ **象限**: ${p.quadrant || '—'}`,
+    description: `新しい家猫カードが生成されました\n**総合家猫度**: ${p.total || p.score || '—'}／ **象限**: ${p.quad || p.quadrant || '—'}`,
     color: 0x1F3864,
     fields: [
-      {name:'X（公的↔私的）', value:String(p.x||'—'), inline:true},
-      {name:'Y（半野良↔家猫）', value:String(p.y||'—'), inline:true},
-      {name:'モード', value:String(p.mode||'—'), inline:true}
+      {name:'X（公的↔私的）',    value:String(p.x||'—'), inline:true},
+      {name:'Y（半野良↔家猫）',  value:String(p.y||'—'), inline:true},
+      {name:'モード',            value:String(p.mode||'—'), inline:true}
     ],
     footer:{text:`cid:${(p.cid||'').slice(0,8)}  •  ${new Date().toLocaleString('ja-JP')}`}
   };
-  _sendDiscord({
+  if(imgData){
+    // dataURL に対応するファイル名を Embed の image.url に指定
+    embed.image = { url: 'attachment://ieneko_card.png' };
+  }
+  const payload = {
     content: `**${p.catname || '家猫'}** さんが街に現れました 🏙`,
     embeds: [embed],
     thread_name: `🍶 ${p.catname || p.name || '猫'} を語ろう`
-  }, p);
+  };
+  _sendDiscord(payload, p, imgData);
 }
 
 function _notifyDiscord_vote(p){
@@ -130,7 +160,7 @@ function _notifyDiscord_vote(p){
     content: `🌿 ${p.nick || '名無しねこ'} が投票しました`,
     embeds: [embed],
     thread_name: `🌿 またたび議論: ${p.name || 'No.'+(p.no||'')}`
-  }, p);
+  }, p, null);
 }
 
 function _notifyDiscord_idea(p){
@@ -144,26 +174,59 @@ function _notifyDiscord_idea(p){
     content: `🌿 新しいアイデアが届きました`,
     embeds: [embed],
     thread_name: `🌿 またたび議論: ${p.name || 'No.'+(p.no||'')}`
-  }, p);
+  }, p, null);
 }
 
-// Discord送信共通（?wait=true でスレッド作成できる形式）
-function _sendDiscord(payload, p){
+// Discord送信共通
+//   - imgData（dataURL）ありなら multipart/form-data で画像添付
+//   - なければ JSON で送信
+//   - ?wait=true でスレッド作成
+function _sendDiscord(payload, p, imgData){
   if(!WEBHOOK) return;
   try{
     const url = WEBHOOK + '?wait=true';
-    const res = UrlFetchApp.fetch(url, {
-      method: 'post',
-      contentType: 'application/json',
-      payload: JSON.stringify(payload),
-      muteHttpExceptions: true
-    });
-    const log = _sheet('discord', ['ts','type','name','status','msgId']);
+    let res;
+    if(imgData){
+      // dataURL → Blob
+      const m = /^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/.exec(imgData);
+      if(m){
+        const mime = m[1] || 'image/png';
+        const b64  = m[2];
+        const bytes = Utilities.base64Decode(b64);
+        const blob  = Utilities.newBlob(bytes, mime, 'ieneko_card.png');
+        // Apps Script の UrlFetchApp は payload に blob を含めると multipart になる
+        res = UrlFetchApp.fetch(url, {
+          method: 'post',
+          payload: {
+            'payload_json': JSON.stringify(payload),
+            'files[0]': blob
+          },
+          muteHttpExceptions: true
+        });
+      }else{
+        res = _sendJSON(url, payload);
+      }
+    }else{
+      res = _sendJSON(url, payload);
+    }
+    const log = _sheet('discord', ['ts','type','name','status','msgId','hasImage']);
     let body = {}; try{ body = JSON.parse(res.getContentText()||'{}'); }catch(e){}
-    log.appendRow([new Date().toISOString(), payload.thread_name||'', (p&&p.name)||'', res.getResponseCode(), body.id||'']);
+    log.appendRow([new Date().toISOString(), payload.thread_name||'', (p&&p.name)||'', res.getResponseCode(), body.id||'', imgData?'yes':'no']);
   }catch(err){
     // 失敗しても本処理は継続
+    try{
+      const log = _sheet('discord', ['ts','type','name','status','msgId','hasImage']);
+      log.appendRow([new Date().toISOString(), (payload&&payload.thread_name)||'', (p&&p.name)||'', 'err', String(err), imgData?'yes':'no']);
+    }catch(e2){}
   }
+}
+function _sendJSON(url, payload){
+  return UrlFetchApp.fetch(url, {
+    method: 'post',
+    contentType: 'application/json',
+    payload: JSON.stringify(payload),
+    muteHttpExceptions: true
+  });
 }
 
 // ─── ヘルパー ───────────────────────────────────

@@ -334,7 +334,7 @@ a{color:var(--blue)}
   </div>
 </details>
 <p class="note" style="margin-top:14px">SNS共有について：スマホは「📱 シェア」でInstagram/X/Facebook/LINE等に画像付きで直接共有できます。パソコンや一部環境では、画像が自動保存されキャプションがコピーされるので、各SNSで画像を添付して貼り付けてください（Instagramはアプリからの投稿が必要です）。</p>
-<p class="note" style="margin-top:14px"><b>共有ステータス：</b><span id="apiStat">—</span> 　<button class="ghost" style="padding:4px 12px;font-size:.8rem" onclick="checkApi()">再確認</button> 　<a class="ghost" style="padding:4px 12px;font-size:.8rem;text-decoration:none" href="ienekomap.html" target="_blank" rel="noopener">🗺 シビックテック学創成町マップ</a></p>
+<p class="note" style="margin-top:14px"><b>共有ステータス：</b><span id="apiStat">—</span> 　<button class="ghost" style="padding:4px 12px;font-size:.8rem" onclick="checkApi()">再確認</button> 　<a class="ghost" style="padding:4px 12px;font-size:.8rem;text-decoration:none" href="ienekomap.html" target="_blank" rel="noopener">🗺 家猫マップ</a></p>
 <p class="note">本アプリは社会論・文明論の枠組みに基づく自己点検ツールです。特定個人や属性を断罪する意図はありません。猫の顔・座標・タイプは典型像に基づく相対的な表現です。</p>
 <div id="detailModal" class="modal" onclick="if(event.target===this)closeDetail()"><div class="dinner"></div></div>
 </div>
@@ -620,45 +620,17 @@ function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');}
 // ---- 匿名データ記録（GAS中継→Sheet＋GitHub）----
 function cfg(){try{return localStorage.getItem('catlog_endpoint')||'';}catch(e){return '';}}
 function clientId(){try{let id=localStorage.getItem('catlog_cid');if(!id){id='c'+Math.random().toString(36).slice(2)+Date.now().toString(36);localStorage.setItem('catlog_cid',id);}return id;}catch(e){return 'c0';}}
-function logResult(p, cardObj){
-  p.ts=new Date().toISOString();p.cid=clientId();p.app='家猫カードジェネレーター';p.ver='2.1';
-  var url=(typeof apiUrl==='function'&&apiUrl())||cfg();
-  if(!url) return false;
-  p.action='record';
-
-  // カードオブジェクトが渡された場合、画像を生成して同送する（GAS→Discordへ画像添付）
-  function sendWithImage(dataUrl){
-    var body=Object.assign({},p);
-    if(dataUrl) body.image=dataUrl;
-    try{
-      fetch(url,{
-        method:'POST',
-        mode:'no-cors',
-        headers:{'Content-Type':'text/plain;charset=UTF-8'},
-        body:JSON.stringify(body)
-      }).catch(function(){});
-    }catch(e){}
-  }
-  function sendTextOnly(){
-    try{
+function logResult(p){
+  p.ts=new Date().toISOString();p.cid=clientId();p.app='家猫カードジェネレーター';p.ver='2.0';
+  // 新: 共有APIに常時送信（診断結果 → Sheet + Discord embed + スレッド作成）
+  try{
+    var url=(typeof apiUrl==='function'&&apiUrl())||cfg();
+    if(url){
+      p.action='record';
       var q=Object.keys(p).map(function(k){return encodeURIComponent(k)+'='+encodeURIComponent(p[k]==null?'':(typeof p[k]==='object'?JSON.stringify(p[k]):p[k]));}).join('&');
       fetch(url+(url.indexOf('?')<0?'?':'&')+q,{cache:'no-store'}).catch(function(){});
-    }catch(e){}
-  }
-
-  if(cardObj && typeof makeBlob==='function'){
-    try{
-      makeBlob(cardObj,function(blob){
-        if(!blob){ sendTextOnly(); return; }
-        var rd=new FileReader();
-        rd.onload=function(){ sendWithImage(rd.result); };
-        rd.onerror=function(){ sendTextOnly(); };
-        rd.readAsDataURL(blob);
-      });
-    }catch(e){ sendTextOnly(); }
-  }else{
-    sendTextOnly();
-  }
+    }
+  }catch(e){}
   return true;}
 function logNote(id){const el=document.getElementById(id);if(!el)return;el.textContent='✓ この猫を街の記録に匿名で送信しました 🏙 Discordで語り合えます 🍶';}
 function saveEp(){try{const v=document.getElementById('epInput').value.trim();localStorage.setItem('catlog_endpoint',v);document.getElementById('epStat').textContent=v?'✓ 保存しました':'空です';}catch(e){document.getElementById('epStat').textContent='保存不可（この環境ではローカル保存ができません）';}}
@@ -1071,11 +1043,11 @@ document.getElementById('submit').addEventListener('click',()=>{
     if(cd<=0){clearInterval(_iv);
       res.innerHTML=h;
       res.insertAdjacentHTML('beforeend','<div class="sub center" id="lognote2" style="margin-top:8px"></div>');
-      logResult({mode:'2軸',x:+x.toFixed(2),y:+y.toFixed(2),quad:q.name,persona:per.n,answers:answers.join(''),cntA:c.A,cntB:c.B,cntC:c.C,cntD:c.D,nearestNo:near.no,nearestName:near.name,catname:near.catname,kit:ans9q.v}, Object.assign({},near,{x:+x.toFixed(2),y:+y.toFixed(2),persona:per.n,kit:ans9q.v,holo:holo}));
+      logResult({mode:'2軸',x:+x.toFixed(2),y:+y.toFixed(2),quad:q.name,persona:per.n,answers:answers.join(''),cntA:c.A,cntB:c.B,cntC:c.C,cntD:c.D,nearestNo:near.no,nearestName:near.name,catname:near.catname,kit:ans9q.v});
       var stkN=stockLocal({x:+x.toFixed(2),y:+y.toFixed(2),quad:q.name,persona:per.n,nearestNo:near.no,typeName:near.name,catname:near.catname,kit:ans9q.v,holo:holo?1:0,ts:new Date().toISOString()});
       apiSend({action:'cat',kind:'cat',x:+x.toFixed(2),y:+y.toFixed(2),quad:q.name,typeName:near.name,catname:near.catname,persona:per.n,kit:ans9q.v,holo:holo?1:0});
       logNote('lognote2');
-      res.insertAdjacentHTML('beforeend','<div class="center" style="margin-top:6px"><span class="sub">🗺 この猫を地区マップに追加しました（この端末に '+stkN+' 匹）</span><br><a class="ghost" style="display:inline-block;margin-top:6px;text-decoration:none;line-height:1.9" href="ienekomap.html" target="_blank" rel="noopener">🗺 シビックテック学創成町マップを見る</a></div>');
+      res.insertAdjacentHTML('beforeend','<div class="center" style="margin-top:6px"><span class="sub">🗺 この猫を地区マップに追加しました（この端末に '+stkN+' 匹）</span><br><a class="ghost" style="display:inline-block;margin-top:6px;text-decoration:none;line-height:1.9" href="ienekomap.html" target="_blank" rel="noopener">🗺 みんなの家猫マップを見る</a></div>');
       document.getElementById('submit').disabled=false;
       res.scrollIntoView({behavior:'smooth'});
     }
@@ -1177,7 +1149,7 @@ document.getElementById('submit8').addEventListener('click',()=>{
   document.getElementById('res8').innerHTML=h;
   document.getElementById('res8').insertAdjacentHTML('beforeend','<div class="sub center" id="lognote8" style="margin-top:8px"></div>');
   const sObj={};AX8.forEach((a,i)=>sObj['ax_'+a]=scores[i]);
-  logResult(Object.assign({mode:'8軸',x:x,y:y,total:+mean.toFixed(2),quad:q.name,nearestNo:near.no,nearestName:near.name,catname:near.catname,scores:scores.join(',')},sObj), {title:q.name,catname:'あなたの8軸プロファイル',desc:q.desc,x:x,y:y,seed:Math.round(x*7+y*13),kit:ans9.v});
+  logResult(Object.assign({mode:'8軸',x:x,y:y,total:+mean.toFixed(2),quad:q.name,nearestNo:near.no,nearestName:near.name,scores:scores.join(',')},sObj));
   logNote('lognote8');
   document.getElementById('res8').scrollIntoView({behavior:'smooth'});
 });
