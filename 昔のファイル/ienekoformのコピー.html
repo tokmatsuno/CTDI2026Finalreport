@@ -5,10 +5,7 @@
 :root{color-scheme:light}
 body{margin:0;font-family:"Hiragino Sans","Yu Gothic",Meiryo,system-ui,sans-serif;color:#222;background:#f2ede3;line-height:1.6}
 .wrap{max-width:1280px;margin:0 auto;padding:18px 14px 80px}
-h1{font-size:1.4rem;color:#1F3864;margin:.2em 0;display:flex;align-items:center;gap:10px}
-@keyframes earTwitch{0%,88%,100%{transform:rotate(0)}92%{transform:rotate(-8deg)}96%{transform:rotate(4deg)}}
-.mascot-ear-l,.mascot-ear-r{transform-origin:center bottom;animation:earTwitch 4.6s ease-in-out infinite}
-.mascot-ear-r{animation-delay:.4s}
+h1{font-size:1.4rem;color:#1F3864;margin:.2em 0}
 .sub{color:#666;font-size:.9rem}
 .bar{position:sticky;top:0;background:#f2ede3;padding:10px 0;z-index:5;display:flex;flex-wrap:wrap;gap:8px;align-items:center;border-bottom:1px solid #dcd2bd}
 button{font:inherit;font-weight:700;border:1.5px solid #1F3864;border-radius:8px;padding:8px 14px;background:#fff;color:#1F3864;cursor:pointer}
@@ -27,7 +24,7 @@ textarea{min-height:42px}
 .tag{background:#fff3c4;border-radius:4px;padding:1px 6px;font-size:.78rem}
 </style></head>
 <body><div class="wrap">
-<h1><svg width="30" height="30" viewBox="0 0 60 60" aria-hidden="true"><g fill="#1F3864"><path class="mascot-ear-l" d="M12 22 L20 6 L26 22 Z"/><path class="mascot-ear-r" d="M48 22 L40 6 L34 22 Z"/><circle cx="30" cy="32" r="18"/></g><g fill="#FFD98A"><circle cx="24" cy="30" r="2.5"/><circle cx="36" cy="30" r="2.5"/></g></svg>🐾 家猫 データ編集（CSV）</h1>
+<h1>🐾 家猫 データ編集（CSV）</h1>
 <p class="sub">46タイプの定義を表で編集し、CSVで書き出せます。書き出したCSVを「家猫カードジェネレーター」の<b>📊 データソース設定</b>で読み込むと反映されます。<span class="tag">列見出しは変更しないでください</span></p>
 <div class="bar">
   <button class="pri" onclick="addRow()">＋ 行を追加</button>
@@ -84,5 +81,4 @@ function importCSV(inp){var f=inp.files&&inp.files[0];if(!f)return;var rd=new Fi
 };rd.readAsText(f);}
 render();
 </script>
-<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body></html>

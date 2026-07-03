@@ -3,24 +3,6 @@
 <title>家猫マップ — この地区にどんな猫がいる？</title>
 <style>
 :root{--navy:#1F3864;--blue:#2E5496;--line:#d7cdb8;--muted:#777;color-scheme:light}
-
-/* ─── 都市×猫 テーマ（マップ） ─── */
-:root{--city-navy:#1F3864;--city-blue:#2E5496;--city-copper:#B8763E;--city-glow:#FFD98A;}
-.map-hero{position:relative;padding:16px 16px 44px;border-radius:14px;
-  background:linear-gradient(180deg,#f7f3e8,#e2d3b3);
-  background-image:linear-gradient(rgba(31,56,100,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(31,56,100,.05) 1px,transparent 1px);
-  background-size:22px 22px;background-blend-mode:multiply;
-  overflow:hidden;margin-bottom:14px;box-shadow:0 4px 14px rgba(31,56,100,.08)}
-.map-hero h1{position:relative;z-index:2;display:flex;align-items:center;gap:10px;margin:0 0 4px}
-.map-hero .catmark{width:34px;height:34px}
-.map-hero .lead{position:relative;z-index:2;color:#5a4a30;font-size:.9rem;margin:0}
-.map-hero .skyline{position:absolute;left:0;right:0;bottom:0;height:44px;pointer-events:none;z-index:1}
-@keyframes earTwitch{0%,88%,100%{transform:rotate(0)}92%{transform:rotate(-8deg)}96%{transform:rotate(4deg)}}
-@keyframes tailWave{0%,100%{transform:rotate(-14deg)}50%{transform:rotate(18deg)}}
-.mascot-ear-l,.mascot-ear-r{transform-origin:center bottom;animation:earTwitch 4.6s ease-in-out infinite}
-.mascot-ear-r{animation-delay:.4s}
-.mascot-tail{transform-origin:right center;animation:tailWave 2.4s ease-in-out infinite}
-
 *{box-sizing:border-box}
 body{margin:0;font-family:"Hiragino Sans","Yu Gothic",Meiryo,system-ui,sans-serif;color:#222;background:#f4efe4;line-height:1.6}
 .wrap{max-width:1000px;margin:0 auto;padding:18px 14px 70px}
@@ -352,7 +334,7 @@ root.catSVG=catSVG; root.octaRadar=octaRadar; root.KITS=KITS;
 var QUAD={"halfP": {"name": "半野良（公）", "light": "#E2EFDA", "banner": "#5a7d3a"}, "cage": {"name": "公営の檻", "light": "#D9E1F2", "banner": "#3a5a8c"}, "halfV": {"name": "半野良（私）", "light": "#FFF2CC", "banner": "#b58f2a"}, "house": {"name": "ハイテク室内飼い", "light": "#FCE4D6", "banner": "#b5663a"}};
 var RECORDS=[];      // 表示順（新しい順）
 var TYByName={}, TYByCat={};
-const SHARED_API="https://script.google.com/macros/s/AKfycbzBaagdobV2ixb6GwVpAFDmCN4tOwmvAseuPq8OvXnZsoOcUJ5kwD8Ih11TOKjYSf8U/exec";
+const SHARED_API="https://script.google.com/macros/s/AKfycbxRpYhB5mTB5O9zZ_VthkBvSwTLdOnGjeY6u6eZH_bw2tC0HLTTbDNd4-LhfjUfX7K2/exec";
 function quadKey(x,y){var p=x>=5.5,d=y>=5.5;return d?(p?'house':'cage'):(p?'halfV':'halfP');}
 function catsUrl(){return SHARED_API?SHARED_API+(SHARED_API.indexOf('?')<0?'?':'&')+'what=cats':'';}
 function getLocal(){try{return JSON.parse(localStorage.getItem('catmap_stock')||'[]');}catch(e){return [];}}
@@ -480,5 +462,4 @@ window.reloadAll=reloadAll;window.exportJSON=exportJSON;window.importJSON=import
 window.addEventListener('resize',function(){clearTimeout(window._rz);window._rz=setTimeout(render,200);});
 reloadAll();
 </script>
-<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body></html>
