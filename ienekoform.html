@@ -38,7 +38,7 @@ textarea{min-height:42px}
   <span class="sub" id="cnt"></span>
 </div>
 <div class="tablewrap"><table><thead id="thead"></thead><tbody id="tbody"></tbody></table></div>
-<p class="note">列：No／領域／タイプ名／猫ネーム／キャッチ／家猫化ポイント／X(1-10)／Y(1-10)／チュール／キャットタワー／改善策／副作用／出典タイプ／出典／URL。<br>X=飼い主(1公的⇔10私的)、Y=家猫度(1半野良⇔10純血家猫)。猫の毛色・表情はX/Yで自動生成されます。</p>
+<p class="note">列：No／領域／タイプ名／猫ネーム／キャッチ／家猫化ポイント／X(1-10)／Y(1-10)／チュール／キャットタワー／改善策／副作用／出典タイプ／出典／URL。<br>X=飼い主(1公的⇔10私的)、Y=家猫度(1まち猫⇔10いえ猫)。猫の毛色・表情はX/Yで自動生成されます。</p>
 </div>
 <script>
 const COLS=["No","領域","タイプ名","猫ネーム","キャッチ","家猫化ポイント","X","Y","チュール","キャットタワー","改善策","副作用","出典タイプ","出典","URL"];
@@ -84,5 +84,10 @@ function importCSV(inp){var f=inp.files&&inp.files[0];if(!f)return;var rd=new Fi
 };rd.readAsText(f);}
 render();
 </script>
+
+<footer style="margin-top:24px;padding:14px 12px 20px;border-top:1px dashed #cbb68a;text-align:center;color:#7a5a3c;font-size:10pt;letter-spacing:.04em;line-height:1.7">
+  <div style="font-weight:700">🐾 東京大学シビックテック・デザイン学講座 team1（2026）</div>
+  <div style="font-size:9pt;color:#a89673;margin-top:2px">Civic Tech &amp; Design Studio · The University of Tokyo · team1 / 2026</div>
+</footer>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body></html>
