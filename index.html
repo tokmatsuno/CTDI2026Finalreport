@@ -228,7 +228,7 @@ a{color:var(--blue)}
 </style></head>
 <body><div id="splash"><div id="splashCat"></div><div class="sload">Loading<span class="sdots"></span></div><div class="scd">あと <b id="spNum">2</b> びょう</div></div><div class="wrap">
 <section class="city-hero">
-  <div style="position:relative;z-index:2;font-size:10pt;color:var(--muted);letter-spacing:.04em;margin-bottom:2px">v4.01</div>
+  <div style="position:relative;z-index:2;font-size:10pt;color:var(--muted);letter-spacing:.04em;margin-bottom:2px">v4.02</div>
   <div class="title">
     <h1 class="brand">
       <svg class="catmark" viewBox="0 0 60 60" aria-hidden="true">
@@ -1098,16 +1098,25 @@ function shareLine(o,d,fname){
       +(siteU?('\n\n診断してみる: '+siteU):'')
       +(siteU?('\n🌿 みんなの家猫マップ: '+siteU+'ienekomap.html'):'')
       +'\n\n（東京大学シビックテック・デザイン学講座 team1）';
-    // ① 画像をローカル保存 ② キャプションをクリップボード ③ オープンチャットを開く
-    dlBlob(blob,fname||'ieneko_card');
-    if(typeof copyText==='function')copyText(body);
-    btns.forEach(function(b,i){b.innerHTML='✓ 画像保存＆コピー完了';});
-    if(window.toastMsg)window.toastMsg('ok','💚 いえ猫カフェへ準備完了',
-      '① 画像を保存しました\n② コメントをコピーしました\n③ LINEを新しいタブで開きます\n\nLINE内で「＋」→写真→保存した画像を選び、コメントを貼り付けて送信してください。');
-    setTimeout(function(){
-      window.open(LINE_OPENCHAT,'_blank','noopener');
-      restore();
-    },400);
+    // ① スマホ等：Web Share API で画像を添付してLINEに送れる
+    if(navigator.canShare){
+      var f=new File([blob],(fname||'ieneko_card')+'.png',{type:'image/png'});
+      if(navigator.canShare({files:[f]})){
+        navigator.share({files:[f],title:'いえ猫カード',text:body})
+          .then(function(){btns.forEach(function(b,i){b.innerHTML='✓ 共有しました';});restore();})
+          .catch(function(){lineFallback();});
+        return;
+      }
+    }
+    lineFallback();
+    function lineFallback(){
+      dlBlob(blob,fname||'ieneko_card');
+      if(typeof copyText==='function')copyText(body);
+      btns.forEach(function(b,i){b.innerHTML='✓ 画像保存＆コピー完了';});
+      if(window.toastMsg)window.toastMsg('ok','💚 いえ猫カフェへ準備完了',
+        '① 画像を保存しました\n② コメントをコピーしました\n③ LINEを開きます\n\nスマホでは共有シートからLINEを選ぶと画像が添付されます。パソコンではLINE内で「＋」→写真→保存した画像を選び、コメントを貼り付けて送信してください。');
+      setTimeout(function(){window.open(LINE_OPENCHAT,'_blank','noopener');restore();},400);
+    }
   });
 }
 window.shareLine=shareLine;
@@ -1130,15 +1139,26 @@ function shareMail(o,d,fname){
       +'\n----\n東京大学シビックテック・デザイン学講座 team1（2026）\n'
       +'いえ猫カードジェネレーター';
     var subject='🐾 いえ猫カードが届きました 「'+((d&&d.catname)||'家猫')+'」';
-    // 画像はローカル保存し、メール本文にはURLと文字だけを載せる（mailtoは添付できないため）
-    dlBlob(blob,fname||'ieneko_card');
-    if(typeof copyText==='function')copyText(body);
-    btns.forEach(function(b,i){b.innerHTML='✓ 画像保存 & メール準備';});
-    if(window.toastMsg)window.toastMsg('ok','💌 メール準備完了',
-      '① カード画像を保存しました\n② コメントをコピーしました\n③ メールアプリを開きます\n\nメール本文はセット済み。保存したPNGを手動で添付して送信してください。');
-    // mailto を新窓で開く
-    var mailto='mailto:?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
-    setTimeout(function(){window.location.href=mailto;restore();},400);
+    // ① スマホ等：Web Share API で画像を添付してメール送信できる
+    if(navigator.canShare){
+      var f=new File([blob],(fname||'ieneko_card')+'.png',{type:'image/png'});
+      if(navigator.canShare({files:[f]})){
+        navigator.share({files:[f],title:subject,text:body})
+          .then(function(){btns.forEach(function(b,i){b.innerHTML='✓ 共有しました';});restore();})
+          .catch(function(){mailFallback();});
+        return;
+      }
+    }
+    mailFallback();
+    function mailFallback(){
+      dlBlob(blob,fname||'ieneko_card');
+      if(typeof copyText==='function')copyText(body);
+      btns.forEach(function(b,i){b.innerHTML='✓ 画像保存 & メール準備';});
+      if(window.toastMsg)window.toastMsg('ok','💌 メール準備完了',
+        '① カード画像を保存しました\n② コメントをコピーしました\n③ メールアプリを開きます\n\nパソコンではメールに画像を自動添付できないため、保存したPNGを手動で添付してください（スマホは共有シートから画像付きで送れます）。');
+      var mailto='mailto:?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
+      setTimeout(function(){window.location.href=mailto;restore();},400);
+    }
   });
 }
 window.shareMail=shareMail;
@@ -1311,11 +1331,25 @@ function mtIdea(no){var t=mtType(no);if(!t)return;var ta=document.getElementById
   (MEETING.ideas[no]=MEETING.ideas[no]||[]).push({no:no,idea:txt,nick:mtNick()||'名無しねこ'});
   var lst=document.getElementById('mtideas_'+no);if(lst)lst.innerHTML=mtIdeaList(no);
   var el=document.getElementById('mtstat_'+no);if(el)el.textContent='⏳ 送信中…';
-  apiSend({action:'idea',kind:'idea',no:t.no,name:t.name,catname:t.catname,idea:txt,nick:mtNick()}).then(function(res){
-    if(el)el.textContent=(res&&res.ok)?'✓ アイデアを送信しました。ありがとう！全員に共有されます🌿':'（この端末に保存しました。共有サーバとの同期は後で行われます）';
+  apiSend({action:'idea',kind:'idea',no:t.no,name:t.name,catname:t.catname,idea:txt,nick:mtNick(),nodisc:1}).then(function(res){
+    if(el)el.textContent=(res&&res.ok)?'✓ アイデアを送信しました。ありがとう！いえ猫カードもDiscordに投稿します🌿':'（この端末に保存しました。共有サーバとの同期は後で行われます）';
     loadMeeting().then(function(){var l2=document.getElementById('mtideas_'+no);if(l2)l2.innerHTML=mtIdeaList(no);});});
+  // いえ猫カードをPNGでDiscordにも投稿（画像付き）
+  try{ mtPostIdeaCard(t,txt,mtNick()); }catch(e){}
   if(ta)ta.value='';}
-window.mtVote=mtVote;window.mtIdea=mtIdea;
+function mtPostIdeaCard(t,idea,nick){
+  if(typeof makeBlob!=='function'||typeof DISCORD_WEBHOOK==='undefined'||!DISCORD_WEBHOOK)return;
+  var o={title:t.catname,sub:t.name,desc:(t.churu||t.catch||''),x:+t.x,y:+t.y,seed:t.no,kit:''};
+  makeBlob(o,function(blob){
+    if(!blob)return;
+    var content='💡 **またたびアイデア** ／ '+(t.name||'')+'（'+(t.catname||'')+'）\n> '+idea+'\n— '+(nick||'名無しねこ');
+    var fd=new FormData();
+    fd.append('payload_json',JSON.stringify({content:content,username:'家猫アプリ'}));
+    fd.append('files[0]',blob,'ieneko_'+(t.no||'card')+'.png');
+    fetch(DISCORD_WEBHOOK+'?wait=true',{method:'POST',body:fd}).catch(function(){});
+  });
+}
+window.mtVote=mtVote;window.mtIdea=mtIdea;window.mtPostIdeaCard=mtPostIdeaCard;
 function mtReviewHTML(t){
   var chan=mtChan();
   var h='<div class="discord-hub">';
@@ -1332,7 +1366,7 @@ function mtReviewHTML(t){
   h+='<div id="mttally_'+t.no+'">'+mtTally(t.no)+'</div>';
   h+='<div class="kv" style="margin-top:8px"><b>💡 こんなまたたびはどう？</b></div>';
   h+='<textarea id="mtidea_'+t.no+'" rows="2" placeholder="例）この子には◯◯の方が動きやすいかも" style="width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;font:inherit;box-sizing:border-box"></textarea>';
-  h+='<div style="margin-top:6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button class="ghost" onclick="mtIdea('+t.no+')">🌿 アイデアを送る</button>';
+  h+='<div style="margin-top:6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button class="ghost" onclick="mtIdea('+t.no+')">🌿 またたびアイデアを送る</button>';
   h+='<a class="dbtn" href="'+(chan||"https://discord.com/channels/1369281268977500170/1504436492242522314")+'" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037 13.79 13.79 0 0 0-.608 1.25 18.27 18.27 0 0 0-5.487 0 12.63 12.63 0 0 0-.617-1.25.074.074 0 0 0-.079-.037A19.74 19.74 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.058a.082.082 0 0 0 .031.056 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.3 12.3 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.84 19.84 0 0 0 6.002-3.03.077.077 0 0 0 .032-.055c.5-5.177-.838-9.674-3.548-13.66a.061.061 0 0 0-.031-.028zM8.02 15.331c-1.183 0-2.157-1.085-2.157-2.42 0-1.334.956-2.42 2.157-2.42 1.21 0 2.176 1.096 2.157 2.42 0 1.335-.956 2.42-2.157 2.42zm7.975 0c-1.183 0-2.157-1.085-2.157-2.42 0-1.334.955-2.42 2.157-2.42 1.21 0 2.176 1.096 2.157 2.42 0 1.335-.946 2.42-2.157 2.42z"/></svg>💬 Discordで議論する</a>';
   h+='</div>';
   h+='<div id="mtideas_'+t.no+'">'+mtIdeaList(t.no)+'</div>';
