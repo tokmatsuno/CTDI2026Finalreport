@@ -40,7 +40,7 @@
 .city-hero h1.brand .catmark{width:38px;height:38px}
 .city-hero .brand-sub{color:#5a4a30;font-size:.85rem;margin:0}
 .city-hero .skyline{position:absolute;left:0;right:0;bottom:0;height:64px;pointer-events:none;z-index:1}
-.city-hero .cat-mascot{position:absolute;right:14px;bottom:6px;width:96px;height:78px;z-index:2;overflow:visible}
+.city-hero .cat-mascot{position:absolute;right:14px;bottom:6px;width:96px;height:78px;z-index:2}
 
 /* 都市トーンのタブ・ボタンをより上質に */
 .tab{transition:all .18s ease;letter-spacing:.02em}
@@ -71,7 +71,7 @@ button.go:disabled{background:#c8bfad;cursor:not-allowed;box-shadow:none}
 @keyframes pawStep{0%,100%{transform:translateY(0);opacity:.4}50%{transform:translateY(-3px);opacity:.9}}
 .mascot-ear-l,.mascot-ear-r{transform-origin:center bottom;animation:earTwitch 4.6s ease-in-out infinite}
 .mascot-ear-r{animation-delay:.4s}
-.mascot-tail{transform-box:fill-box;transform-origin:left bottom;animation:tailWave 2.4s ease-in-out infinite}
+.mascot-tail{transform-origin:right center;animation:tailWave 2.4s ease-in-out infinite}
 .paw-trail circle{animation:pawStep 1.8s ease-in-out infinite}
 .paw-trail circle:nth-child(2){animation-delay:.3s}
 .paw-trail circle:nth-child(3){animation-delay:.6s}
@@ -228,7 +228,7 @@ a{color:var(--blue)}
 </style></head>
 <body><div id="splash"><div id="splashCat"></div><div class="sload">Loading<span class="sdots"></span></div><div class="scd">あと <b id="spNum">2</b> びょう</div></div><div class="wrap">
 <section class="city-hero">
-  <div style="position:relative;z-index:2;font-size:10pt;color:var(--muted);letter-spacing:.04em;margin-bottom:2px">v4.01</div>
+  <div style="position:relative;z-index:2;font-size:.72rem;color:var(--muted);letter-spacing:.04em;margin-bottom:2px">v3.2.0 · 都市×猫edition</div>
   <div class="title">
     <h1 class="brand">
       <svg class="catmark" viewBox="0 0 60 60" aria-hidden="true">
@@ -668,16 +668,68 @@ function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');}
 function cfg(){try{return localStorage.getItem('catlog_endpoint')||'';}catch(e){return '';}}
 function clientId(){try{let id=localStorage.getItem('catlog_cid');if(!id){id='c'+Math.random().toString(36).slice(2)+Date.now().toString(36);localStorage.setItem('catlog_cid',id);}return id;}catch(e){return 'c0';}}
 function logResult(p, cardObj){
-  p.ts=new Date().toISOString();p.cid=clientId();p.app='家猫カードジェネレーター';p.ver='4.01';
+  p.ts=new Date().toISOString();p.cid=clientId();p.app='家猫カードジェネレーター';p.ver='2.1';
   var url=(typeof apiUrl==='function'&&apiUrl())||cfg();
   if(!url) return false;
-  p.action='record';   // GAS側は action=record で猫を記録＆Discord通知
-  // 記録はGETで一度だけ（レスポンスを読めて確実・重複なし）。カード画像のDiscord投稿は各Shareボタンから個別に。
-  if(typeof apiSend==='function'){ apiSend(p); return true; }
-  try{
-    var q=Object.keys(p).map(function(k){return encodeURIComponent(k)+'='+encodeURIComponent(p[k]==null?'':(typeof p[k]==='object'?JSON.stringify(p[k]):p[k]));}).join('&');
-    fetch(url+(url.indexOf('?')<0?'?':'&')+q,{cache:'no-store'}).catch(function(){});
-  }catch(e){}
+  p.action='record';
+
+  // カードオブジェクトが渡された場合、画像を生成して同送する（GAS→Discordへ画像添付）
+  function sendWithImage(dataUrl){
+    // v3.6: 診断時は画像を送らずテキストのみGASに静かに記録（Discordはユーザー操作で個別送信）
+    var body=Object.assign({},p);
+    // 画像は送らない（GAS Discord自動投稿は廃止し、フロントのShareボタンに委任）
+    var json=JSON.stringify(body);
+    try{
+      if(navigator.sendBeacon){
+        var blob=new Blob([json],{type:"text/plain;charset=UTF-8"});
+        navigator.sendBeacon(url, blob);
+      }else{
+        fetch(url,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=UTF-8"},body:json,keepalive:true}).catch(function(){});
+      }
+    }catch(e){}
+    // 手法2: sendBeacon が失敗（または未対応）ならfetch(no-cors, keepalive)
+    if(!ok){
+      try{
+        fetch(url,{
+          method:'POST',mode:'no-cors',
+          headers:{'Content-Type':'text/plain;charset=UTF-8'},
+          body:json, keepalive:true
+        }).catch(function(){});
+      }catch(e){}
+    }
+    // 手法3: 保険として、画像なしテキスト情報をGETでも送る（重複防止のため 3秒後）
+    if(dataUrl){
+      setTimeout(function(){
+        try{
+          var lite=Object.assign({},p);
+          delete lite.image;
+          lite.image_backup='1';
+          var q=Object.keys(lite).map(function(k){return encodeURIComponent(k)+'='+encodeURIComponent(lite[k]==null?'':(typeof lite[k]==='object'?JSON.stringify(lite[k]):lite[k]));}).join('&');
+          fetch(url+(url.indexOf('?')<0?'?':'&')+q,{cache:'no-store',mode:'no-cors'}).catch(function(){});
+        }catch(e){}
+      },3000);
+    }
+  }
+  function sendTextOnly(){
+    try{
+      var q=Object.keys(p).map(function(k){return encodeURIComponent(k)+'='+encodeURIComponent(p[k]==null?'':(typeof p[k]==='object'?JSON.stringify(p[k]):p[k]));}).join('&');
+      fetch(url+(url.indexOf('?')<0?'?':'&')+q,{cache:'no-store'}).catch(function(){});
+    }catch(e){}
+  }
+
+  if(cardObj && typeof makeBlobSmall==='function'){
+    try{
+      makeBlobSmall(cardObj,function(blob){
+        if(!blob){ sendTextOnly(); return; }
+        var rd=new FileReader();
+        rd.onload=function(){ sendWithImage(rd.result); };
+        rd.onerror=function(){ sendTextOnly(); };
+        rd.readAsDataURL(blob);
+      });
+    }catch(e){ sendTextOnly(); }
+  }else{
+    sendTextOnly();
+  }
   return true;}
 function logNote(id){const el=document.getElementById(id);if(!el)return;el.textContent='✓ この猫を街の記録に匿名で送信しました 🏙 Discordで語り合えます 🍶';}
 function saveEp(){try{const v=document.getElementById('epInput').value.trim();localStorage.setItem('catlog_endpoint',v);document.getElementById('epStat').textContent=v?'✓ 保存しました':'空です';}catch(e){document.getElementById('epStat').textContent='保存不可（この環境ではローカル保存ができません）';}}
@@ -1433,6 +1485,7 @@ document.getElementById('submit').addEventListener('click',()=>{
       res.insertAdjacentHTML('beforeend','<div class="sub center" id="lognote2" style="margin-top:8px"></div>');
       logResult({mode:'2軸',x:+x.toFixed(2),y:+y.toFixed(2),quad:q.name,persona:per.n,answers:answers.join(''),cntA:c.A,cntB:c.B,cntC:c.C,cntD:c.D,nearestNo:near.no,nearestName:near.name,catname:near.catname,kit:ans9q.v}, Object.assign({},near,{x:+x.toFixed(2),y:+y.toFixed(2),persona:per.n,kit:ans9q.v,holo:holo}));
       var stkN=stockLocal({x:+x.toFixed(2),y:+y.toFixed(2),quad:q.name,persona:per.n,nearestNo:near.no,typeName:near.name,catname:near.catname,kit:ans9q.v,holo:holo?1:0,ts:new Date().toISOString()});
+      apiSend({action:'cat',kind:'cat',x:+x.toFixed(2),y:+y.toFixed(2),quad:q.name,typeName:near.name,catname:near.catname,persona:per.n,kit:ans9q.v,holo:holo?1:0});
       logNote('lognote2');
       res.insertAdjacentHTML('beforeend','<div class="center" style="margin-top:6px"><span class="sub">🗺 この猫を地区マップに追加しました（この端末に '+stkN+' 匹）</span><br><a class="ghost" style="display:inline-block;margin-top:6px;text-decoration:none;line-height:1.9" href="ienekomap.html" target="_blank" rel="noopener">🗺 シビックテック学創成町マップを見る</a></div>');
       document.getElementById('submit').disabled=false;
@@ -1572,8 +1625,7 @@ loadMeeting();checkApi();
 
 <footer style="margin-top:24px;padding:14px 12px 20px;border-top:1px dashed #cbb68a;text-align:center;color:#7a5a3c;font-size:10pt;letter-spacing:.04em;line-height:1.7">
   <div style="font-weight:700">🐾 東京大学シビックテック・デザイン学講座 team1（2026）</div>
-  <div style="font-size:9pt;color:#a89673;margin-top:2px">Civic Tech Design Initiative· The University of Tokyo · team1 / 2026</div>
-  <div style="font-size:8.5pt;color:#a89673;margin-top:6px">生成された猫（カード画像）は <b>CC0 1.0（パブリックドメイン）</b>。自由に利用・改変・再配布できます。</div>
+  <div style="font-size:9pt;color:#a89673;margin-top:2px">Civic Tech &amp; Design Studio · The University of Tokyo · team1 / 2026</div>
 </footer>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body></html>

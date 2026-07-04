@@ -410,7 +410,9 @@ function norm(o){var x=num(o.x!=null?o.x:o.X),y=num(o.y!=null?o.y:o.Y);if(x==nul
   return {x:x,y:y,typeName:o.typeName||o.nearestName||o.name||'',catname:o.catname||o.catName||'',persona:o.persona||o.quad||'',kit:o.kit||'',ts:o.ts||''};}
 function parseRemote(text){text=(text||'').replace(/^﻿/,'').trim();if(!text)return [];
   if(text[0]==='['){try{return JSON.parse(text).map(norm).filter(Boolean);}catch(e){}}
-  if(text[0]==='{'){var out=[];text.split('\n').forEach(function(ln){ln=ln.trim();if(!ln)return;try{var r=norm(JSON.parse(ln));if(r)out.push(r);}catch(e){}});return out;}
+  if(text[0]==='{'){
+    try{var obj=JSON.parse(text);if(obj&&Array.isArray(obj.cats))return obj.cats.map(norm).filter(Boolean);}catch(e){}
+    var out=[];text.split('\n').forEach(function(ln){ln=ln.trim();if(!ln)return;try{var r=norm(JSON.parse(ln));if(r)out.push(r);}catch(e){}});return out;}
   var rows=parseCSV(text).filter(function(r){return r.some(function(c){return c!=='';});});if(rows.length<2)return [];
   var head=rows[0].map(function(h){return (h||'').trim();});var o2=[];for(var i=1;i<rows.length;i++){var o={};head.forEach(function(k,j){o[k]=(rows[i][j]||'').trim();});var r=norm(o);if(r)o2.push(r);}return o2;}
 function fetchText(u){return fetch(u,{cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.text();});}
@@ -519,7 +521,7 @@ reloadAll();
 
 <footer style="margin-top:24px;padding:14px 12px 20px;border-top:1px dashed #cbb68a;text-align:center;color:#7a5a3c;font-size:10pt;letter-spacing:.04em;line-height:1.7">
   <div style="font-weight:700">🐾 東京大学シビックテック・デザイン学講座 team1（2026）</div>
-  <div style="font-size:9pt;color:#a89673;margin-top:2px">Civic Tech &amp; Design Studio · The University of Tokyo · team1 / 2026</div>
+  <div style="font-size:9pt;color:#a89673;margin-top:2px">Civic Tech Design Initiative· The University of Tokyo · team1 / 2026</div>
 </footer>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body></html>
