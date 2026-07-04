@@ -840,6 +840,8 @@ function shareCaption(d){
     +(d.kitName?'応援国：'+d.kitName+' ⚽\n':'')
     +'#家猫度診断 #私の取説 #隠れ特技 #家猫カード';
 }
+function lineBody(d){var cap=(typeof shareCaption==='function'?shareCaption(d):'');var u=(typeof siteUrl==='function'?siteUrl():'');
+  return cap+(u?('\n\n診断: '+u+'\n🌿 家猫マップ: '+u+'ienekomap.html'):'')+'\n（東京大学シビックテック・デザイン学講座 team1）';}
 // ---- 隠れ特技・スキル（5問の回答から自動算出）----
 var SKILLS={
  digital:{n:'デジタル活用力',d:'情報やツールを使いこなすのが得意。',c:'回覧のデジタル化・SNS広報・参加フォーム作りで「参加のしやすさ」を上げられます。'},
@@ -991,10 +993,14 @@ function makeBlobSmall(o,cb){var svg=cardSVGFull(o);var url=URL.createObjectURL(
   img.onerror=function(){URL.revokeObjectURL(url);cb(null);};img.src=url;}
 window.makeBlobSmall=makeBlobSmall;
 function dlBlob(b,fname){var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=fname+'.png';document.body.appendChild(a);a.click();setTimeout(function(){a.remove();},120);}
-function sharePNG(o,d,fname){makeBlob(o,function(b){if(!b){alert('画像生成に失敗しました');return;}
-  var f=new File([b],fname+'.png',{type:'image/png'});
-  if(navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f],text:shareCaption(d),title:'私の家猫 取説カード'}).catch(function(){});}
-  else{dlBlob(b,fname);copyText(shareCaption(d));alert('画像を保存し、キャプションをコピーしました。SNSアプリで画像を添付し、貼り付けて投稿してください。');}});}
+function sharePNG(o,d,fname){
+  // 先読みキャッシュ済みの画像があれば同期でシェア（スマホでユーザー操作が切れず確実）
+  var pf=o&&o.__file;
+  if(pf&&navigator.canShare&&navigator.canShare({files:[pf]})){navigator.share({files:[pf],text:shareCaption(d),title:'私の家猫 取説カード'}).catch(function(){});return;}
+  makeBlob(o,function(b){if(!b){alert('画像生成に失敗しました');return;}
+    var f=new File([b],fname+'.png',{type:'image/png'});
+    if(navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f],text:shareCaption(d),title:'私の家猫 取説カード'}).catch(function(){});}
+    else{dlBlob(b,fname);copyText(shareCaption(d));alert('画像を保存し、キャプションをコピーしました。SNSアプリで画像を添付し、貼り付けて投稿してください。');}});}
 function shareX(o,d,fname){var u=siteUrl();var t=shareCaption(d)+(u?'\n'+u:'');copyText(shareCaption(d));makeBlob(o,function(b){if(b)dlBlob(b,fname);});window.open('https://twitter.com/intent/tweet?text='+encodeURIComponent(t),'_blank');}
 function shareFB(o,d,fname){var u=siteUrl();copyText(shareCaption(d));makeBlob(o,function(b){if(b)dlBlob(b,fname);});
   if(u){window.open('https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(u)+'&quote='+encodeURIComponent(shareCaption(d)),'_blank');}
@@ -1007,6 +1013,8 @@ var IC_FB='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 12.06C22 6.
 var IC_IG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.3" cy="6.7" r="1.1" fill="currentColor" stroke="none"/></svg>';
 function shareRow(oVar,dVar,fname){
   var html='';
+  // カード画像を先読み生成してオブジェクトにキャッシュ（タップ時に同期でシェア＝スマホで確実に起動）
+  try{var _O=eval(oVar);if(_O&&typeof makeBlob==='function'){makeBlob(_O,function(b){if(b){try{_O.__file=new File([b],(fname||'ieneko_card')+'.png',{type:'image/png'});}catch(e){}}});}}catch(e){}
   // ─── 1段目：コミュニティで共有（Discord / LINEオープンチャット） ───
   html+='<div class="share-block">'
     +'<div class="share-label">🐾 いえ猫カフェのなかまと共有する</div>'
@@ -1086,38 +1094,16 @@ window.shareDiscord=shareDiscord;
 // LINEはブラウザからwebhook直投稿ができないため、
 // 「カード画像を保存」＋「オープンチャットへのリンクを新窓で開く」＋「キャプションをコピー」の3点セット
 var LINE_OPENCHAT="https://line.me/ti/g2/NH7iI3FM4JEfCN9GeUb9esGmu62tvHRv5MwlVQ?utm_source=invitation&utm_medium=link_copy&utm_campaign=default";
+// いえ猫カフェ（LINEオープンチャット）を直接ひらく＝同期実行でアプリ起動
 function shareLine(o,d,fname){
-  var btns=document.querySelectorAll('.snsbtn.ln');
-  var orig=[];btns.forEach(function(b,i){orig[i]=b.innerHTML;b.innerHTML='⏳ 準備中…';b.disabled=true;});
-  var restore=function(){setTimeout(function(){btns.forEach(function(b,i){b.innerHTML=orig[i];b.disabled=false;});},2200);};
-  makeBlob(o,function(blob){
-    if(!blob){btns.forEach(function(b,i){b.innerHTML='⚠ 画像失敗';});restore();return;}
-    var caption=(typeof shareCaption==='function'?shareCaption(d):'');
-    var siteU=(typeof siteUrl==='function'?siteUrl():'');
-    var body='🐾 いえ猫カフェのみなさん、こんにちは。\n'+caption
-      +(siteU?('\n\n診断してみる: '+siteU):'')
-      +(siteU?('\n🌿 みんなの家猫マップ: '+siteU+'ienekomap.html'):'')
-      +'\n\n（東京大学シビックテック・デザイン学講座 team1）';
-    // ① スマホ等：Web Share API で画像を添付してLINEに送れる
-    if(navigator.canShare){
-      var f=new File([blob],(fname||'ieneko_card')+'.png',{type:'image/png'});
-      if(navigator.canShare({files:[f]})){
-        navigator.share({files:[f],title:'いえ猫カード',text:body})
-          .then(function(){btns.forEach(function(b,i){b.innerHTML='✓ 共有しました';});restore();})
-          .catch(function(){lineFallback();});
-        return;
-      }
-    }
-    lineFallback();
-    function lineFallback(){
-      dlBlob(blob,fname||'ieneko_card');
-      if(typeof copyText==='function')copyText(body);
-      btns.forEach(function(b,i){b.innerHTML='✓ 画像保存＆コピー完了';});
-      if(window.toastMsg)window.toastMsg('ok','💚 いえ猫カフェへ準備完了',
-        '① 画像を保存しました\n② コメントをコピーしました\n③ LINEを開きます\n\nスマホでは共有シートからLINEを選ぶと画像が添付されます。パソコンではLINE内で「＋」→写真→保存した画像を選び、コメントを貼り付けて送信してください。');
-      setTimeout(function(){window.open(LINE_OPENCHAT,'_blank','noopener');restore();},400);
-    }
-  });
+  var body=lineBody(d);
+  if(typeof copyText==='function')copyText(body);              // 同期：コメントをコピー
+  // ★ユーザー操作の文脈内で同期起動（setTimeoutや非同期の後だとスマホでブロックされる）
+  var w=window.open(LINE_OPENCHAT,'_blank');
+  if(!w){ location.href=LINE_OPENCHAT; }                       // ポップアップ不可環境は直接遷移
+  // 画像は背景で保存（オープンチャットで手動添付できるよう）
+  if(o&&typeof makeBlob==='function'){ makeBlob(o,function(b){ if(b)dlBlob(b,fname||'ieneko_card'); }); }
+  if(window.toastMsg)window.toastMsg('ok','💚 いえ猫カフェを開きました','コメントをコピー・カード画像を保存しました。LINEで画像を添付して送れます。');
 }
 window.shareLine=shareLine;
 
@@ -1165,41 +1151,25 @@ window.shareMail=shareMail;
 
 // ═══ LINE 個別送信（1対1、友だち／グループ） ═══════════════
 // LINE Social Plugin の「送信」機能を使う。ブラウザからLINE URIスキームを起動
+// LINEで送る＝同期実行。画像が先読みできていれば共有シートで画像添付、無ければLINE起動（テキスト）
 function shareLineDirect(o,d,fname){
-  var btns=document.querySelectorAll('.snsbtn.lnd');
-  var orig=[];btns.forEach(function(b,i){orig[i]=b.innerHTML;b.innerHTML='⏳ 準備中…';b.disabled=true;});
-  var restore=function(){setTimeout(function(){btns.forEach(function(b,i){b.innerHTML=orig[i];b.disabled=false;});},2200);};
-  var maker=(typeof makeBlobSmall==='function'?makeBlobSmall:makeBlob);
-  maker(o,function(blob){
-    if(!blob){btns.forEach(function(b,i){b.innerHTML='⚠ 画像失敗';});restore();return;}
-    var caption=(typeof shareCaption==='function'?shareCaption(d):'');
-    var siteU=(typeof siteUrl==='function'?siteUrl():'');
-    var text='🐾 いえ猫カード「'+((d&&d.catname)||'家猫')+'」\n'+caption
-      +(siteU?('\n\n診断: '+siteU):'')
-      +'\n（東京大学シビックテック・デザイン学講座 team1）';
-    dlBlob(blob,fname||'ieneko_card');
-    if(typeof copyText==='function')copyText(text);
-    // Web Share API（モバイル優先）
-    if(navigator.canShare){
-      var f=new File([blob],(fname||'ieneko_card')+'.png',{type:'image/png'});
-      if(navigator.canShare({files:[f]})){
-        navigator.share({files:[f],text:text,title:'いえ猫カード'})
-          .then(function(){btns.forEach(function(b,i){b.innerHTML='✓ 送信済み';});restore();})
-          .catch(function(){openLineShare(text);restore();});
-        return;
-      }
-    }
-    openLineShare(text);
-    restore();
-  });
+  var text=lineBody(d);
+  if(typeof copyText==='function')copyText(text);              // 同期
+  var pf=o&&o.__file;
+  if(pf&&navigator.canShare&&navigator.canShare({files:[pf]})){
+    // 画像を添付して共有シート→LINEを選択（画像つき送信）。ユーザー操作内で同期呼び出し
+    navigator.share({files:[pf],text:text,title:'いえ猫カード'}).catch(function(){openLineShare(text);});
+    if(window.toastMsg)window.toastMsg('ok','💚 共有シートを開きました','LINEを選ぶと画像つきで送れます。');
+    return;
+  }
+  openLineShare(text);
   function openLineShare(text){
-    var url=(typeof siteUrl==='function'?siteUrl():'')||'';
-    // LINE のシェアURL（URLとテキストを渡す）
-    var lineUrl='https://line.me/R/msg/text/?'+encodeURIComponent(text);
-    btns.forEach(function(b,i){b.innerHTML='✓ 画像保存＆LINE起動';});
-    if(window.toastMsg)window.toastMsg('ok','💚 LINE送信準備完了',
-      '① カード画像を保存しました\n② コメントをコピーしました\n③ LINEを開きます\n\nLINE内でトーク相手を選び、保存した画像を添付＋コメントを貼り付けて送ってください。');
-    setTimeout(function(){window.open(lineUrl,'_blank','noopener');},400);
+    var lineUrl='https://line.me/R/share?text='+encodeURIComponent(text);   // 新しいLINE共有URL（アプリ起動）
+    var w=window.open(lineUrl,'_blank');
+    if(!w){ location.href=lineUrl; }
+    // 画像は背景で保存（手動添付用）
+    if(o&&typeof makeBlob==='function'){ makeBlob(o,function(b){ if(b)dlBlob(b,fname||'ieneko_card'); }); }
+    if(window.toastMsg)window.toastMsg('ok','💚 LINEを開きました','コメントをコピー・カード画像を保存しました。LINEで画像を添付して送れます。');
   }
 }
 window.shareLineDirect=shareLineDirect;
