@@ -285,6 +285,17 @@ a{color:var(--blue)}
 .djcta .djp{color:#e7dcc8;margin:6px 0 0;font-size:.9rem;line-height:1.6}
 .djcta .dj-launch{margin-top:10px;pointer-events:none;display:inline-block}
 @media(max-width:520px){.djcta{flex-direction:column;text-align:center}.djcta-art{width:132px;flex-basis:132px}}
+/* 80s ポップ看板（DJ IENEKO） */
+.djcta{position:relative;overflow:hidden;background:linear-gradient(180deg,#241a49,#3a1c63 55%,#5a1f6e)!important;border:2px solid #ff5db1;box-shadow:0 0 0 2px #2de2e6 inset,0 8px 24px rgba(20,10,40,.45),0 0 18px rgba(255,93,177,.4);align-items:center}
+.djcta::before{content:"";position:absolute;left:-10%;right:-10%;bottom:0;height:44%;background:repeating-linear-gradient(transparent 0 15px,rgba(45,226,230,.4) 15px 16px);transform:perspective(120px) rotateX(55deg);transform-origin:bottom;opacity:.5;pointer-events:none}
+.djcta::after{content:"";position:absolute;top:-34px;right:34px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,#ffd36e,#ff6ec7 70%,transparent 72%);opacity:.6;pointer-events:none}
+.djcta-art,.djcta-text{position:relative;z-index:2}
+.djcta-t{font-weight:900;font-size:1.7rem;font-style:italic;color:#fff;letter-spacing:.04em;text-shadow:0 0 6px #ff5db1,0 0 13px #ff5db1,2px 2px 0 #2de2e6;line-height:1}
+.djcta-sub{font-weight:800;color:#2de2e6;letter-spacing:.24em;font-size:.8rem;margin-top:3px;text-shadow:0 0 6px rgba(45,226,230,.7)}
+.djcta .djp{color:#f3e3ff;margin:8px 0 0;font-size:.85rem;line-height:1.55}
+.djcta .dj-launch{margin-top:10px;pointer-events:none;display:inline-block;background:linear-gradient(90deg,#ff5db1,#ffb36e)!important;color:#2a0f3a!important;border:none;border-radius:999px;padding:8px 16px;font-weight:900}
+.djcat-mini{width:80px;flex:0 0 80px}
+
 </style></head>
 <body><div id="splash"><div id="splashCat"></div><div class="sload">Loading<span class="sdots"></span></div><div class="scd">あと <b id="spNum">2</b> びょう</div></div><div class="wrap">
 <section class="city-hero">
@@ -445,13 +456,13 @@ a{color:var(--blue)}
 <p class="note">本アプリは社会論・文明論の枠組みに基づく自己点検ツールです。特定個人や属性を断罪する意図はありません。猫の顔・座標・タイプは典型像に基づく相対的な表現です。</p>
 
 <section class="djsec">
-  <h2>🎧 DJ家猫 — Drop the beat!</h2>
   <div class="djcta" onclick="openDJ()" title="タップでDJスタート">
     <div class="djcta-art" id="djcat-art"></div>
-    <div>
-      <div class="djcta-t">Drop the beat! 🐾</div>
-      <p class="djp">46タイプの家猫が選んだテーマソングを、<b>猫の目＝回るレコード</b>でオートMIX（クロスフェード）連続再生。診断結果の「🎧 この曲からDJ」でもその猫の曲から始められます🎶</p>
-      <span class="dj-launch">▶ DJモードを開く</span>
+    <div class="djcta-text">
+      <div class="djcta-t">DJ IENEKO</div>
+      <div class="djcta-sub">▶ SPINNING RECORDS</div>
+      <p class="djp">DJ IENEKO がこのまちの猫たちにチョイスしたミュージックをMIXします。<span style="white-space:nowrap">（要Spotifyアカウント）</span></p>
+      <span class="dj-launch">▶ 再生する</span>
     </div>
   </div>
 </section>
@@ -1060,7 +1071,7 @@ function songBlockHTML(t){
   h+='<div class="songjacket"><img class="songcover" style="display:none" data-pending="1" data-title="'+ae(title)+'" data-artist="'+ae(artist)+'" alt=""><div class="songjph">🎵</div></div>';
   h+='<div class="songinfo"><div class="songttl">'+esc(title)+'</div>'+(artist?'<div class="songart">'+esc(artist)+'</div>':'<div class="songart"></div>');
   h+=(yt?'<a class="songlink" href="'+ae(yt)+'" target="_blank" rel="noopener">▶ YouTubeで聴く</a>':'');
-  h+=' <button class="dj-mini" onclick="openDJ('+((t&&t.no)||0)+')">🎧 この曲からDJ</button>';
+  h+=' <button class="dj-mini" onclick="openDJ('+((t&&t.no)||0)+')">'+DJ_SPOT+'この曲からDJ</button>';
   if(typeof SONG_BY_NO!=='undefined' && t && SONG_BY_NO[t.no] && SONG_BY_NO[t.no].sub){h+='<div style="font-size:.72rem;color:#c0392b;margin-top:4px">※Spotifyでは「'+esc(SONG_BY_NO[t.no].title)+'」で代用</div>';}
   h+='</div></div></div>';
   return h;
@@ -1796,8 +1807,8 @@ loadMeeting();checkApi();
 <div class="modal" id="djmodal" onclick="if(event.target===this)closeDJ()"><div class="dwrap">
   <button class="dx" onclick="closeDJ()">×</button>
   <div class="dj-head" id="dj-head"><div class="djcat-mini" id="djcat-mini"></div><div>
-     <div class="dj-title">🎧 DJ家猫 — Drop the beat!</div>
-     <div style="font-size:.82rem;color:#777;margin:0">家猫たちのテーマソングを、クロスフェードで繋ぐオートMIX🐾</div>
+     <div class="dj-title">DJ IENEKO <span style="color:#B8763E">Spinning records</span></div>
+     <div style="font-size:.82rem;color:#777;margin:0">DJ IENEKO がこのまちの猫たちにチョイスしたミュージックをMIX🐾（要Spotifyアカウント）</div>
   </div></div>
   <div id="dj-embed-wrap">
     <div class="deck" id="deck-a"><div id="dj-embed-a"></div></div>
@@ -1871,6 +1882,7 @@ SONGS.forEach(function(s){SONG_BY_NO[s.no]=s;});
 var DJ={queue:[],idx:0,shuffle:false,active:'a',apiLoaded:false,_loading:false,_cbs:[],
   playing:false,crossing:false,wasPlaying:false,userPaused:false,OVERLAP:6000,
   decks:{a:{ctrl:null,ready:false,pend:false},b:{ctrl:null,ready:false,pend:false}}};
+var DJ_SPOT='<svg width="13" height="13" viewBox="0 0 24 24" style="vertical-align:-2px;margin-right:4px"><circle cx="12" cy="12" r="12" fill="#1DB954"/><path d="M6 9.4c4-1 8.2-.7 11.2 1.1M6.8 13c3-.8 6.4-.4 8.8 1M7.6 16.3c2.3-.6 4.7-.3 6.7.9" stroke="#fff" stroke-width="1.7" fill="none" stroke-linecap="round"/></svg>';
 function djEsc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function djBuildQueue(){DJ.queue=SONGS.slice();}
 function djShuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
@@ -1963,7 +1975,7 @@ function renderDJList(){var el=document.getElementById('dj-queue');if(!el)return
 function djProgress(pos,dur){var b=document.getElementById('dj-bar');if(b&&dur>0){b.style.width=Math.min(100,pos/dur*100)+'%';}}
 function updatePlayBtn(){var btn=document.getElementById('dj-play');if(btn)btn.textContent=DJ.playing?'⏸':'▶';var hd=document.getElementById('dj-head');if(hd)hd.classList.toggle('playing',DJ.playing);}
 window.openDJ=openDJ;window.closeDJ=closeDJ;window.djPrev=djPrev;window.djNext=djNext;window.djToggle=djToggle;window.djPlayIdx=djPlayIdx;window.djToggleShuffle=djToggleShuffle;
-var DJ_CAT_SVG='<svg viewBox="0 0 220 200" xmlns="http://www.w3.org/2000/svg"><path d="M50,60 Q46,18 84,48 Q74,64 50,60 Z" fill="#2b4f96"/><path d="M170,60 Q174,18 136,48 Q146,64 170,60 Z" fill="#2b4f96"/><path d="M58,54 Q57,30 78,49 Q69,58 58,54 Z" fill="#ffc7d3"/><path d="M162,54 Q163,30 142,49 Q151,58 162,54 Z" fill="#ffc7d3"/><ellipse cx="110" cy="114" rx="86" ry="72" fill="#fbf1de" stroke="#2b4f96" stroke-width="3.5"/><path d="M30,94 Q110,10 190,94" fill="none" stroke="#2b4f96" stroke-width="8" stroke-linecap="round"/><rect x="15" y="94" width="26" height="46" rx="13" fill="#2b4f96"/><rect x="21" y="104" width="14" height="26" rx="7" fill="#ffb3c1"/><rect x="179" y="94" width="26" height="46" rx="13" fill="#2b4f96"/><rect x="185" y="104" width="14" height="26" rx="7" fill="#ffb3c1"/><ellipse cx="56" cy="138" rx="13" ry="7.5" fill="#ff9db0" opacity="0.5"/><ellipse cx="164" cy="138" rx="13" ry="7.5" fill="#ff9db0" opacity="0.5"/><g class="rec-eye"><circle cx="82" cy="112" r="24" fill="#23252e" stroke="#14151b" stroke-width="1.5"/><circle cx="82" cy="112" r="18" fill="none" stroke="#40434f" stroke-width="1"/><circle cx="82" cy="112" r="13" fill="none" stroke="#3a3d47" stroke-width="1"/><rect x="81" y="90" width="2" height="8" rx="1" fill="#7d818f"/><circle cx="82" cy="112" r="7" fill="#B8763E"/><circle cx="82" cy="112" r="2" fill="#fbf1de"/></g><circle cx="74" cy="103" r="6.5" fill="#ffffff"/><circle cx="89" cy="118" r="2.8" fill="#ffffff" opacity="0.9"/><g class="rec-eye"><circle cx="138" cy="112" r="24" fill="#23252e" stroke="#14151b" stroke-width="1.5"/><circle cx="138" cy="112" r="18" fill="none" stroke="#40434f" stroke-width="1"/><circle cx="138" cy="112" r="13" fill="none" stroke="#3a3d47" stroke-width="1"/><rect x="137" y="90" width="2" height="8" rx="1" fill="#7d818f"/><circle cx="138" cy="112" r="7" fill="#B8763E"/><circle cx="138" cy="112" r="2" fill="#fbf1de"/></g><circle cx="130" cy="103" r="6.5" fill="#ffffff"/><circle cx="145" cy="118" r="2.8" fill="#ffffff" opacity="0.9"/><path d="M105,134 L115,134 L110,140 Z" fill="#f2889e" stroke="#d76c86" stroke-width="1" stroke-linejoin="round"/><path d="M110,140 L110,144" stroke="#2b4f96" stroke-width="2.5" stroke-linecap="round"/><path d="M110,144 Q103,151 97,145" fill="none" stroke="#2b4f96" stroke-width="2.5" stroke-linecap="round"/><path d="M110,144 Q117,151 123,145" fill="none" stroke="#2b4f96" stroke-width="2.5" stroke-linecap="round"/><g stroke="#2b4f96" stroke-width="2" stroke-linecap="round" opacity="0.4"><path d="M90,136 q-18,-2 -30,-6"/><path d="M90,143 q-18,2 -30,5"/><path d="M130,136 q18,-2 30,-6"/><path d="M130,143 q18,2 30,5"/></g><g fill="#FFD98A"><path d="M40,44 l1.8,4.6 4.6,1.8 -4.6,1.8 -1.8,4.6 -1.8,-4.6 -4.6,-1.8 4.6,-1.8 Z"/><path d="M182,48 l1.4,3.6 3.6,1.4 -3.6,1.4 -1.4,3.6 -1.4,-3.6 -3.6,-1.4 3.6,-1.4 Z"/></g></svg>';
+var DJ_CAT_SVG='<svg class="djeneko" viewBox="0 0 240 200" xmlns="http://www.w3.org/2000/svg"><path d="M182,116 q34,6 30,46" fill="none" stroke="#9aa2ad" stroke-width="9" stroke-linecap="round"/><path d="M78,44 L86,12 L108,42 Z" fill="#aeb6c1" stroke="#2b2b2b" stroke-width="3" stroke-linejoin="round"/><path d="M162,44 L154,12 L132,42 Z" fill="#aeb6c1" stroke="#2b2b2b" stroke-width="3" stroke-linejoin="round"/><path d="M84,40 L89,20 L102,40 Z" fill="#e79aa0"/><path d="M156,40 L151,20 L138,40 Z" fill="#e79aa0"/><circle cx="120" cy="72" r="46" fill="#aeb6c1" stroke="#2b2b2b" stroke-width="4"/><path d="M74,60 Q120,4 166,60" fill="none" stroke="#2b2b2b" stroke-width="8" stroke-linecap="round"/><rect x="58" y="56" width="22" height="36" rx="10" fill="#2b2b2b"/><rect x="64" y="65" width="10" height="18" rx="5" fill="#ff7aa8"/><rect x="160" y="56" width="22" height="36" rx="10" fill="#2b2b2b"/><rect x="166" y="65" width="10" height="18" rx="5" fill="#ff7aa8"/><ellipse cx="104" cy="70" rx="10" ry="13" fill="#fff" stroke="#2b2b2b" stroke-width="2.5"/><ellipse cx="136" cy="70" rx="10" ry="13" fill="#fff" stroke="#2b2b2b" stroke-width="2.5"/><circle cx="105" cy="72" r="4.6" fill="#1c1c1c"/><circle cx="137" cy="72" r="4.6" fill="#1c1c1c"/><circle cx="102" cy="68" r="1.7" fill="#fff"/><circle cx="134" cy="68" r="1.7" fill="#fff"/><path d="M116,84 L124,84 L120,90 Z" fill="#e79aa0" stroke="#2b2b2b" stroke-width="1.5" stroke-linejoin="round"/><path d="M120,90 q-7,7 -14,3 M120,90 q7,7 14,3" fill="none" stroke="#2b2b2b" stroke-width="2" stroke-linecap="round"/><g stroke="#2b2b2b" stroke-width="1.5" stroke-linecap="round" opacity="0.7"><path d="M92,82 h-18"/><path d="M92,90 h-17"/><path d="M148,82 h18"/><path d="M148,90 h17"/></g><rect x="8" y="150" width="224" height="46" rx="7" fill="#26293a"/><rect x="8" y="150" width="224" height="8" rx="4" fill="#3a3f57"/><g class="rec-eye"><circle cx="56" cy="173" r="22" fill="#1e1e26"/><circle cx="56" cy="173" r="15" fill="none" stroke="#3a3d47" stroke-width="1"/><rect x="55" y="153" width="2" height="8" fill="#6d6d6d"/><circle cx="56" cy="173" r="6" fill="#B8763E"/><circle cx="56" cy="173" r="1.6" fill="#e9e2d0"/></g><line x1="72" y1="157" x2="60" y2="171" stroke="#c9ccd6" stroke-width="2" stroke-linecap="round"/><g class="rec-eye"><circle cx="184" cy="173" r="22" fill="#1e1e26"/><circle cx="184" cy="173" r="15" fill="none" stroke="#3a3d47" stroke-width="1"/><rect x="183" y="153" width="2" height="8" fill="#6d6d6d"/><circle cx="184" cy="173" r="6" fill="#B8763E"/><circle cx="184" cy="173" r="1.6" fill="#e9e2d0"/></g><line x1="200" y1="157" x2="188" y2="171" stroke="#c9ccd6" stroke-width="2" stroke-linecap="round"/><rect x="104" y="158" width="32" height="30" rx="3" fill="#3a3f57"/><circle cx="112" cy="167" r="2.6" fill="#ff7aa8"/><circle cx="128" cy="167" r="2.6" fill="#7ad0ff"/><rect x="110" y="176" width="20" height="4" rx="2" fill="#8a90a6"/><ellipse cx="92" cy="150" rx="10" ry="7" fill="#aeb6c1" stroke="#2b2b2b" stroke-width="2"/><ellipse cx="148" cy="150" rx="10" ry="7" fill="#aeb6c1" stroke="#2b2b2b" stroke-width="2"/></svg>';
 (function(){var a=document.getElementById('djcat-art');if(a)a.innerHTML=DJ_CAT_SVG;var m=document.getElementById('djcat-mini');if(m)m.innerHTML=DJ_CAT_SVG;})();
 djBuildQueue();
 </script>
