@@ -69,9 +69,6 @@ button.pri{background:var(--navy);color:#fff}
 .dj-mini{font-size:.72rem;padding:3px 9px;margin-left:6px;border-radius:6px;border:1.5px solid #7A3E5F;background:#fff;color:#7A3E5F;cursor:pointer;font-weight:700;white-space:nowrap}
 #djmodal .dinner{max-width:540px}
 .dj-head{display:flex;align-items:center;gap:12px;margin:2px 30px 12px 0}
-.dj-head .disc{width:46px;height:46px;flex:0 0 46px;border-radius:50%;background:repeating-radial-gradient(circle at 50% 50%,#2b2b2b 0 2px,#151515 2px 4px);border:3px solid #666;position:relative;animation:djspin 3s linear infinite;animation-play-state:paused}
-.dj-head .disc::after{content:"";position:absolute;inset:39%;background:#B8763E;border-radius:50%}
-.dj-head.playing .disc{animation-play-state:running}
 @keyframes djspin{to{transform:rotate(360deg)}}
 .dj-title{font-weight:800;color:#7A3E5F;font-size:1.1rem;line-height:1.2}
 .dj-now{background:#faf5f0;border:1px solid #eadfce;border-radius:10px;padding:10px 12px;margin-bottom:8px}
@@ -94,7 +91,11 @@ button.pri{background:var(--navy);color:#fff}
 .dj-item .qcat{color:#1F3864;font-weight:700}
 .dj-item .qsp{margin-left:auto;color:#1DB954;text-decoration:none;font-weight:800;font-size:1rem;flex:0 0 auto}
 .dj-note{font-size:.75rem;color:#888;margin-top:9px;line-height:1.55}
-#dj-embed-wrap{margin-bottom:8px;min-height:82px}
+/* 2デッキ・クロスフェード */
+#dj-embed-wrap{position:relative;min-height:84px;margin-bottom:8px}
+.deck{position:absolute;left:0;right:0;top:0;transition:opacity .8s ease}
+.deck.hidden{opacity:0;pointer-events:none}
+.dj-mixbadge{display:inline-block;font-size:.68rem;font-weight:800;color:#fff;background:linear-gradient(90deg,#7A3E5F,#B8763E);border-radius:999px;padding:2px 9px;margin-left:8px;vertical-align:middle}
 /* 猫の目＝回るレコード */
 .rec-eye{transform-box:fill-box;transform-origin:center;animation:djspin 4.5s linear infinite}
 .dj-head.playing .rec-eye,.djcta:hover .rec-eye{animation-duration:1.05s}
@@ -173,7 +174,7 @@ button.pri{background:var(--navy);color:#fff}
     <div class="djcta-art" id="djcat-art"></div>
     <div>
       <div class="djcta-t">Drop the beat! 🐾</div>
-      <p class="note">家猫たちが選んだ全46曲のテーマソングを、<b>猫の目＝回るレコード</b>で自動ミックス連続再生。タップでDJスタート🎶</p>
+      <p class="note">家猫たちが選んだ全46曲のテーマソングを、<b>猫の目＝回るレコード</b>でオートMIX（クロスフェード）連続再生。タップでDJスタート🎶</p>
       <span class="dj-launch btn">▶ DJモードを開く</span>
     </div>
   </div>
@@ -189,9 +190,12 @@ button.pri{background:var(--navy);color:#fff}
   <button class="dx" onclick="closeDJ()">×</button>
   <div class="dj-head" id="dj-head"><div class="djcat-mini" id="djcat-mini"></div><div>
      <div class="dj-title">🎧 DJ家猫 — Drop the beat!</div>
-     <div class="note" style="margin:0">家猫たちが選んだテーマソングを、自動ミックスで連続再生🐾</div>
+     <div class="note" style="margin:0">家猫たちのテーマソングを、クロスフェードで繋ぐオートMIX🐾</div>
   </div></div>
-  <div id="dj-embed-wrap"><div id="dj-embed"></div></div>
+  <div id="dj-embed-wrap">
+    <div class="deck" id="deck-a"><div id="dj-embed-a"></div></div>
+    <div class="deck hidden" id="deck-b"><div id="dj-embed-b"></div></div>
+  </div>
   <div class="dj-now" id="dj-now"></div>
   <div class="dj-ctrls">
     <button onclick="djPrev()" title="前の曲">⏮</button>
@@ -200,7 +204,7 @@ button.pri{background:var(--navy);color:#fff}
     <button id="dj-shuf" onclick="djToggleShuffle()" title="シャッフル">🔀</button>
   </div>
   <div class="dj-queue" id="dj-queue"></div>
-  <div class="dj-note">※ このプレイリストは全曲を自動で繋いで流します（オートミックス／曲が終わると自動で次へ）。<br>※ Spotifyにログインしていない場合は各曲<b>30秒のプレビュー</b>再生です。フル尺で聴くには、同じブラウザで <a href="https://open.spotify.com" target="_blank" rel="noopener">Spotifyにログイン</a> してください。各曲の <span style="color:#1DB954;font-weight:800">↗</span> からSpotifyで開けます。</div>
+  <div class="dj-note">🎚️ 曲の終わり際に次の曲を重ねて繋ぐ<b>オートMIX（クロスフェード）</b>で連続再生します。<br>※ Spotify未ログイン時は各曲<b>30秒プレビュー</b>。フル尺＆滑らかな繋ぎには、同じブラウザで <a href="https://open.spotify.com" target="_blank" rel="noopener">Spotifyにログイン</a> してください（Spotifyの仕様上、音量フェードは非対応のため2曲を短く重ねて繋ぎます）。各曲の <span style="color:#1DB954;font-weight:800">↗</span> でSpotifyを開けます。</div>
 </div></div>
 
 
@@ -599,7 +603,7 @@ reloadAll();
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 
 <script>
-/* ===== 🎧 DJ家猫 Drop the beat!（Spotify iframe API 自動ミックス） ===== */
+/* ===== 🎧 DJ家猫 Drop the beat!（Spotify 2デッキ・オートMIX クロスフェード） ===== */
 var SONGS=[
 {"no": 1, "cat": "実家ぬくぬく猫", "type": "パラサイト・シングル(親密圏依存)", "title": "Mother - John Lennon", "sid": "43Ud1IajwtBvw6ONj6aK2Q", "yt": "https://www.youtube.com/watch?v=bSRJJNXxvPo"},
 {"no": 2, "cat": "次の一歩まち猫", "type": "ニート(NEET)", "title": "Waiting for the Day - George Michael", "sid": "44LRgmkoGQUIlLvHAOvmKZ", "yt": "https://www.youtube.com/watch?v=JT1GGUbAvW0"},
@@ -651,59 +655,92 @@ var SONGS=[
 
 var SONG_BY_NAME={}, SONG_BY_CAT={};
 SONGS.forEach(function(s){SONG_BY_NAME[s.type]=s; SONG_BY_CAT[s.cat]=s;});
-var DJ={queue:[],idx:0,ctrl:null,ready:false,playing:false,advancing:false,shuffle:false,apiLoaded:false,pendingPlay:false};
+var DJ={queue:[],idx:0,shuffle:false,active:'a',apiLoaded:false,_loading:false,_cbs:[],
+  playing:false,crossing:false,wasPlaying:false,userPaused:false,OVERLAP:6000,
+  decks:{a:{ctrl:null,ready:false,pend:false},b:{ctrl:null,ready:false,pend:false}}};
 function djEsc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function djBuildQueue(){DJ.queue=SONGS.slice();}
 function djShuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+function djOther(k){return k==='a'?'b':'a';}
+function djSid(i){var s=DJ.queue[((i%DJ.queue.length)+DJ.queue.length)%DJ.queue.length];return s?s.sid:SONGS[0].sid;}
 function openDJ(startNo){
   if(!DJ.queue.length){djBuildQueue();if(DJ.shuffle)djShuffle(DJ.queue);}
   if(startNo!=null){var k=DJ.queue.findIndex(function(s){return s.no===startNo;});if(k>=0)DJ.idx=k;}
   document.getElementById('djmodal').classList.add('on');
   var sf=document.getElementById('dj-shuf');if(sf)sf.classList.toggle('act',DJ.shuffle);
-  renderDJList();updateNowPlaying();
-  loadSpotifyApi(function(){djLoadCurrent(true);});
+  showDeck(DJ.active);renderDJList();updateNowPlaying();
+  DJ.userPaused=false;
+  loadSpotifyApi(function(){
+    var d=DJ.decks[DJ.active];if(!d.ctrl)return;
+    if(d.ready){try{d.ctrl.loadUri('spotify:track:'+djSid(DJ.idx));d.ctrl.play();}catch(e){}}
+    else{d.pend=true;}
+  });
 }
-function closeDJ(){document.getElementById('djmodal').classList.remove('on');if(DJ.ctrl){try{DJ.ctrl.pause();}catch(e){}}DJ.playing=false;updatePlayBtn();}
+function closeDJ(){
+  document.getElementById('djmodal').classList.remove('on');
+  ['a','b'].forEach(function(k){if(DJ.decks[k].ctrl){try{DJ.decks[k].ctrl.pause();}catch(e){}}});
+  DJ.playing=false;updatePlayBtn();
+}
 function loadSpotifyApi(cb){
   if(DJ.apiLoaded){cb&&cb();return;}
   if(DJ._loading){DJ._cbs.push(cb);return;}
   DJ._loading=true;DJ._cbs=[cb];
-  window.onSpotifyIframeApiReady=function(IFrameAPI){
-    var el=document.getElementById('dj-embed');
-    var first=DJ.queue[DJ.idx]||SONGS[0];
-    IFrameAPI.createController(el,{uri:'spotify:track:'+first.sid,width:'100%',height:'80'},function(ctrl){
-      DJ.ctrl=ctrl;DJ.apiLoaded=true;
-      ctrl.addListener('ready',function(){DJ.ready=true;if(DJ.pendingPlay){DJ.pendingPlay=false;try{ctrl.play();}catch(e){}}});
-      ctrl.addListener('playback_update',function(e){
-        var d=e.data||{};djProgress(d.position||0,d.duration||0);
-        DJ.playing=!d.isPaused;updatePlayBtn();
-        if(d.duration>0&&d.position>0&&d.position>=d.duration-1200&&!DJ.advancing){
-          DJ.advancing=true;setTimeout(function(){DJ.advancing=false;djNext();},250);
-        }
-      });
-      DJ._cbs.forEach(function(f){f&&f();});DJ._cbs=[];
-    });
+  window.onSpotifyIframeApiReady=function(API){
+    var made=0;function done(){made++;if(made>=2){DJ.apiLoaded=true;DJ._cbs.forEach(function(f){f&&f();});DJ._cbs=[];}}
+    createDeck(API,'a',djSid(DJ.idx),done);
+    createDeck(API,'b',djSid(DJ.idx+1),done);
   };
   var sc=document.createElement('script');sc.src='https://open.spotify.com/embed/iframe-api/v1';sc.async=true;document.head.appendChild(sc);
 }
-function djLoadCurrent(autoplay){
-  var s=DJ.queue[DJ.idx];if(!s||!DJ.ctrl){updateNowPlaying();renderDJList();return;}
-  if(DJ.ready){try{DJ.ctrl.loadUri('spotify:track:'+s.sid);if(autoplay)DJ.ctrl.play();}catch(e){}}
-  else{DJ.pendingPlay=!!autoplay;}
-  updateNowPlaying();renderDJList();
+function createDeck(API,key,sid,done){
+  var el=document.getElementById('dj-embed-'+key);if(!el){done();return;}
+  API.createController(el,{uri:'spotify:track:'+sid,width:'100%',height:'80'},function(ctrl){
+    DJ.decks[key].ctrl=ctrl;
+    ctrl.addListener('ready',function(){DJ.decks[key].ready=true;if(DJ.decks[key].pend){DJ.decks[key].pend=false;try{ctrl.play();}catch(e){}}});
+    ctrl.addListener('playback_update',function(e){onUpdate(key,e.data||{});});
+    done();
+  });
 }
-function djNext(){DJ.idx=(DJ.idx+1)%DJ.queue.length;djLoadCurrent(true);}
-function djPrev(){DJ.idx=(DJ.idx-1+DJ.queue.length)%DJ.queue.length;djLoadCurrent(true);}
-function djPlayIdx(i){DJ.idx=i;djLoadCurrent(true);}
-function djToggle(){if(DJ.ctrl){try{DJ.ctrl.togglePlay();}catch(e){}}}
+function onUpdate(key,d){
+  if(key!==DJ.active)return;
+  DJ.playing=!d.isPaused;updatePlayBtn();
+  djProgress(d.position||0,d.duration||0);
+  if(DJ.queue.length>1 && !DJ.crossing){
+    if(d.duration>0 && d.position>0 && d.position>=d.duration-DJ.OVERLAP){
+      djTransition(DJ.idx+1, DJ.OVERLAP);           // フル尺: 終わり際にクロスフェード
+    } else if(DJ.wasPlaying && d.isPaused && !DJ.userPaused && (d.position===0 || (d.duration>0 && d.position>=d.duration-1500))){
+      djTransition(DJ.idx+1, 800);                  // プレビュー終了/曲切れ: 即つなぐ
+    }
+  }
+  DJ.wasPlaying=!d.isPaused;
+}
+function djTransition(nextIdxRaw, overlap){
+  if(DJ.crossing || DJ.queue.length<1)return;
+  var nextIdx=((nextIdxRaw%DJ.queue.length)+DJ.queue.length)%DJ.queue.length;
+  DJ.crossing=true;DJ.userPaused=false;
+  var other=djOther(DJ.active);var od=DJ.decks[other];
+  if(od&&od.ctrl){try{od.ctrl.loadUri('spotify:track:'+djSid(nextIdx));if(od.ready){od.ctrl.play();}else{od.pend=true;}}catch(e){}}
+  showDeck(other);updateNowPlaying(nextIdx);
+  setTimeout(function(){
+    var old=DJ.active;if(DJ.decks[old].ctrl){try{DJ.decks[old].ctrl.pause();}catch(e){}}
+    DJ.active=other;DJ.idx=nextIdx;DJ.crossing=false;DJ.wasPlaying=true;
+    updateNowPlaying();renderDJList();
+  }, Math.max(250,overlap));
+}
+function showDeck(key){var a=document.getElementById('deck-a'),b=document.getElementById('deck-b');if(a)a.classList.toggle('hidden',key!=='a');if(b)b.classList.toggle('hidden',key!=='b');}
+function djNext(){djTransition(DJ.idx+1,800);}
+function djPrev(){djTransition(DJ.idx-1,800);}
+function djPlayIdx(i){if(i!==DJ.idx)djTransition(i,800);}
+function djToggle(){var d=DJ.decks[DJ.active];if(!d.ctrl)return;DJ.userPaused=DJ.playing;try{d.ctrl.togglePlay();}catch(e){}}
 function djToggleShuffle(){
-  var cur=DJ.queue[DJ.idx];DJ.shuffle=!DJ.shuffle;djBuildQueue();if(DJ.shuffle)djShuffle(DJ.queue);
+  if(DJ.crossing)return;var cur=DJ.queue[DJ.idx];DJ.shuffle=!DJ.shuffle;djBuildQueue();if(DJ.shuffle)djShuffle(DJ.queue);
   var k=DJ.queue.findIndex(function(s){return cur&&s.no===cur.no;});DJ.idx=k>=0?k:0;
   document.getElementById('dj-shuf').classList.toggle('act',DJ.shuffle);renderDJList();updateNowPlaying();
 }
-function updateNowPlaying(){var s=DJ.queue[DJ.idx];if(!s)return;var el=document.getElementById('dj-now');if(!el)return;
-  var subN=s.sub?'<div style="color:#c0392b;font-size:.74rem;margin-top:2px">※「'+djEsc(s.sub)+'」はSpotify未収録のため、同アーティストの代表曲で代用':'';
-  el.innerHTML='<div class="nptype">'+djEsc(s.type)+'</div><div class="npcat">'+djEsc(s.cat)+'</div><div class="nsong">🎵 '+djEsc(s.title)+'</div>'+subN+'<div class="dj-prog"><div id="dj-bar"></div></div>';
+function updateNowPlaying(optIdx){var i=(optIdx!=null)?optIdx:DJ.idx;var s=DJ.queue[i];if(!s)return;var el=document.getElementById('dj-now');if(!el)return;
+  var subN=s.sub?'<div style="color:#c0392b;font-size:.74rem;margin-top:2px">※「'+djEsc(s.sub)+'」はSpotify未収録のため、同アーティストの代表曲で代用</div>':'';
+  var mix=DJ.crossing?'<span class="dj-mixbadge">🎚️ MIX中…</span>':'';
+  el.innerHTML='<div class="nptype">'+djEsc(s.type)+'</div><div class="npcat">'+djEsc(s.cat)+mix+'</div><div class="nsong">🎵 '+djEsc(s.title)+'</div>'+subN+'<div class="dj-prog"><div id="dj-bar"></div></div>';
 }
 function renderDJList(){var el=document.getElementById('dj-queue');if(!el)return;var h='';
   DJ.queue.forEach(function(s,i){var sb=s.sub?' <span style="color:#c0392b;font-size:.68rem;font-weight:700">※代用</span>':'';h+='<div class="dj-item'+(i===DJ.idx?' cur':'')+'" onclick="djPlayIdx('+i+')"><span class="qn">'+(i+1)+'</span><span><span class="qcat">'+djEsc(s.cat)+'</span><br><span class="qtitle">'+djEsc(s.title)+'</span>'+sb+'</span><a class="qsp" href="https://open.spotify.com/track/'+s.sid+'" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="Spotifyで開く">↗</a></div>';});
