@@ -1879,12 +1879,23 @@ var SONGS=[
 
 var SONG_BY_NO={};
 SONGS.forEach(function(s){SONG_BY_NO[s.no]=s;});
+var SPOTIFY_BY_NO={};SONGS.forEach(function(s){SPOTIFY_BY_NO[s.no]={sid:s.sid,sub:s.sub};});
 var DJ={queue:[],idx:0,shuffle:false,active:'a',apiLoaded:false,_loading:false,_cbs:[],
   playing:false,crossing:false,wasPlaying:false,userPaused:false,OVERLAP:6000,
   decks:{a:{ctrl:null,ready:false,pend:false},b:{ctrl:null,ready:false,pend:false}}};
 var DJ_SPOT='<svg width="13" height="13" viewBox="0 0 24 24" style="vertical-align:-2px;margin-right:4px"><circle cx="12" cy="12" r="12" fill="#1DB954"/><path d="M6 9.4c4-1 8.2-.7 11.2 1.1M6.8 13c3-.8 6.4-.4 8.8 1M7.6 16.3c2.3-.6 4.7-.3 6.7.9" stroke="#fff" stroke-width="1.7" fill="none" stroke-linecap="round"/></svg>';
 function djEsc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-function djBuildQueue(){DJ.queue=SONGS.slice();}
+function djLiveTypes(){
+  var arr=null;
+  if(typeof TYPES!=='undefined'&&TYPES&&TYPES.length)arr=TYPES;
+  else if(typeof TYByName!=='undefined'){arr=[];for(var k in TYByName)arr.push(TYByName[k]);}
+  if(!arr)return null;
+  var out=[];
+  arr.forEach(function(t){var no=parseInt(t.no)||0;var title=((t.song||'')+'').trim();var sp=SPOTIFY_BY_NO[no];if(!title||!sp)return;out.push({no:no,cat:(t.catname||''),type:(t.name||t.typeName||''),title:title,sid:sp.sid,yt:(t.ytlink||''),sub:sp.sub});});
+  out.sort(function(a,b){return a.no-b.no;});
+  return out.length?out:null;
+}
+function djBuildQueue(){var live=djLiveTypes();DJ.queue=(live&&live.length)?live:SONGS.slice();}
 function djShuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
 function djOther(k){return k==='a'?'b':'a';}
 function djSid(i){var s=DJ.queue[((i%DJ.queue.length)+DJ.queue.length)%DJ.queue.length];return s?s.sid:SONGS[0].sid;}

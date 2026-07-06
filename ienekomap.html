@@ -64,63 +64,19 @@ button.pri{background:var(--navy);color:#fff}
 .kv b{color:var(--navy)}
 .badge{display:inline-block;color:#fff;border-radius:999px;font-size:.72rem;padding:2px 10px;font-weight:700}
 
-/* ─── 🎧 DJ家猫 Drop the beat! ─── */
-.dj-launch{background:linear-gradient(90deg,#7A3E5F,#B8763E)!important;color:#fff!important;border:none!important;box-shadow:0 3px 10px rgba(122,62,95,.35)}
-.dj-mini{font-size:.72rem;padding:3px 9px;margin-left:6px;border-radius:6px;border:1.5px solid #7A3E5F;background:#fff;color:#7A3E5F;cursor:pointer;font-weight:700;white-space:nowrap}
-#djmodal .dinner{max-width:540px}
-.dj-head{display:flex;align-items:center;gap:12px;margin:2px 30px 12px 0}
-@keyframes djspin{to{transform:rotate(360deg)}}
-.dj-title{font-weight:800;color:#7A3E5F;font-size:1.1rem;line-height:1.2}
-.dj-now{background:#faf5f0;border:1px solid #eadfce;border-radius:10px;padding:10px 12px;margin-bottom:8px}
-.dj-now .nptype{font-size:.74rem;color:#999}
-.dj-now .npcat{font-weight:800;color:#1F3864;font-size:1.02rem}
-.dj-now .nsong{color:#7A3E5F;font-weight:700;margin-top:2px}
-.dj-prog{height:6px;background:#e6ddcf;border-radius:4px;overflow:hidden;margin-top:9px}
-.dj-prog>div{height:100%;width:0;background:linear-gradient(90deg,#7A3E5F,#B8763E)}
-.dj-ctrls{display:flex;gap:10px;align-items:center;justify-content:center;margin:12px 0}
-.dj-ctrls button{border:1.5px solid #7A3E5F;background:#fff;color:#7A3E5F;border-radius:999px;width:46px;height:46px;font-size:1.05rem;cursor:pointer;font-weight:800;display:flex;align-items:center;justify-content:center}
-.dj-ctrls button.big{width:58px;height:58px;background:#7A3E5F;color:#fff;font-size:1.4rem}
-.dj-ctrls button.act{background:#B8763E;color:#fff;border-color:#B8763E}
-.dj-queue{max-height:236px;overflow:auto;border:1px solid #eadfce;border-radius:10px;margin-top:6px}
-.dj-item{display:flex;gap:9px;align-items:center;padding:7px 10px;border-bottom:1px solid #f2ebdf;cursor:pointer;font-size:.85rem}
-.dj-item:last-child{border-bottom:none}
-.dj-item:hover{background:#faf5f0}
-.dj-item.cur{background:#f3e6ee}
-.dj-item .qn{color:#b7ad9c;width:22px;text-align:right;flex:0 0 22px;font-variant-numeric:tabular-nums}
-.dj-item .qtitle{color:#7A3E5F;font-weight:700}
-.dj-item .qcat{color:#1F3864;font-weight:700}
-.dj-item .qsp{margin-left:auto;color:#1DB954;text-decoration:none;font-weight:800;font-size:1rem;flex:0 0 auto}
-.dj-note{font-size:.75rem;color:#888;margin-top:9px;line-height:1.55}
-/* 2デッキ・クロスフェード */
-#dj-embed-wrap{position:relative;min-height:84px;margin-bottom:8px}
-.deck{position:absolute;left:0;right:0;top:0;transition:opacity .8s ease}
-.deck.hidden{opacity:0;pointer-events:none}
-.dj-mixbadge{display:inline-block;font-size:.68rem;font-weight:800;color:#fff;background:linear-gradient(90deg,#7A3E5F,#B8763E);border-radius:999px;padding:2px 9px;margin-left:8px;vertical-align:middle}
-/* 猫の目＝回るレコード */
-.rec-eye{transform-box:fill-box;transform-origin:center;animation:djspin 4.5s linear infinite}
-.dj-head.playing .rec-eye,.djcta:hover .rec-eye{animation-duration:1.05s}
-.djcat-mini{width:62px;flex:0 0 62px}
-.djcat-mini svg{width:62px;height:auto;display:block}
-.djsec{margin-top:24px}
-.djcta{display:flex;gap:16px;align-items:center;background:linear-gradient(135deg,#1F3864,#4a2540);border-radius:16px;padding:16px 18px;cursor:pointer;color:#fff;box-shadow:0 6px 18px rgba(31,56,100,.28);transition:transform .12s}
-.djcta:hover{transform:translateY(-2px)}
-.djcta-art{width:152px;flex:0 0 152px}
-.djcta-art svg{width:152px;height:auto;display:block}
-.djcta-t{font-weight:800;font-size:1.35rem;color:#FFD98A;letter-spacing:.02em;line-height:1.2}
-.djcta .note{color:#e7dcc8;margin:6px 0 0}
-.djcta .dj-launch{margin-top:10px;pointer-events:none;display:inline-block}
-@media(max-width:520px){.djcta{flex-direction:column;text-align:center}.djcta-art{width:132px;flex-basis:132px}}
-/* 80s ポップ看板（DJ IENEKO） */
-.djcta{position:relative;overflow:hidden;background:linear-gradient(180deg,#241a49,#3a1c63 55%,#5a1f6e)!important;border:2px solid #ff5db1;box-shadow:0 0 0 2px #2de2e6 inset,0 8px 24px rgba(20,10,40,.45),0 0 18px rgba(255,93,177,.4);align-items:center}
-.djcta::before{content:"";position:absolute;left:-10%;right:-10%;bottom:0;height:44%;background:repeating-linear-gradient(transparent 0 15px,rgba(45,226,230,.4) 15px 16px);transform:perspective(120px) rotateX(55deg);transform-origin:bottom;opacity:.5;pointer-events:none}
-.djcta::after{content:"";position:absolute;top:-34px;right:34px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,#ffd36e,#ff6ec7 70%,transparent 72%);opacity:.6;pointer-events:none}
-.djcta-art,.djcta-text{position:relative;z-index:2}
-.djcta-t{font-weight:900;font-size:1.7rem;font-style:italic;color:#fff;letter-spacing:.04em;text-shadow:0 0 6px #ff5db1,0 0 13px #ff5db1,2px 2px 0 #2de2e6;line-height:1}
-.djcta-sub{font-weight:800;color:#2de2e6;letter-spacing:.24em;font-size:.8rem;margin-top:3px;text-shadow:0 0 6px rgba(45,226,230,.7)}
-.djcta .djp{color:#f3e3ff;margin:8px 0 0;font-size:.85rem;line-height:1.55}
-.djcta .dj-launch{margin-top:10px;pointer-events:none;display:inline-block;background:linear-gradient(90deg,#ff5db1,#ffb36e)!important;color:#2a0f3a!important;border:none;border-radius:999px;padding:8px 16px;font-weight:900}
-.djcat-mini{width:80px;flex:0 0 80px}
-
+/* おすすめソング */
+.songbox2{background:linear-gradient(135deg,#fff0f6,#fdeef8);border:1px solid #f0a8c8 !important}
+.songcap{font-size:.74rem;color:#b0286a;font-weight:800;letter-spacing:.04em;margin-bottom:6px}
+.songrow{display:flex;gap:12px;align-items:center}
+.songjacket{width:74px;height:74px;flex:0 0 74px;border-radius:9px;overflow:hidden;position:relative;box-shadow:0 2px 7px rgba(0,0,0,.18);background:#f3c9de}
+.songjacket img,.songjacket .songjph{position:absolute;inset:0;width:100%;height:100%}
+.songjacket img{object-fit:cover;z-index:2}
+.songjph{display:flex;align-items:center;justify-content:center;font-size:30px;color:#b5537f;background:linear-gradient(135deg,#ffd1e6,#f7b7d6);z-index:1}
+.songinfo{flex:1;min-width:0}
+.songttl{font-weight:700;color:#a12766;font-size:.92rem;line-height:1.3}
+.songart{color:#7a5a6a;font-size:.82rem;margin:2px 0 7px}
+.songlink{display:inline-flex;align-items:center;gap:5px;background:#ff0000;color:#fff !important;text-decoration:none;font-weight:700;font-size:.8rem;padding:5px 12px;border-radius:999px}
+.songlink:hover{background:#cc0000}
 </style></head>
 <body><div class="wrap">
 <section class="map-hero">
@@ -179,45 +135,10 @@ button.pri{background:var(--navy);color:#fff}
 <h2>🐾 みんなの家猫カード一覧</h2>
 <div class="gallery" id="gallery"></div>
 
-<section class="djsec">
-  <div class="djcta" onclick="openDJ()" title="タップでDJスタート">
-    <div class="djcta-art" id="djcat-art"></div>
-    <div class="djcta-text">
-      <div class="djcta-t">DJ IENEKO</div>
-      <div class="djcta-sub">▶ SPINNING RECORDS</div>
-      <p class="djp">DJ IENEKO がこのまちの猫たちにチョイスしたミュージックをMIXします。<span style="white-space:nowrap">（要Spotifyアカウント）</span></p>
-      <span class="dj-launch">▶ 再生する</span>
-    </div>
-  </div>
-</section>
-
-
 <p class="note" style="margin-top:14px">全員の結果は共有サーバーに自動で集約されます（この端末で生成した猫もすぐ表示）。設定は不要です。※プライバシー：座標・タイプ・時刻のみを扱い、個人を特定する情報は含みません。</p>
 </div>
 
 <div class="modal" id="modal" onclick="if(event.target===this)closeDetail()"><div class="dinner" id="dinner"></div></div>
-
-<div class="modal" id="djmodal" onclick="if(event.target===this)closeDJ()"><div class="dinner">
-  <button class="dx" onclick="closeDJ()">×</button>
-  <div class="dj-head" id="dj-head"><div class="djcat-mini" id="djcat-mini"></div><div>
-     <div class="dj-title">DJ IENEKO <span style="color:#B8763E">Spinning records</span></div>
-     <div class="note" style="margin:0">DJ IENEKO がこのまちの猫たちにチョイスしたミュージックをMIX🐾（要Spotifyアカウント）</div>
-  </div></div>
-  <div id="dj-embed-wrap">
-    <div class="deck" id="deck-a"><div id="dj-embed-a"></div></div>
-    <div class="deck hidden" id="deck-b"><div id="dj-embed-b"></div></div>
-  </div>
-  <div class="dj-now" id="dj-now"></div>
-  <div class="dj-ctrls">
-    <button onclick="djPrev()" title="前の曲">⏮</button>
-    <button class="big" id="dj-play" onclick="djToggle()" title="再生 / 一時停止">▶</button>
-    <button onclick="djNext()" title="次の曲">⏭</button>
-    <button id="dj-shuf" onclick="djToggleShuffle()" title="シャッフル">🔀</button>
-  </div>
-  <div class="dj-queue" id="dj-queue"></div>
-  <div class="dj-note">🎚️ 曲の終わり際に次の曲を重ねて繋ぐ<b>オートMIX（クロスフェード）</b>で連続再生します。<br>※ Spotify未ログイン時は各曲<b>30秒プレビュー</b>。フル尺＆滑らかな繋ぎには、同じブラウザで <a href="https://open.spotify.com" target="_blank" rel="noopener">Spotifyにログイン</a> してください（Spotifyの仕様上、音量フェードは非対応のため2曲を短く重ねて繋ぎます）。各曲の <span style="color:#1DB954;font-weight:800">↗</span> でSpotifyを開けます。</div>
-</div></div>
-
 
 <script>
 // 2軸パラメトリック猫顔ジェネレーター
@@ -478,7 +399,7 @@ root.catSVG=catSVG; root.octaRadar=octaRadar; root.KITS=KITS;
 
 </script>
 <script>
-var QUAD={"halfP": {"name": "まち猫（公）", "light": "#E2EFDA", "banner": "#5a7d3a"}, "cage": {"name": "公共のゆりかご（いえ猫）", "light": "#D9E1F2", "banner": "#3a5a8c"}, "halfV": {"name": "まち猫（私）", "light": "#FFF2CC", "banner": "#b58f2a"}, "house": {"name": "ハイテク室内飼い（いえ猫）", "light": "#FCE4D6", "banner": "#b5663a"}};
+var QUAD={"halfP": {"name": "まち猫（公）", "light": "#E2EFDA", "banner": "#5a7d3a"}, "cage": {"name": "公助のゆりかご", "light": "#D9E1F2", "banner": "#3a5a8c"}, "halfV": {"name": "まち猫（私）", "light": "#FFF2CC", "banner": "#b58f2a"}, "house": {"name": "ハイテク室内飼い", "light": "#FCE4D6", "banner": "#b5663a"}};
 var RECORDS=[];      // 表示順（新しい順）
 var TYByName={}, TYByCat={};
 const SHARED_API="https://script.google.com/macros/s/AKfycbzBaagdobV2ixb6GwVpAFDmCN4tOwmvAseuPq8OvXnZsoOcUJ5kwD8Ih11TOKjYSf8U/exec";
@@ -490,9 +411,9 @@ function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replac
 
 // ---- CSV parse（家猫_データソース.csv からチュール等を取得）----
 function parseCSV(text){var rows=[],row=[],cur='',q=false;for(var i=0;i<text.length;i++){var c=text[i];if(q){if(c==='"'){if(text[i+1]==='"'){cur+='"';i++;}else q=false;}else cur+=c;}else{if(c==='"')q=true;else if(c===','){row.push(cur);cur='';}else if(c==='\n'){row.push(cur);rows.push(row);row=[];cur='';}else if(c==='\r'){}else cur+=c;}}if(cur!==''||row.length){row.push(cur);rows.push(row);}return rows;}
-var HMAP={'no':'no','番号':'no','領域':'cluster','タイプ名':'name','名称':'name','猫ネーム':'catname','キャッチ':'catch','家猫化ポイント':'point','x':'x','y':'y','チュール':'churu','キャットタワー':'tower','改善策':'kaizen','またたび策':'kaizen','副作用':'side','出典':'source','url':'url','引用元url':'url'};
+var HMAP={'no':'no','番号':'no','領域':'cluster','タイプ名':'name','名称':'name','猫ネーム':'catname','キャッチ':'catch','家猫化ポイント':'point','x':'x','y':'y','チュール':'churu','キャットタワー':'tower','改善策':'kaizen','またたび策':'kaizen','副作用':'side','出典':'source','url':'url','引用元url':'url','おすすめ曲':'song','おすすめ曲名':'song','曲':'song','youtubeリンク':'ytlink','youtube':'ytlink','曲リンク':'ytlink','ytリンク':'ytlink'};
 function nrm(s){return (s||'').replace(/[\s　]/g,'').replace(/[（(][^）)]*[）)]/g,'').toLowerCase();}
-function loadTypes(){return fetch('家猫_データソース.csv',{cache:'no-store'}).then(function(r){return r.text();}).then(function(t){
+function loadTypes(){return fetch('家猫_データソース.csv',{cache:'no-store'}).then(function(r){if(!r.ok)throw new Error('csv-fetch-failed');return r.text();}).then(function(t){
   var rows=parseCSV(t.replace(/^﻿/,'')).filter(function(r){return r.some(function(c){return c!=='';});});
   if(rows.length<2)return; var head=rows[0].map(function(h){return HMAP[nrm(h)]||nrm(h);});
   TYByName={};TYByCat={};
@@ -503,7 +424,9 @@ function norm(o){var x=num(o.x!=null?o.x:o.X),y=num(o.y!=null?o.y:o.Y);if(x==nul
   return {x:x,y:y,typeName:o.typeName||o.nearestName||o.name||'',catname:o.catname||o.catName||'',persona:o.persona||o.quad||'',kit:o.kit||'',ts:o.ts||''};}
 function parseRemote(text){text=(text||'').replace(/^﻿/,'').trim();if(!text)return [];
   if(text[0]==='['){try{return JSON.parse(text).map(norm).filter(Boolean);}catch(e){}}
-  if(text[0]==='{'){var out=[];text.split('\n').forEach(function(ln){ln=ln.trim();if(!ln)return;try{var r=norm(JSON.parse(ln));if(r)out.push(r);}catch(e){}});return out;}
+  if(text[0]==='{'){
+    try{var obj=JSON.parse(text);if(obj&&Array.isArray(obj.cats))return obj.cats.map(norm).filter(Boolean);}catch(e){}
+    var out=[];text.split('\n').forEach(function(ln){ln=ln.trim();if(!ln)return;try{var r=norm(JSON.parse(ln));if(r)out.push(r);}catch(e){}});return out;}
   var rows=parseCSV(text).filter(function(r){return r.some(function(c){return c!=='';});});if(rows.length<2)return [];
   var head=rows[0].map(function(h){return (h||'').trim();});var o2=[];for(var i=1;i<rows.length;i++){var o={};head.forEach(function(k,j){o[k]=(rows[i][j]||'').trim();});var r=norm(o);if(r)o2.push(r);}return o2;}
 function fetchText(u){return fetch(u,{cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.text();});}
@@ -542,8 +465,8 @@ function render(){
   s+='<rect x="'+midx+'" y="'+pad+'" width="'+(pad+inner-midx)+'" height="'+(midy-pad)+'" fill="'+QUAD.house.light+'"/>';
   s+='<rect x="'+pad+'" y="'+midy+'" width="'+(midx-pad)+'" height="'+(pad+inner-midy)+'" fill="'+QUAD.halfP.light+'"/>';
   s+='<rect x="'+midx+'" y="'+midy+'" width="'+(pad+inner-midx)+'" height="'+(pad+inner-midy)+'" fill="'+QUAD.halfV.light+'"/>';
-  s+='<text x="'+(pad+6)+'" y="'+(pad+16)+'" font-size="11" fill="#3a5a8c" font-weight="bold">公共のゆりかご（いえ猫）</text>';
-  s+='<text x="'+(pad+inner-6)+'" y="'+(pad+16)+'" font-size="11" fill="#b5663a" font-weight="bold" text-anchor="end">ハイテク室内飼い（いえ猫）</text>';
+  s+='<text x="'+(pad+6)+'" y="'+(pad+16)+'" font-size="11" fill="#3a5a8c" font-weight="bold">公助のゆりかご</text>';
+  s+='<text x="'+(pad+inner-6)+'" y="'+(pad+16)+'" font-size="11" fill="#b5663a" font-weight="bold" text-anchor="end">ハイテク室内飼い</text>';
   s+='<text x="'+(pad+6)+'" y="'+(pad+inner-8)+'" font-size="11" fill="#5a7d3a" font-weight="bold">まち猫（公）</text>';
   s+='<text x="'+(pad+inner-6)+'" y="'+(pad+inner-8)+'" font-size="11" fill="#b58f2a" font-weight="bold" text-anchor="end">まち猫（私）</text>';
   s+='<g stroke="#cfd6e0" stroke-width="1">';
@@ -598,173 +521,61 @@ function openDetail(i){var r=RECORDS[i];if(!r)return;var t=typeOf(r);var q=QUAD[
   h+='<div class="kv"><b>🌿 またたび：</b>'+esc(t.kaizen||'（データ未登録）')+'</div>';
   if(t.side)h+='<div class="kv"><b>🐾 そっと気をつけたいこと：</b>'+esc(t.side)+'</div>';
   if(t.source)h+='<div class="kv" style="font-size:.8rem;color:#666"><b>📚 出典：</b>'+esc(t.source)+(t.url?' ／ <a href="'+t.url+'" target="_blank" rel="noopener">引用元</a>':'')+'</div>';
-  var _sg=(typeof SONG_BY_NAME!=='undefined')&&(SONG_BY_NAME[r.typeName]||SONG_BY_CAT[r.catname]);
-  if(_sg){h+='<div class="kv"><b>🎵 テーマソング：</b>'+esc(_sg.title)+(_sg.sub?' <span style="color:#c0392b;font-size:.72rem">（※「'+esc(_sg.sub)+'」の代用）</span>':'')+' <button class="dj-mini" onclick="closeDetail();openDJ('+_sg.no+')">'+DJ_SPOT+'この曲からDJ</button></div>';}
-  document.getElementById('dinner').innerHTML=h;document.getElementById('modal').classList.add('on');}
+  h+=songBlockHTML(t);
+  document.getElementById('dinner').innerHTML=h;document.getElementById('modal').classList.add('on');resolveCovers();}
 function closeDetail(){document.getElementById('modal').classList.remove('on');}
 window.openDetail=openDetail;window.closeDetail=closeDetail;
 
 function exportJSON(){var a=getLocal();var blob=new Blob([JSON.stringify(a,null,2)],{type:'application/json'});var u=URL.createObjectURL(blob);var el=document.createElement('a');el.href=u;el.download='iemeko_stock.json';document.body.appendChild(el);el.click();setTimeout(function(){el.remove();URL.revokeObjectURL(u);},100);}
 function importJSON(inp){var f=inp.files&&inp.files[0];if(!f)return;var rd=new FileReader();rd.onload=function(){try{var arr=JSON.parse(rd.result);if(!Array.isArray(arr))throw 0;var cur=getLocal();localStorage.setItem('catmap_stock',JSON.stringify(cur.concat(arr).slice(-3000)));reloadAll();alert('読み込みました（'+arr.length+'件を追加）');}catch(e){alert('JSONを読み込めませんでした。');}};rd.readAsText(f);}
 function clearLocal(){if(confirm('この端末に保存された猫のストックを消します。よろしいですか？（共有データには影響しません）')){localStorage.removeItem('catmap_stock');reloadAll();}}
-window.reloadAll=reloadAll;window.exportJSON=exportJSON;window.importJSON=importJSON;window.clearLocal=clearLocal;
+window.reloadAll=reloadAll;
+
+// ==== おすすめソング（Cover Art Archive ジャケット） ====
+function songBlockHTML(t){
+  if(!t||!t.song)return '';
+  var s=String(t.song).trim(); if(!s)return '';
+  var i=s.lastIndexOf(' - ');
+  var title=(i>0?s.slice(0,i):s).trim(), artist=(i>0?s.slice(i+3):'').trim();
+  var yt=(t.ytlink||'').trim();
+  function ae(v){return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');}
+  var h='<div class="box songbox2"><div class="songcap">🎵 そんなあなたへのおすすめソング</div><div class="songrow">';
+  h+='<div class="songjacket"><img class="songcover" style="display:none" data-pending="1" data-title="'+ae(title)+'" data-artist="'+ae(artist)+'" alt=""><div class="songjph">🎵</div></div>';
+  h+='<div class="songinfo"><div class="songttl">'+esc(title)+'</div>'+(artist?'<div class="songart">'+esc(artist)+'</div>':'<div class="songart"></div>');
+  h+=(yt?'<a class="songlink" href="'+ae(yt)+'" target="_blank" rel="noopener">▶ YouTubeで聴く</a>':'');
+  h+='</div></div></div>';
+  return h;
+}
+var _covCache={};
+function resolveCovers(){
+  var list=document.querySelectorAll('img.songcover[data-pending]');
+  Array.prototype.forEach.call(list,function(img){
+    img.removeAttribute('data-pending');
+    var title=img.getAttribute('data-title')||'', artist=img.getAttribute('data-artist')||'';
+    var key=title+'|'+artist;
+    img.onload=function(){img.style.display='block';};
+    img.onerror=function(){img.style.display='none';};
+    if(_covCache[key]){img.src=_covCache[key];return;}
+    if(_covCache[key]===null){return;}
+    var q='release-group:"'+title+'"'+(artist?(' AND artist:"'+artist+'"'):'');
+    var url='https://musicbrainz.org/ws/2/release-group/?query='+encodeURIComponent(q)+'&fmt=json&limit=1';
+    fetch(url,{headers:{Accept:'application/json'}}).then(function(r){return r.ok?r.json():null;}).then(function(j){
+      var rg=j&&j['release-groups']&&j['release-groups'][0];
+      if(!rg||!rg.id){_covCache[key]=null;return;}
+      var src='https://coverartarchive.org/release-group/'+rg.id+'/front-250';
+      _covCache[key]=src; img.src=src;
+    }).catch(function(){_covCache[key]=null;});
+  });
+}
+window.songBlockHTML=songBlockHTML;window.resolveCovers=resolveCovers;
+window.exportJSON=exportJSON;window.importJSON=importJSON;window.clearLocal=clearLocal;
 window.addEventListener('resize',function(){clearTimeout(window._rz);window._rz=setTimeout(render,200);});
 reloadAll();
 </script>
+
+<footer style="margin-top:24px;padding:14px 12px 20px;border-top:1px dashed #cbb68a;text-align:center;color:#7a5a3c;font-size:10pt;letter-spacing:.04em;line-height:1.7">
+  <div style="font-weight:700">🐾 東京大学シビックテック・デザイン学講座 team1（2026）</div>
+  <div style="font-size:9pt;color:#a89673;margin-top:2px">Civic Tech Design Initiative· The University of Tokyo · team1 / 2026</div>
+</footer>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
-
-<script>
-/* ===== 🎧 DJ家猫 Drop the beat!（Spotify 2デッキ・オートMIX クロスフェード） ===== */
-var SONGS=[
-{"no": 1, "cat": "実家ぬくぬく猫", "type": "パラサイト・シングル(親密圏依存)", "title": "Mother - John Lennon", "sid": "43Ud1IajwtBvw6ONj6aK2Q", "yt": "https://www.youtube.com/watch?v=bSRJJNXxvPo"},
-{"no": 2, "cat": "次の一歩まち猫", "type": "ニート(NEET)", "title": "Waiting for the Day - George Michael", "sid": "44LRgmkoGQUIlLvHAOvmKZ", "yt": "https://www.youtube.com/watch?v=JT1GGUbAvW0"},
-{"no": 3, "cat": "おうち安心猫", "type": "ひきこもり", "title": "The Sound of Silence - Simon & Garfunkel", "sid": "3YfS47QufnLDFA71FUsgCM", "yt": "https://www.youtube.com/watch?v=4zLfCnGVeL4"},
-{"no": 4, "cat": "おうち長期滞在猫", "type": "中高年ひきこもり(8050問題)", "title": "Time After Time - Cyndi Lauper", "sid": "7o9uu2GDtVDr9nsR7ZRN73", "yt": "https://www.youtube.com/watch?v=VdQY7BusJNU"},
-{"no": 5, "cat": "自由時間満喫猫", "type": "FIRE早期リタイア層", "title": "Freedom - Pharrell Williams", "sid": "6RB9YvNyP0RZfCUcMtZELH", "yt": "https://www.youtube.com/watch?v=vRiQCbzaEUQ"},
-{"no": 6, "cat": "安心ベース待ち猫", "type": "ベーシックインカム待望者", "title": "Imagine - John Lennon", "sid": "0sKVgEEApbh4EmJJyoUmBB", "yt": "https://www.youtube.com/watch?v=YkgkThdzX-8"},
-{"no": 7, "cat": "ひなたで充電猫", "type": "ぶら下がり社員(社内失業)", "title": "Lazy Song - Bruno Mars", "sid": "4ZS9gLtPWfNr2a2TwXjz3y", "yt": "https://www.youtube.com/watch?v=fLexgOxsZu0"},
-{"no": 8, "cat": "アプリ活用猫", "type": "ギグワーカー(プラットフォーム依存)", "title": "Highway to Hell - AC/DC", "sid": "2zYzyRzz6pRmhPzyfMEC8s", "yt": "https://www.youtube.com/watch?v=l482T0yNkeo"},
-{"no": 9, "cat": "おすすめ発見猫", "type": "レコメンド任せ(フィルターバブル)", "title": "Pretender - Official髭男dism", "sid": "15HNdxGKNCIO9pgaY4n7FU", "yt": "https://www.youtube.com/watch?v=GRUxOYhxwMM", "sub": "Recommend - Official髭男dism"},
-{"no": 10, "cat": "いいね励み猫", "type": "SNS承認依存", "title": "1-2-3 - Gloria Estefan", "sid": "0EZWczlEGnrm3nCcX0FU7a", "yt": "https://www.youtube.com/watch?v=T4IWlFutwXo&list=RDT4IWlFutwXo&start_radio=1"},
-{"no": 11, "cat": "借りぐらし上手猫", "type": "サブスク全部入り(非所有)", "title": "借りてきた猫 - 筋肉少女帯", "sid": "2Efdmr7O7bQHgEATOYYTTh", "yt": "https://www.youtube.com/watch?v=3q0Gfxq5xJA"},
-{"no": 12, "cat": "まず聞いてみる猫", "type": "認知アウトソース(AI思考代行)", "title": "Everybody wants to rule the world - Tears For Fears", "sid": "4RvWPyQ5RL0ao9LPZeSouE", "yt": "https://www.youtube.com/watch?v=aGCdLKXNF3w&list=RDaGCdLKXNF3w&start_radio=1"},
-{"no": 13, "cat": "仮想世界おでかけ猫", "type": "メタバース/ゲーム没入", "title": "Virtual Insanity - Jamiroquai", "sid": "0xRf0aeTsHnj6OubE7YU2U", "yt": "https://www.youtube.com/watch?v=4JkIs37a2JE"},
-{"no": 14, "cat": "お取り寄せ上手猫", "type": "EC・デリバリー完結生活", "title": "Deliver Me - Sarah Brightman", "sid": "1XyJaNDXDhFg8NhJSw7XzA", "yt": "https://www.youtube.com/watch?v=5G3ZJw6kKOM"},
-{"no": 15, "cat": "投票きっかけ待ち猫", "type": "無関心・棄権層", "title": "Jump - Van Halen", "sid": "6Fba9RZtC6vTY814JToDtP", "yt": "https://www.youtube.com/watch?v=SwYN7mTi6HM&list=RDSwYN7mTi6HM&start_radio=1"},
-{"no": 16, "cat": "相談先さがし猫", "type": "お上任せ・公助依存", "title": "Help! - The Beatles", "sid": "6EdSN1iGtLPhcz43QDRkdK", "yt": "https://www.youtube.com/watch?v=2Q_ZzBGPdqE"},
-{"no": 17, "cat": "声を届けたい猫", "type": "お客様・クレーマー型市民(自動販売機モデル)", "title": "Crazy - Alanis Morissette", "sid": "0WTYBoRiOOAyXm2bKkie3v", "yt": "https://www.youtube.com/watch?v=Lu0fTmHsDqE&list=RDLu0fTmHsDqE&start_radio=1"},
-{"no": 18, "cat": "ご近所大事猫", "type": "NIMBY", "title": "Under Pressure - Queen and David Bowie", "sid": "1mSClObliRtgPVT399COQH", "yt": "https://www.youtube.com/watch?v=a01QQZyl-_I&list=RDa01QQZyl-_I&start_radio=1"},
-{"no": 19, "cat": "どうせ…から一歩猫", "type": "政治的無力感(学習性無力感)", "title": "Change the world - Eric Clapton", "sid": "6BQNJ0JFKh8sWjQLI6Zudi", "yt": "https://www.youtube.com/watch?v=nXB4xBnP22o&list=RDnXB4xBnP22o&start_radio=1"},
-{"no": 20, "cat": "空気を読む猫", "type": "同調・空気読み", "title": "Don't Stop Me Now - Queen", "sid": "43DHLzDkncpby82Po5jlOZ", "yt": "https://www.youtube.com/watch?v=HgzGwKwLmgM"},
-{"no": 21, "cat": "きちんと従う猫", "type": "権威主義的従順", "title": "Killing Me Softly - Fugees", "sid": "0Q0IVlqMV64kNLlwjPj0Hl", "yt": "https://www.youtube.com/watch?v=vSoUEKfPFnY"},
-{"no": 22, "cat": "支えを使う猫", "type": "生活保護の長期依存", "title": "Stand By Me - Ben E. King", "sid": "3SdTKo2uVsxFblQjpScoHy", "yt": "https://www.youtube.com/watch?v=hwZNL7QVJjE"},
-{"no": 23, "cat": "からだ相談猫", "type": "過剰受診・医療化", "title": "Doctor Doctor - Thompson Twins", "sid": "15PC4RTMeQa2Gv4nnwSrwc", "yt": "https://www.youtube.com/watch?v=LGJr6c0b_w0"},
-{"no": 24, "cat": "見守られ安心猫", "type": "施設・社会的入院依存(高齢)", "title": "Beautiful day- U2", "sid": "1VuBmEauSZywQVtqbxNqka", "yt": "https://www.youtube.com/watch?v=vCqlrhnl68g&list=RDvCqlrhnl68g&start_radio=1"},
-{"no": 25, "cat": "箱入り安心猫", "type": "過保護の子(ヘリコプターペアレント下)", "title": "Overprotected - Britney Spears", "sid": "5p0KCAuu5nrHpTuAIhHdLw", "yt": "https://www.youtube.com/watch?v=InAoMa-DaPY"},
-{"no": 26, "cat": "ぬくぬく安心猫", "type": "コンフォートゾーン固着", "title": "Comfortable - John Mayer", "sid": "26PnyFUmYdeRG7nQrsTpHc", "yt": "https://www.youtube.com/watch?v=mJAfbWzBNb4"},
-{"no": 27, "cat": "安定だいじ猫", "type": "安定至上(大企業・公務員志向)", "title": "Pride-U2", "sid": "24rv66H94QGVqIXHjA3kn6", "yt": "https://www.youtube.com/watch?v=Jn6wRE43dAY&list=RDJn6wRE43dAY&start_radio=1"},
-{"no": 28, "cat": "おまかせ上手猫", "type": "決断疲れ・おすすめ任せ", "title": "Let Me Entertain You - Robbie Williams", "sid": "0SLtqCrXBRrnkxSOMA3X4W", "yt": "https://www.youtube.com/watch?v=y3XSMEQg9IQ"},
-{"no": 29, "cat": "がんばり背負い猫", "type": "自己責任論の内面化・諦観", "title": "Carry That Weight - The Beatles", "sid": "5eZrW59C3UgBhkqNlowEID", "yt": "https://www.youtube.com/watch?v=3V5HLRdGOYQ"},
-{"no": 30, "cat": "推しと生きる猫", "type": "推し活没入(現実退避)", "title": "Obsessed - Mariah Carey", "sid": "3IcIIZMMS7UArJJPtEHXG8", "yt": "https://www.youtube.com/watch?v=mfSamCkiNFY"},
-{"no": 31, "cat": "手ぶら身軽猫", "type": "ミニマリスト(他者インフラ依存)", "title": "Lovefool - The Cardigans", "sid": "6xjyk6NiOaeUigFQYz6Lny", "yt": "https://www.youtube.com/watch?v=c1-FbdEfkDw", "sub": "Minimum - The Cardigans"},
-{"no": 32, "cat": "おうちゆったり猫", "type": "座りっぱなし・室内完結(身体不活動)", "title": "Sitting on the Dock of the Bay - Otis Redding", "sid": "3zBhihYUHBmGd2bcQIobrF", "yt": "https://www.youtube.com/watch?v=rTVjnBo96Ug"},
-{"no": 33, "cat": "さっとごはん猫", "type": "超加工食品依存", "title": "Fast Food Song - Fast Food Rockers", "sid": "5fRAvz6qCeSKbAi4LELOor", "yt": "https://www.youtube.com/watch?v=vrkTKSBxSSw"},
-{"no": 34, "cat": "快適チューニング猫", "type": "快適環境最適化マニア", "title": "Robot Rock - Daft Punk", "sid": "7LL40F6YdZgeiQ6en1c7Lk", "yt": "https://www.youtube.com/watch?v=gAjR4_CbPpQ"},
-{"no": 35, "cat": "ひとり気まま猫", "type": "孤立だが快適(つながり放棄)", "title": "I Am a Rock - Simon & Garfunkel", "sid": "0byOqNZN9ailhoORv5Ps0Z", "yt": "https://www.youtube.com/watch?v=JoSWVhEmHc4"},
-{"no": 36, "cat": "家庭を守る猫", "type": "完全専業依存(配偶者扶養)", "title": "The House That Built Me - Miranda Lambert", "sid": "02eD9ymfJOJOhM97HYp5R9", "yt": "https://www.youtube.com/watch?v=RDC7bMIblTk"},
-{"no": 37, "cat": "便利さ歓迎猫", "type": "監視に喜んで従う", "title": "Every Breath You Take - The Police", "sid": "1JSTJqkT5qHq8MDJnJbRE1", "yt": "https://www.youtube.com/watch?v=OMOGaugKpzs"},
-{"no": 38, "cat": "するっと選ぶ猫", "type": "ナッジ誘導の最適化人間", "title": "Go With the Flow - Queens of the Stone Age", "sid": "0wzRcekWyVCSyPtlPOeJau", "yt": "https://www.youtube.com/watch?v=yzwbSInCdlA"},
-{"no": 39, "cat": "ぬるま湯ごきげん猫", "type": "幸福な家畜(快楽的従属)", "title": "Don't Worry, Be Happy - Bobby McFerrin", "sid": "4hObp5bmIJ3PP3cKA9K9GY", "yt": "https://www.youtube.com/watch?v=d-diB65scQU"},
-{"no": 40, "cat": "飼われ心地よし猫", "type": "自己家畜化を肯定する人", "title": "Almost Cut My Hair - David Crosby", "sid": "0gCJkpD0RhF2rjiALLHBQL", "yt": "https://www.youtube.com/watch?v=D8rlTzKlnMs", "sub": "Domesticated Animal - David Crosby"},
-{"no": 41, "cat": "働き方見直し猫", "type": "ポスト労働・脱労働志向", "title": "Black or white - Michael Jackson", "sid": "7EsjkelQuoUlJXEw7SeVV4", "yt": "https://www.youtube.com/watch?v=F2AitTPI5U0&list=RDF2AitTPI5U0&start_radio=1"},
-{"no": 42, "cat": "からだアップデート猫", "type": "身体放棄(トランスヒューマニズム)", "title": "Viva la vida - Coldplay", "sid": "1mea3bSkSGXuIRvnydlB5b", "yt": "https://www.youtube.com/watch?v=dvgZkm1xWPE&list=RDdvgZkm1xWPE&start_radio=1"},
-{"no": 43, "cat": "ロボ見守り猫", "type": "ケアロボ前提の老後設計", "title": "Mr. Roboto - Styx", "sid": "7C0rG4oWO7VeZcffyW1sK9", "yt": "https://www.youtube.com/watch?v=uc6f_2nPSX8"},
-{"no": 44, "cat": "暮らし整え猫", "type": "終活・縮小均衡(守りの撤退)", "title": "Life Is a Cabaret - Liza Minnelli", "sid": "7AFy1aN1RQVgGOXzCtrK87", "yt": "https://www.youtube.com/watch?v=Qor2JqoNL1M"},
-{"no": 45, "cat": "通知にそわそわ猫", "type": "スマホ・アテンション中毒(ドゥームスクロール)", "title": "Rossana- Toto", "sid": "0GTLSJRogaeoDpkZ5hppOu", "yt": "https://www.youtube.com/watch?v=qmOLtTGvsbM&list=RDqmOLtTGvsbM&start_radio=1"},
-{"no": 46, "cat": "アプリで出会う猫", "type": "マッチング依存(出会いの外注)", "title": "Take my breathe away - Berlin", "sid": "3PnygBQ2ruykkHgrCWV3jt", "yt": "https://www.youtube.com/watch?v=Bx51eegLTY8&list=RDBx51eegLTY8&start_radio=1"},
-];
-
-var SONG_BY_NAME={}, SONG_BY_CAT={};
-SONGS.forEach(function(s){SONG_BY_NAME[s.type]=s; SONG_BY_CAT[s.cat]=s;});
-var DJ={queue:[],idx:0,shuffle:false,active:'a',apiLoaded:false,_loading:false,_cbs:[],
-  playing:false,crossing:false,wasPlaying:false,userPaused:false,OVERLAP:6000,
-  decks:{a:{ctrl:null,ready:false,pend:false},b:{ctrl:null,ready:false,pend:false}}};
-var DJ_SPOT='<svg width="13" height="13" viewBox="0 0 24 24" style="vertical-align:-2px;margin-right:4px"><circle cx="12" cy="12" r="12" fill="#1DB954"/><path d="M6 9.4c4-1 8.2-.7 11.2 1.1M6.8 13c3-.8 6.4-.4 8.8 1M7.6 16.3c2.3-.6 4.7-.3 6.7.9" stroke="#fff" stroke-width="1.7" fill="none" stroke-linecap="round"/></svg>';
-function djEsc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-function djBuildQueue(){DJ.queue=SONGS.slice();}
-function djShuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
-function djOther(k){return k==='a'?'b':'a';}
-function djSid(i){var s=DJ.queue[((i%DJ.queue.length)+DJ.queue.length)%DJ.queue.length];return s?s.sid:SONGS[0].sid;}
-function openDJ(startNo){
-  if(!DJ.queue.length){djBuildQueue();if(DJ.shuffle)djShuffle(DJ.queue);}
-  if(startNo!=null){var k=DJ.queue.findIndex(function(s){return s.no===startNo;});if(k>=0)DJ.idx=k;}
-  document.getElementById('djmodal').classList.add('on');
-  var sf=document.getElementById('dj-shuf');if(sf)sf.classList.toggle('act',DJ.shuffle);
-  showDeck(DJ.active);renderDJList();updateNowPlaying();
-  DJ.userPaused=false;
-  loadSpotifyApi(function(){
-    var d=DJ.decks[DJ.active];if(!d.ctrl)return;
-    if(d.ready){try{d.ctrl.loadUri('spotify:track:'+djSid(DJ.idx));d.ctrl.play();}catch(e){}}
-    else{d.pend=true;}
-  });
-}
-function closeDJ(){
-  document.getElementById('djmodal').classList.remove('on');
-  ['a','b'].forEach(function(k){if(DJ.decks[k].ctrl){try{DJ.decks[k].ctrl.pause();}catch(e){}}});
-  DJ.playing=false;updatePlayBtn();
-}
-function loadSpotifyApi(cb){
-  if(DJ.apiLoaded){cb&&cb();return;}
-  if(DJ._loading){DJ._cbs.push(cb);return;}
-  DJ._loading=true;DJ._cbs=[cb];
-  window.onSpotifyIframeApiReady=function(API){
-    var made=0;function done(){made++;if(made>=2){DJ.apiLoaded=true;DJ._cbs.forEach(function(f){f&&f();});DJ._cbs=[];}}
-    createDeck(API,'a',djSid(DJ.idx),done);
-    createDeck(API,'b',djSid(DJ.idx+1),done);
-  };
-  var sc=document.createElement('script');sc.src='https://open.spotify.com/embed/iframe-api/v1';sc.async=true;document.head.appendChild(sc);
-}
-function createDeck(API,key,sid,done){
-  var el=document.getElementById('dj-embed-'+key);if(!el){done();return;}
-  API.createController(el,{uri:'spotify:track:'+sid,width:'100%',height:'80'},function(ctrl){
-    DJ.decks[key].ctrl=ctrl;
-    ctrl.addListener('ready',function(){DJ.decks[key].ready=true;if(DJ.decks[key].pend){DJ.decks[key].pend=false;try{ctrl.play();}catch(e){}}});
-    ctrl.addListener('playback_update',function(e){onUpdate(key,e.data||{});});
-    done();
-  });
-}
-function onUpdate(key,d){
-  if(key!==DJ.active)return;
-  DJ.playing=!d.isPaused;updatePlayBtn();
-  djProgress(d.position||0,d.duration||0);
-  if(DJ.queue.length>1 && !DJ.crossing){
-    if(d.duration>0 && d.position>0 && d.position>=d.duration-DJ.OVERLAP){
-      djTransition(DJ.idx+1, DJ.OVERLAP);           // フル尺: 終わり際にクロスフェード
-    } else if(DJ.wasPlaying && d.isPaused && !DJ.userPaused && (d.position===0 || (d.duration>0 && d.position>=d.duration-1500))){
-      djTransition(DJ.idx+1, 800);                  // プレビュー終了/曲切れ: 即つなぐ
-    }
-  }
-  DJ.wasPlaying=!d.isPaused;
-}
-function djTransition(nextIdxRaw, overlap){
-  if(DJ.crossing || DJ.queue.length<1)return;
-  var nextIdx=((nextIdxRaw%DJ.queue.length)+DJ.queue.length)%DJ.queue.length;
-  DJ.crossing=true;DJ.userPaused=false;
-  var other=djOther(DJ.active);var od=DJ.decks[other];
-  if(od&&od.ctrl){try{od.ctrl.loadUri('spotify:track:'+djSid(nextIdx));if(od.ready){od.ctrl.play();}else{od.pend=true;}}catch(e){}}
-  showDeck(other);updateNowPlaying(nextIdx);
-  setTimeout(function(){
-    var old=DJ.active;if(DJ.decks[old].ctrl){try{DJ.decks[old].ctrl.pause();}catch(e){}}
-    DJ.active=other;DJ.idx=nextIdx;DJ.crossing=false;DJ.wasPlaying=true;
-    updateNowPlaying();renderDJList();
-  }, Math.max(250,overlap));
-}
-function showDeck(key){var a=document.getElementById('deck-a'),b=document.getElementById('deck-b');if(a)a.classList.toggle('hidden',key!=='a');if(b)b.classList.toggle('hidden',key!=='b');}
-function djNext(){djTransition(DJ.idx+1,800);}
-function djPrev(){djTransition(DJ.idx-1,800);}
-function djPlayIdx(i){if(i!==DJ.idx)djTransition(i,800);}
-function djToggle(){var d=DJ.decks[DJ.active];if(!d.ctrl)return;DJ.userPaused=DJ.playing;try{d.ctrl.togglePlay();}catch(e){}}
-function djToggleShuffle(){
-  if(DJ.crossing)return;var cur=DJ.queue[DJ.idx];DJ.shuffle=!DJ.shuffle;djBuildQueue();if(DJ.shuffle)djShuffle(DJ.queue);
-  var k=DJ.queue.findIndex(function(s){return cur&&s.no===cur.no;});DJ.idx=k>=0?k:0;
-  document.getElementById('dj-shuf').classList.toggle('act',DJ.shuffle);renderDJList();updateNowPlaying();
-}
-function updateNowPlaying(optIdx){var i=(optIdx!=null)?optIdx:DJ.idx;var s=DJ.queue[i];if(!s)return;var el=document.getElementById('dj-now');if(!el)return;
-  var subN=s.sub?'<div style="color:#c0392b;font-size:.74rem;margin-top:2px">※「'+djEsc(s.sub)+'」はSpotify未収録のため、同アーティストの代表曲で代用</div>':'';
-  var mix=DJ.crossing?'<span class="dj-mixbadge">🎚️ MIX中…</span>':'';
-  el.innerHTML='<div class="nptype">'+djEsc(s.type)+'</div><div class="npcat">'+djEsc(s.cat)+mix+'</div><div class="nsong">🎵 '+djEsc(s.title)+'</div>'+subN+'<div class="dj-prog"><div id="dj-bar"></div></div>';
-}
-function renderDJList(){var el=document.getElementById('dj-queue');if(!el)return;var h='';
-  DJ.queue.forEach(function(s,i){var sb=s.sub?' <span style="color:#c0392b;font-size:.68rem;font-weight:700">※代用</span>':'';h+='<div class="dj-item'+(i===DJ.idx?' cur':'')+'" onclick="djPlayIdx('+i+')"><span class="qn">'+(i+1)+'</span><span><span class="qcat">'+djEsc(s.cat)+'</span><br><span class="qtitle">'+djEsc(s.title)+'</span>'+sb+'</span><a class="qsp" href="https://open.spotify.com/track/'+s.sid+'" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="Spotifyで開く">↗</a></div>';});
-  el.innerHTML=h;
-  var cur=el.querySelector('.dj-item.cur');if(cur&&cur.scrollIntoView){cur.scrollIntoView({block:'nearest'});}
-}
-function djProgress(pos,dur){var b=document.getElementById('dj-bar');if(b&&dur>0){b.style.width=Math.min(100,pos/dur*100)+'%';}}
-function updatePlayBtn(){var btn=document.getElementById('dj-play');if(btn)btn.textContent=DJ.playing?'⏸':'▶';var hd=document.getElementById('dj-head');if(hd)hd.classList.toggle('playing',DJ.playing);}
-window.openDJ=openDJ;window.closeDJ=closeDJ;window.djPrev=djPrev;window.djNext=djNext;window.djToggle=djToggle;window.djPlayIdx=djPlayIdx;window.djToggleShuffle=djToggleShuffle;
-var DJ_CAT_SVG='<svg class="djeneko" viewBox="0 0 240 200" xmlns="http://www.w3.org/2000/svg"><path d="M182,116 q34,6 30,46" fill="none" stroke="#9aa2ad" stroke-width="9" stroke-linecap="round"/><path d="M78,44 L86,12 L108,42 Z" fill="#aeb6c1" stroke="#2b2b2b" stroke-width="3" stroke-linejoin="round"/><path d="M162,44 L154,12 L132,42 Z" fill="#aeb6c1" stroke="#2b2b2b" stroke-width="3" stroke-linejoin="round"/><path d="M84,40 L89,20 L102,40 Z" fill="#e79aa0"/><path d="M156,40 L151,20 L138,40 Z" fill="#e79aa0"/><circle cx="120" cy="72" r="46" fill="#aeb6c1" stroke="#2b2b2b" stroke-width="4"/><path d="M74,60 Q120,4 166,60" fill="none" stroke="#2b2b2b" stroke-width="8" stroke-linecap="round"/><rect x="58" y="56" width="22" height="36" rx="10" fill="#2b2b2b"/><rect x="64" y="65" width="10" height="18" rx="5" fill="#ff7aa8"/><rect x="160" y="56" width="22" height="36" rx="10" fill="#2b2b2b"/><rect x="166" y="65" width="10" height="18" rx="5" fill="#ff7aa8"/><ellipse cx="104" cy="70" rx="10" ry="13" fill="#fff" stroke="#2b2b2b" stroke-width="2.5"/><ellipse cx="136" cy="70" rx="10" ry="13" fill="#fff" stroke="#2b2b2b" stroke-width="2.5"/><circle cx="105" cy="72" r="4.6" fill="#1c1c1c"/><circle cx="137" cy="72" r="4.6" fill="#1c1c1c"/><circle cx="102" cy="68" r="1.7" fill="#fff"/><circle cx="134" cy="68" r="1.7" fill="#fff"/><path d="M116,84 L124,84 L120,90 Z" fill="#e79aa0" stroke="#2b2b2b" stroke-width="1.5" stroke-linejoin="round"/><path d="M120,90 q-7,7 -14,3 M120,90 q7,7 14,3" fill="none" stroke="#2b2b2b" stroke-width="2" stroke-linecap="round"/><g stroke="#2b2b2b" stroke-width="1.5" stroke-linecap="round" opacity="0.7"><path d="M92,82 h-18"/><path d="M92,90 h-17"/><path d="M148,82 h18"/><path d="M148,90 h17"/></g><rect x="8" y="150" width="224" height="46" rx="7" fill="#26293a"/><rect x="8" y="150" width="224" height="8" rx="4" fill="#3a3f57"/><g class="rec-eye"><circle cx="56" cy="173" r="22" fill="#1e1e26"/><circle cx="56" cy="173" r="15" fill="none" stroke="#3a3d47" stroke-width="1"/><rect x="55" y="153" width="2" height="8" fill="#6d6d6d"/><circle cx="56" cy="173" r="6" fill="#B8763E"/><circle cx="56" cy="173" r="1.6" fill="#e9e2d0"/></g><line x1="72" y1="157" x2="60" y2="171" stroke="#c9ccd6" stroke-width="2" stroke-linecap="round"/><g class="rec-eye"><circle cx="184" cy="173" r="22" fill="#1e1e26"/><circle cx="184" cy="173" r="15" fill="none" stroke="#3a3d47" stroke-width="1"/><rect x="183" y="153" width="2" height="8" fill="#6d6d6d"/><circle cx="184" cy="173" r="6" fill="#B8763E"/><circle cx="184" cy="173" r="1.6" fill="#e9e2d0"/></g><line x1="200" y1="157" x2="188" y2="171" stroke="#c9ccd6" stroke-width="2" stroke-linecap="round"/><rect x="104" y="158" width="32" height="30" rx="3" fill="#3a3f57"/><circle cx="112" cy="167" r="2.6" fill="#ff7aa8"/><circle cx="128" cy="167" r="2.6" fill="#7ad0ff"/><rect x="110" y="176" width="20" height="4" rx="2" fill="#8a90a6"/><ellipse cx="92" cy="150" rx="10" ry="7" fill="#aeb6c1" stroke="#2b2b2b" stroke-width="2"/><ellipse cx="148" cy="150" rx="10" ry="7" fill="#aeb6c1" stroke="#2b2b2b" stroke-width="2"/></svg>';
-(function(){var a=document.getElementById('djcat-art');if(a)a.innerHTML=DJ_CAT_SVG;var m=document.getElementById('djcat-mini');if(m)m.innerHTML=DJ_CAT_SVG;})();
-djBuildQueue();
-</script>
-
 </body></html>
