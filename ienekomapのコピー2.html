@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>東京大学 シビックテック学創成町 家猫マップ</title>
+<style>
+:root{--navy:#1F3864;--blue:#2E5496;--line:#d7cdb8;--muted:#777;color-scheme:light}
+
+/* ─── 都市×猫 テーマ（マップ） ─── */
+:root{--city-navy:#1F3864;--city-blue:#2E5496;--city-copper:#B8763E;--city-glow:#FFD98A;}
+.map-hero{position:relative;padding:16px 16px 44px;border-radius:14px;
+  background:linear-gradient(180deg,#f7f3e8,#e2d3b3);
+  background-image:linear-gradient(rgba(31,56,100,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(31,56,100,.05) 1px,transparent 1px);
+  background-size:22px 22px;background-blend-mode:multiply;
+  overflow:hidden;margin-bottom:14px;box-shadow:0 4px 14px rgba(31,56,100,.08)}
+.map-hero h1{position:relative;z-index:2;display:flex;align-items:center;gap:10px;margin:0 0 4px}
+.map-hero .catmark{width:34px;height:34px}
+.map-hero .lead{position:relative;z-index:2;color:#5a4a30;font-size:.9rem;margin:0}
+.map-hero .skyline{position:absolute;left:0;right:0;bottom:0;height:44px;pointer-events:none;z-index:1}
+@keyframes earTwitch{0%,88%,100%{transform:rotate(0)}92%{transform:rotate(-8deg)}96%{transform:rotate(4deg)}}
+@keyframes tailWave{0%,100%{transform:rotate(-14deg)}50%{transform:rotate(18deg)}}
+.mascot-ear-l,.mascot-ear-r{transform-origin:center bottom;animation:earTwitch 4.6s ease-in-out infinite}
+.mascot-ear-r{animation-delay:.4s}
+.mascot-tail{transform-origin:right center;animation:tailWave 2.4s ease-in-out infinite}
+
+*{box-sizing:border-box}
+body{margin:0;font-family:"Hiragino Sans","Yu Gothic",Meiryo,system-ui,sans-serif;color:#222;background:#f4efe4;line-height:1.6}
+.wrap{max-width:1000px;margin:0 auto;padding:18px 14px 70px}
+.ver{font-size:.72rem;color:#999}
+h1{font-size:1.4rem;color:var(--navy);margin:.1em 0}
+h2{font-size:1.05rem;color:var(--navy);margin:22px 0 8px}
+.lead{color:#555;font-size:.92rem;margin:.2em 0 14px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+button,.btn{font:inherit;font-weight:700;border:1.5px solid var(--navy);border-radius:8px;padding:7px 13px;background:#fff;color:var(--navy);cursor:pointer}
+button.pri{background:var(--navy);color:#fff}
+.stat{display:flex;flex-wrap:wrap;gap:10px;margin:8px 0 16px}
+.chip{background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:.9rem;min-width:120px}
+.chip b{display:block;font-size:1.3rem;color:var(--navy)}
+.maparea{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;text-align:center}
+.qcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:16px}
+.qcard{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;gap:10px;align-items:flex-start}
+.qcard .qcat{width:64px;height:64px;flex:0 0 64px;background:#faf7f0;border:1px solid #eadfc6;border-radius:10px;overflow:hidden}
+.qcard .qcat svg{width:64px;height:64px}
+.qcard h3{margin:.1em 0;font-size:1rem}
+.qcard .pct{font-size:1.5rem;font-weight:800}
+.qcard .tp{font-size:.8rem;color:#555;margin-top:2px}
+.rank{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin-top:16px}
+.rank ol{margin:.3em 0;padding-left:1.4em}
+.rank li{margin:2px 0}.rank .n{color:var(--muted);font-size:.85rem}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:10px;margin-top:8px}
+.gcard{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;cursor:pointer;transition:transform .1s,box-shadow .1s}
+.gcard:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.12)}
+.gart{height:108px;display:flex;align-items:center;justify-content:center}
+.gart svg{width:104px;height:104px}
+.gnm{font-size:.82rem;font-weight:700;color:var(--navy);padding:4px 8px 0;line-height:1.25}
+.gty{font-size:.68rem;color:#777;padding:0 8px 8px}
+.note{color:var(--muted);font-size:.82rem}
+.empty{color:#a33;padding:20px;text-align:center}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
+.modal.on{display:flex}
+.dinner{background:#fff;border-radius:16px;max-width:460px;width:100%;max-height:90vh;overflow:auto;padding:16px 18px;position:relative}
+.dx{position:absolute;top:8px;right:10px;border:none;background:#eee;border-radius:50%;width:30px;height:30px;font-size:1.1rem;cursor:pointer;color:#333}
+.dart{border-radius:12px;height:220px;display:flex;align-items:center;justify-content:center;margin-bottom:8px}
+.dart svg{width:210px;height:210px}
+.kv{margin:5px 0;font-size:.9rem}
+.kv b{color:var(--navy)}
+.badge{display:inline-block;color:#fff;border-radius:999px;font-size:.72rem;padding:2px 10px;font-weight:700}
+
+/* ─── 🎧 DJ家猫 Drop the beat! ─── */
+.dj-launch{background:linear-gradient(90deg,#7A3E5F,#B8763E)!important;color:#fff!important;border:none!important;box-shadow:0 3px 10px rgba(122,62,95,.35)}
+.dj-mini{font-size:.72rem;padding:3px 9px;margin-left:6px;border-radius:6px;border:1.5px solid #7A3E5F;background:#fff;color:#7A3E5F;cursor:pointer;font-weight:700;white-space:nowrap}
+#djmodal .dinner{max-width:540px}
+.dj-head{display:flex;align-items:center;gap:12px;margin:2px 30px 12px 0}
+@keyframes djspin{to{transform:rotate(360deg)}}
+.dj-title{font-weight:800;color:#7A3E5F;font-size:1.1rem;line-height:1.2}
+.dj-now{background:#faf5f0;border:1px solid #eadfce;border-radius:10px;padding:10px 12px;margin-bottom:8px}
+.dj-now .nptype{font-size:.74rem;color:#999}
+.dj-now .npcat{font-weight:800;color:#1F3864;font-size:1.02rem}
+.dj-now .nsong{color:#7A3E5F;font-weight:700;margin-top:2px}
+.dj-prog{height:6px;background:#e6ddcf;border-radius:4px;overflow:hidden;margin-top:9px}
+.dj-prog>div{height:100%;width:0;background:linear-gradient(90deg,#7A3E5F,#B8763E)}
+.dj-ctrls{display:flex;gap:10px;align-items:center;justify-content:center;margin:12px 0}
+.dj-ctrls button{border:1.5px solid #7A3E5F;background:#fff;color:#7A3E5F;border-radius:999px;width:46px;height:46px;font-size:1.05rem;cursor:pointer;font-weight:800;display:flex;align-items:center;justify-content:center}
+.dj-ctrls button.big{width:58px;height:58px;background:#7A3E5F;color:#fff;font-size:1.4rem}
+.dj-ctrls button.act{background:#B8763E;color:#fff;border-color:#B8763E}
+.dj-queue{max-height:236px;overflow:auto;border:1px solid #eadfce;border-radius:10px;margin-top:6px}
+.dj-item{display:flex;gap:9px;align-items:center;padding:7px 10px;border-bottom:1px solid #f2ebdf;cursor:pointer;font-size:.85rem}
+.dj-item:last-child{border-bottom:none}
+.dj-item:hover{background:#faf5f0}
+.dj-item.cur{background:#f3e6ee}
+.dj-item .qn{color:#b7ad9c;width:22px;text-align:right;flex:0 0 22px;font-variant-numeric:tabular-nums}
+.dj-item .qtitle{color:#7A3E5F;font-weight:700}
+.dj-item .qcat{color:#1F3864;font-weight:700}
+.dj-item .qsp{margin-left:auto;color:#1DB954;text-decoration:none;font-weight:800;font-size:1rem;flex:0 0 auto}
+.dj-note{font-size:.75rem;color:#888;margin-top:9px;line-height:1.55}
+/* 2デッキ・クロスフェード */
+#dj-embed-wrap{position:relative;min-height:84px;margin-bottom:8px}
+.deck{position:absolute;left:0;right:0;top:0;transition:opacity .8s ease}
+.deck.hidden{opacity:0;pointer-events:none}
+.dj-mixbadge{display:inline-block;font-size:.68rem;font-weight:800;color:#fff;background:linear-gradient(90deg,#7A3E5F,#B8763E);border-radius:999px;padding:2px 9px;margin-left:8px;vertical-align:middle}
+/* 猫の目＝回るレコード */
+.rec-eye{transform-box:fill-box;transform-origin:center;animation:djspin 4.5s linear infinite}
+.dj-head.playing .rec-eye,.djcta:hover .rec-eye{animation-duration:1.05s}
+.djcat-mini{width:62px;flex:0 0 62px}
+.djcat-mini svg{width:62px;height:auto;display:block}
+.djsec{margin-top:24px}
+.djcta{display:flex;gap:16px;align-items:center;background:linear-gradient(135deg,#1F3864,#4a2540);border-radius:16px;padding:16px 18px;cursor:pointer;color:#fff;box-shadow:0 6px 18px rgba(31,56,100,.28);transition:transform .12s}
+.djcta:hover{transform:translateY(-2px)}
+.djcta-art{width:152px;flex:0 0 152px}
+.djcta-art svg{width:152px;height:auto;display:block}
+.djcta-t{font-weight:800;font-size:1.35rem;color:#FFD98A;letter-spacing:.02em;line-height:1.2}
+.djcta .note{color:#e7dcc8;margin:6px 0 0}
+.djcta .dj-launch{margin-top:10px;pointer-events:none;display:inline-block}
+@media(max-width:520px){.djcta{flex-direction:column;text-align:center}.djcta-art{width:132px;flex-basis:132px}}
+/* 80s ポップ看板（DJ IENEKO） */
+.djcta{position:relative;overflow:hidden;background:linear-gradient(180deg,#241a49,#3a1c63 55%,#5a1f6e)!important;border:2px solid #ff5db1;box-shadow:0 0 0 2px #2de2e6 inset,0 8px 24px rgba(20,10,40,.45),0 0 18px rgba(255,93,177,.4);align-items:center}
+.djcta::before{content:"";position:absolute;left:-10%;right:-10%;bottom:0;height:44%;background:repeating-linear-gradient(transparent 0 15px,rgba(45,226,230,.4) 15px 16px);transform:perspective(120px) rotateX(55deg);transform-origin:bottom;opacity:.5;pointer-events:none}
+.djcta::after{content:"";position:absolute;top:-34px;right:34px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,#ffd36e,#ff6ec7 70%,transparent 72%);opacity:.6;pointer-events:none}
+.djcta-art,.djcta-text{position:relative;z-index:2}
+.djcta-t{font-weight:900;font-size:1.7rem;font-style:italic;color:#fff;letter-spacing:.04em;text-shadow:0 0 6px #ff5db1,0 0 13px #ff5db1,2px 2px 0 #2de2e6;line-height:1}
+.djcta-sub{font-weight:800;color:#2de2e6;letter-spacing:.24em;font-size:.8rem;margin-top:3px;text-shadow:0 0 6px rgba(45,226,230,.7)}
+.djcta .djp{color:#f3e3ff;margin:8px 0 0;font-size:.85rem;line-height:1.55}
+.djcta .dj-launch{margin-top:10px;pointer-events:none;display:inline-block;background:linear-gradient(90deg,#ff5db1,#ffb36e)!important;color:#2a0f3a!important;border:none;border-radius:999px;padding:8px 16px;font-weight:900}
+.djcat-mini{width:80px;flex:0 0 80px}
+
+</style></head>
+<body><div class="wrap">
+<section class="map-hero">
+  <div style="position:relative;z-index:2;font-size:.72rem;color:#999;letter-spacing:.04em;margin-bottom:2px">v1.2.0 · 自治会エディション</div>
+  <div style="position:relative;z-index:2">
+    <div style="font-size:.78rem;color:#7A3E5F;font-weight:700;letter-spacing:.08em;margin-bottom:2px">TOKYO UNIVERSITY · CIVIC TECH DISTRICT</div>
+    <h1>
+      <svg class="catmark" viewBox="0 0 60 60" aria-hidden="true"><g fill="#1F3864">
+        <path class="mascot-ear-l" d="M12 22 L20 6 L26 22 Z"/>
+        <path class="mascot-ear-r" d="M48 22 L40 6 L34 22 Z"/>
+        <circle cx="30" cy="32" r="18"/></g>
+        <g fill="#FFD98A"><circle cx="24" cy="30" r="2.5"/><circle cx="36" cy="30" r="2.5"/></g>
+      </svg>東京大学 シビックテック学創成町 家猫マップ
+    </h1>
+    <p class="lead">診断で生まれた猫たちを、<b>飼い主（公的⇔私的）</b>×<b>家猫度（半野良⇔純血家猫）</b>の2軸にプロット。この地区に暮らす猫の分布を、みんなで見守り、語り合う自治会マップです。</p>
+  </div>
+  <svg class="skyline" viewBox="0 0 1200 60" preserveAspectRatio="none" aria-hidden="true">
+    <g fill="rgba(31,56,100,.28)">
+      <rect x="0" y="30" width="80" height="30"/><rect x="80" y="14" width="46" height="46"/>
+      <rect x="126" y="34" width="52" height="26"/><polygon points="178,34 200,10 222,34 222,60 178,60"/>
+      <rect x="222" y="20" width="60" height="40"/><rect x="282" y="34" width="40" height="26"/>
+      <rect x="322" y="6" width="70" height="54"/><rect x="392" y="30" width="46" height="30"/>
+      <rect x="438" y="18" width="58" height="42"/><rect x="496" y="34" width="40" height="26"/>
+      <rect x="536" y="4" width="54" height="56"/><rect x="590" y="26" width="42" height="34"/>
+      <rect x="632" y="12" width="80" height="48"/><rect x="712" y="34" width="46" height="26"/>
+      <rect x="758" y="20" width="62" height="40"/><rect x="820" y="34" width="34" height="26"/>
+      <polygon points="854,34 878,12 902,34 902,60 854,60"/><rect x="902" y="26" width="50" height="34"/>
+      <rect x="952" y="8" width="70" height="52"/><rect x="1022" y="34" width="42" height="26"/>
+      <rect x="1064" y="20" width="58" height="40"/><rect x="1122" y="34" width="78" height="26"/>
+    </g>
+    <g fill="#FFD98A" opacity=".85">
+      <rect x="92" y="24" width="4" height="6"/><rect x="106" y="40" width="4" height="6"/>
+      <rect x="236" y="34" width="4" height="6"/><rect x="264" y="46" width="4" height="6"/>
+      <rect x="336" y="18" width="4" height="6"/><rect x="360" y="42" width="4" height="6"/>
+      <rect x="452" y="34" width="4" height="6"/><rect x="548" y="18" width="4" height="6"/>
+      <rect x="572" y="40" width="4" height="6"/><rect x="648" y="26" width="4" height="6"/>
+      <rect x="682" y="44" width="4" height="6"/><rect x="774" y="36" width="4" height="6"/>
+      <rect x="966" y="18" width="4" height="6"/><rect x="998" y="46" width="4" height="6"/>
+    </g>
+  </svg>
+</section>
+
+<div class="bar">
+  <button class="pri" onclick="reloadAll()">🔄 再読込</button>
+  <button onclick="exportJSON()">⬇ この端末のストックを書き出す(JSON)</button>
+  <label class="btn" style="display:inline-block">⬆ JSONを読み込む<input type="file" id="impFile" accept=".json,application/json" style="display:none" onchange="importJSON(this)"></label>
+  <button onclick="clearLocal()">🗑 この端末のストックを消す</button>
+</div>
+
+<div id="netstat" class="note" style="margin:-4px 0 10px">⏳ 共有サーバに接続中…</div>
+<div class="stat" id="stat"></div>
+<div class="maparea"><div id="mapHost"></div></div>
+<div class="qcards" id="qcards"></div>
+<div class="rank" id="rank"></div>
+
+<h2>🐾 みんなの家猫カード一覧</h2>
+<div class="gallery" id="gallery"></div>
+
+<section class="djsec">
+  <div class="djcta" onclick="openDJ()" title="タップでDJスタート">
+    <div class="djcta-art" id="djcat-art"></div>
+    <div class="djcta-text">
+      <div class="djcta-t">DJ IENEKO</div>
+      <div class="djcta-sub">▶ SPINNING RECORDS</div>
+      <p class="djp">DJ IENEKO がこのまちの猫たちにチョイスしたミュージックをMIXします。<span style="white-space:nowrap">（要Spotifyアカウント）</span></p>
+      <span class="dj-launch">▶ 再生する</span>
+    </div>
+  </div>
+</section>
+
+
+<p class="note" style="margin-top:14px">全員の結果は共有サーバーに自動で集約されます（この端末で生成した猫もすぐ表示）。設定は不要です。※プライバシー：座標・タイプ・時刻のみを扱い、個人を特定する情報は含みません。</p>
+</div>
+
+<div class="modal" id="modal" onclick="if(event.target===this)closeDetail()"><div class="dinner" id="dinner"></div></div>
+
+<div class="modal" id="djmodal" onclick="if(event.target===this)closeDJ()"><div class="dinner">
+  <button class="dx" onclick="closeDJ()">×</button>
+  <div class="dj-head" id="dj-head"><div class="djcat-mini" id="djcat-mini"></div><div>
+     <div class="dj-title">DJ IENEKO <span style="color:#B8763E">Spinning records</span></div>
+     <div class="note" style="margin:0">DJ IENEKO がこのまちの猫たちにチョイスしたミュージックをMIX🐾（要Spotifyアカウント）</div>
+  </div></div>
+  <div id="dj-embed-wrap">
+    <div class="deck" id="deck-a"><div id="dj-embed-a"></div></div>
+    <div class="deck hidden" id="deck-b"><div id="dj-embed-b"></div></div>
+  </div>
+  <div class="dj-now" id="dj-now"></div>
+  <div class="dj-ctrls">
+    <button onclick="djPrev()" title="前の曲">⏮</button>
+    <button class="big" id="dj-play" onclick="djToggle()" title="再生 / 一時停止">▶</button>
+    <button onclick="djNext()" title="次の曲">⏭</button>
+    <button id="dj-shuf" onclick="djToggleShuffle()" title="シャッフル">🔀</button>
+  </div>
+  <div class="dj-queue" id="dj-queue"></div>
+  <div class="dj-note">🎚️ 曲の終わり際に次の曲を重ねて繋ぐ<b>オートMIX（クロスフェード）</b>で連続再生します。<br>※ Spotify未ログイン時は各曲<b>30秒プレビュー</b>。フル尺＆滑らかな繋ぎには、同じブラウザで <a href="https://open.spotify.com" target="_blank" rel="noopener">Spotifyにログイン</a> してください（Spotifyの仕様上、音量フェードは非対応のため2曲を短く重ねて繋ぎます）。各曲の <span style="color:#1DB954;font-weight:800">↗</span> でSpotifyを開けます。</div>
+</div></div>
+
+
+<script>
+// 2軸パラメトリック猫顔ジェネレーター
+// x: 1(公的)..10(私的)   y: 1(半野良)..10(純血家猫)
+(function(root){
+function lerp(a,b,t){return a+(b-a)*t;}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+function smooth(t){t=clamp(t,0,1);return t*t*(3-2*t);}
+function mix(c1,c2,t){return [Math.round(lerp(c1[0],c2[0],t)),Math.round(lerp(c1[1],c2[1],t)),Math.round(lerp(c1[2],c2[2],t))];}
+function rgb(c){return 'rgb('+c[0]+','+c[1]+','+c[2]+')';}
+function dark(c,f){return [Math.round(c[0]*f),Math.round(c[1]*f),Math.round(c[2]*f)];}
+function rng(seed){let s=seed*9301+49297;return function(){s=(s*9301+49297)%233280;return s/233280;};}
+
+// 2026 W杯 出場48か国（国旗絵文字＋配色キット・ロゴ無し版権セーフ）
+var KITS={
+ ca:{name:'カナダ',flag:'🇨🇦',base:'#d52b1e',trim:'#ffffff'},
+ mx:{name:'メキシコ',flag:'🇲🇽',base:'#137a3e',trim:'#ffffff'},
+ us:{name:'アメリカ',flag:'🇺🇸',base:'#1c3a8c',trim:'#ffffff'},
+ jp:{name:'日本',flag:'🇯🇵',base:'#16307a',trim:'#ffffff'},
+ nz:{name:'ニュージーランド',flag:'🇳🇿',base:'#f2f2f2',trim:'#111111'},
+ ir:{name:'イラン',flag:'🇮🇷',base:'#f2f2f2',trim:'#1aa44a'},
+ ar:{name:'アルゼンチン',flag:'🇦🇷',base:'#ffffff',trim:'#74acdf',stripes:true,stripeCol:'#74acdf'},
+ uz:{name:'ウズベキスタン',flag:'🇺🇿',base:'#1f6fc0',trim:'#ffffff'},
+ jo:{name:'ヨルダン',flag:'🇯🇴',base:'#c8202e',trim:'#ffffff'},
+ kr:{name:'韓国',flag:'🇰🇷',base:'#d4012d',trim:'#ffffff'},
+ au:{name:'オーストラリア',flag:'🇦🇺',base:'#f4c20d',trim:'#1b7a3c'},
+ br:{name:'ブラジル',flag:'🇧🇷',base:'#f4d000',trim:'#1ca84f'},
+ ec:{name:'エクアドル',flag:'🇪🇨',base:'#ffd400',trim:'#1f3a8c'},
+ py:{name:'パラグアイ',flag:'🇵🇾',base:'#ffffff',trim:'#d4012d',stripes:true,stripeCol:'#d4012d'},
+ uy:{name:'ウルグアイ',flag:'🇺🇾',base:'#5aa6e6',trim:'#0a2a5e'},
+ co:{name:'コロンビア',flag:'🇨🇴',base:'#ffcd00',trim:'#1f3a8c'},
+ ma:{name:'モロッコ',flag:'🇲🇦',base:'#c1272d',trim:'#1b7a3c'},
+ tn:{name:'チュニジア',flag:'🇹🇳',base:'#e70013',trim:'#ffffff'},
+ eg:{name:'エジプト',flag:'🇪🇬',base:'#c8102e',trim:'#ffffff'},
+ dz:{name:'アルジェリア',flag:'🇩🇿',base:'#f2f2f2',trim:'#1b7a3c'},
+ gh:{name:'ガーナ',flag:'🇬🇭',base:'#f2f2f2',trim:'#d4012d'},
+ cv:{name:'カーボベルデ',flag:'🇨🇻',base:'#1f4ea1',trim:'#ffffff'},
+ qa:{name:'カタール',flag:'🇶🇦',base:'#8a1538',trim:'#ffffff'},
+ sa:{name:'サウジアラビア',flag:'🇸🇦',base:'#1b7a3c',trim:'#ffffff'},
+ sn:{name:'セネガル',flag:'🇸🇳',base:'#f2f2f2',trim:'#1b7a3c'},
+ za:{name:'南アフリカ',flag:'🇿🇦',base:'#1b7a3c',trim:'#f4c20d'},
+ ci:{name:'コートジボワール',flag:'🇨🇮',base:'#f36c21',trim:'#1b7a3c'},
+ eng:{name:'イングランド',flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',base:'#f4f4f4',trim:'#16307a'},
+ fr:{name:'フランス',flag:'🇫🇷',base:'#1e3a8c',trim:'#e23b3b'},
+ hr:{name:'クロアチア',flag:'🇭🇷',base:'#ffffff',trim:'#d4012d',stripes:true,stripeCol:'#d4012d'},
+ pt:{name:'ポルトガル',flag:'🇵🇹',base:'#c8102e',trim:'#1b7a3c'},
+ no:{name:'ノルウェー',flag:'🇳🇴',base:'#c8102e',trim:'#16307a'},
+ de:{name:'ドイツ',flag:'🇩🇪',base:'#f4f4f4',trim:'#141414'},
+ nl:{name:'オランダ',flag:'🇳🇱',base:'#f36c21',trim:'#ffffff'},
+ ch:{name:'スイス',flag:'🇨🇭',base:'#d52b1e',trim:'#ffffff'},
+ sct:{name:'スコットランド',flag:'🏴󠁧󠁢󠁳󠁣󠁴󠁿',base:'#1c3a6e',trim:'#ffffff'},
+ es:{name:'スペイン',flag:'🇪🇸',base:'#c8202e',trim:'#f4d000'},
+ at:{name:'オーストリア',flag:'🇦🇹',base:'#c8102e',trim:'#ffffff'},
+ be:{name:'ベルギー',flag:'🇧🇪',base:'#c8102e',trim:'#f4d000'},
+ pa:{name:'パナマ',flag:'🇵🇦',base:'#c8102e',trim:'#16307a'},
+ cw:{name:'キュラソー',flag:'🇨🇼',base:'#1f4ea1',trim:'#ffd400'},
+ ht:{name:'ハイチ',flag:'🇭🇹',base:'#1f4ea1',trim:'#d4012d'},
+ ba:{name:'ボスニア・ヘルツェゴビナ',flag:'🇧🇦',base:'#1f4ea1',trim:'#ffd400'},
+ se:{name:'スウェーデン',flag:'🇸🇪',base:'#f4d000',trim:'#1b53a8'},
+ tr:{name:'トルコ',flag:'🇹🇷',base:'#e30a17',trim:'#ffffff'},
+ cz:{name:'チェコ',flag:'🇨🇿',base:'#d7141a',trim:'#ffffff'},
+ cd:{name:'コンゴ民主共和国',flag:'🇨🇩',base:'#1f6fc0',trim:'#ffd400'},
+ iq:{name:'イラク',flag:'🇮🇶',base:'#f2f2f2',trim:'#1b7a3c'}
+};
+
+function catSVG(x,y,seed,kitKey){
+  seed=seed||1;
+  const nx=clamp((x-1)/9,0,1);      // 0 public .. 1 private
+  const ny=clamp((y-1)/9,0,1);      // 0 feral .. 1 housecat
+  const r=rng(seed);
+  // ---- palette (X: public cool grey -> private warm cream) ----
+  const PUB=[150,160,174], PRV=[226,184,128];
+  const fur=mix(PUB,PRV,nx);
+  const furD=dark(fur,0.80);                 // markings / shadow
+  const white=[249,247,241];                 // muzzle / chest
+  const patch=[150,110,72];                  // calico brown patch
+  const ink='#2b2b2b';
+  const innerEar=[246,198,198], earSh=[224,150,150], nose=[232,150,150];
+  const cx=150;
+  const kit = kitKey && KITS[kitKey];
+  const gid='hg'+seed, iid='ir'+seed, eid='eg'+seed;
+  const irisCol=mix([120,166,92],[214,150,66],nx); // greenish -> amber
+  let s='<svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">';
+  s+='<defs><radialGradient id="'+gid+'" cx="40%" cy="34%" r="76%">'
+    +'<stop offset="0%" stop-color="'+rgb(mix(fur,[255,255,255],0.26))+'"/>'
+    +'<stop offset="60%" stop-color="'+rgb(fur)+'"/>'
+    +'<stop offset="100%" stop-color="'+rgb(dark(fur,0.84))+'"/></radialGradient>'
+    +'<radialGradient id="'+iid+'" cx="40%" cy="34%" r="66%"><stop offset="0%" stop-color="'+rgb(mix(irisCol,[255,255,255],0.55))+'"/><stop offset="52%" stop-color="'+rgb(irisCol)+'"/><stop offset="100%" stop-color="'+rgb(dark(irisCol,0.58))+'"/></radialGradient>'
+    +'<radialGradient id="'+eid+'" cx="50%" cy="30%" r="75%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#eef1f6"/></radialGradient></defs>';
+
+  // ===== bust / shoulders (kit = uniform) =====
+  const BUST='M36,300 C36,248 92,224 150,224 C208,224 264,248 264,300 Z';
+  if(kit){
+    s+='<path d="'+BUST+'" fill="'+kit.base+'" stroke="'+ink+'" stroke-width="5"/>';
+    if(kit.stripes){
+      const cid='jc'+seed;
+      s+='<clipPath id="'+cid+'"><path d="'+BUST+'"/></clipPath><g clip-path="url(#'+cid+')">';
+      for(let xx=52;xx<268;xx+=30){s+='<rect x="'+xx+'" y="220" width="15" height="88" fill="'+kit.stripeCol+'"/>';}
+      s+='</g><path d="'+BUST+'" fill="none" stroke="'+ink+'" stroke-width="5"/>';
+    }
+    s+='<path d="M124,228 L150,250 L176,228" fill="none" stroke="'+kit.trim+'" stroke-width="7" stroke-linejoin="round"/>';
+    s+='<path d="M48,262 Q80,232 112,228" fill="none" stroke="'+kit.trim+'" stroke-width="6"/>';
+    s+='<path d="M252,262 Q220,232 188,228" fill="none" stroke="'+kit.trim+'" stroke-width="6"/>';
+  } else {
+    s+='<path d="'+BUST+'" fill="'+rgb(fur)+'" stroke="'+ink+'" stroke-width="5"/>';
+    // white chest bib
+    s+='<path d="M150,232 C176,236 188,262 184,300 L116,300 C112,262 124,236 150,232 Z" fill="'+rgb(white)+'"/>';
+    if(ny>0.55){ // collar+bell for housecat
+      const cw=smooth((ny-0.55)/0.45);
+      s+='<path d="M112,240 Q150,260 188,240" fill="none" stroke="'+rgb(mix([210,70,90],[120,90,200],nx))+'" stroke-width="'+(6*cw+2)+'" stroke-linecap="round"/>';
+      s+='<circle cx="150" cy="254" r="'+(5*cw+1.5)+'" fill="#ffd84a" stroke="'+ink+'" stroke-width="2"/>';
+    }
+  }
+
+  // ===== ears =====
+  const earUp=lerp(8,18,1-ny); // feral ears more upright/pointed
+  function ear(side){
+    const baseO=cx+side*92, baseI=cx+side*38;
+    const apexX=cx+side*(74+earUp), apexY=14-earUp;
+    let p='<path d="M'+baseO+',104 Q'+(cx+side*100)+',58 '+apexX+','+apexY+' Q'+(cx+side*58)+',46 '+baseI+',74 Z" fill="'+rgb(fur)+'" stroke="'+ink+'" stroke-width="5" stroke-linejoin="round"/>';
+    p+='<path d="M'+(cx+side*80)+',92 Q'+(cx+side*86)+',64 '+(cx+side*68)+',34 Q'+(cx+side*50)+',56 '+(cx+side*44)+',78 Z" fill="'+rgb(innerEar)+'"/>';
+    return p;
+  }
+  s+=ear(-1)+ear(1);
+
+  // ===== head =====
+  const HEAD='M150,44 C232,44 250,104 248,150 C246,200 206,232 150,232 C94,232 54,200 52,150 C50,104 68,44 150,44 Z';
+  s+='<path d="'+HEAD+'" fill="url(#'+gid+')" stroke="'+ink+'" stroke-width="5" stroke-linejoin="round"/>';
+
+  // ===== coat markings (clipped to head) =====
+  const cidH='hd'+seed;
+  s+='<clipPath id="'+cidH+'"><path d="'+HEAD+'"/></clipPath><g clip-path="url(#'+cidH+')">';
+  const style=seed%3; // 0 calico, 1 tabby, 2 plain+white
+  if(style===0){ // calico: brown patch over one upper side + ear-side
+    const sd=(seed%2)?1:-1;
+    s+='<path d="M'+cx+',44 C'+(cx+sd*70)+',44 '+(cx+sd*100)+',70 '+(cx+sd*96)+',120 C'+(cx+sd*70)+',150 '+(cx+sd*30)+',120 '+cx+',92 Z" fill="'+rgb(patch)+'"/>';
+    s+='<ellipse cx="'+(cx-sd*70)+'" cy="186" rx="34" ry="26" fill="'+rgb(patch)+'" opacity="0.9"/>';
+  } else if(style===1){ // tabby stripes (forehead + cheeks)
+    s+='<g stroke="'+rgb(furD)+'" stroke-width="7" stroke-linecap="round" fill="none">';
+    s+='<path d="M150,52 L150,86"/><path d="M132,56 Q126,72 122,90"/><path d="M168,56 Q174,72 178,90"/>';
+    s+='<path d="M60,150 q22,6 40,2"/><path d="M60,170 q24,6 42,0"/>';
+    s+='<path d="M240,150 q-22,6 -40,2"/><path d="M240,170 q-24,6 -42,0"/>';
+    s+='</g>';
+  }
+  // soft lower shading
+  s+='<path d="M52,150 C70,222 230,222 248,150 C246,210 206,236 150,236 C94,236 54,210 52,150 Z" fill="'+rgb(furD)+'" opacity="0.16"/>';
+  s+='</g>';
+
+  // forehead white blaze for calico/plain
+  if(style!==1){ s+='<path d="M150,150 C140,120 140,92 150,78 C160,92 160,120 150,150 Z" fill="'+rgb(white)+'" opacity="0.9"/>'; }
+
+  // ===== muzzle (white) + blush cheeks =====
+  s+='<ellipse cx="150" cy="180" rx="54" ry="40" fill="'+rgb(white)+'"/>';
+  s+='<ellipse cx="92" cy="176" rx="17" ry="10" fill="#f29b9b" opacity="0.32"/>';
+  s+='<ellipse cx="208" cy="176" rx="17" ry="10" fill="#f29b9b" opacity="0.32"/>';
+
+  // ===== eyes (big, friendly, glossy) =====
+  const eyeDX=46, eyeY=148, eyeRx=21, eyeRy=24;
+  const pr=lerp(8,11,ny);                            // pupil bigger when housecat
+  const lidF=ny<0.4?((0.4-ny)/0.4):0;                // feral upper-lid
+  function eye(side){
+    const ex=cx+side*eyeDX; let p='';
+    p+='<ellipse cx="'+ex+'" cy="'+eyeY+'" rx="'+eyeRx+'" ry="'+eyeRy+'" fill="url(#'+eid+')" stroke="'+ink+'" stroke-width="4"/>';
+    p+='<circle cx="'+ex+'" cy="'+(eyeY+1.5)+'" r="'+(eyeRy-2)+'" fill="url(#'+iid+')"/>';
+    p+='<circle cx="'+ex+'" cy="'+(eyeY+1.5)+'" r="'+(eyeRy-2)+'" fill="none" stroke="'+rgb(dark(irisCol,0.6))+'" stroke-width="2.4"/>';
+    p+='<circle cx="'+ex+'" cy="'+(eyeY+2.5)+'" r="'+pr+'" fill="#141414"/>';
+    p+='<circle cx="'+(ex-5.5)+'" cy="'+(eyeY-6.5)+'" r="5.2" fill="#fff"/>';
+    p+='<circle cx="'+(ex+6)+'" cy="'+(eyeY+7)+'" r="2.6" fill="#fff" opacity="0.9"/>';
+    p+='<path d="M'+(ex-eyeRx+3)+','+(eyeY+eyeRy-4)+' Q'+ex+','+(eyeY+eyeRy+2)+' '+(ex+eyeRx-3)+','+(eyeY+eyeRy-4)+'" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity="0.5"/>';
+    p+='<path d="M'+(ex-eyeRx+2)+','+(eyeY-eyeRy+5)+' Q'+ex+','+(eyeY-eyeRy-2)+' '+(ex+eyeRx-2)+','+(eyeY-eyeRy+5)+'" fill="none" stroke="'+ink+'" stroke-width="2.6" stroke-linecap="round" opacity="0.55"/>';
+    if(lidF>0){ p+='<path d="M'+(ex-eyeRx-1)+','+(eyeY-eyeRy*0.5)+' Q'+ex+','+(eyeY-eyeRy-3*lidF)+' '+(ex+eyeRx+1)+','+(eyeY-eyeRy*0.5)+' L'+(ex+eyeRx+1)+','+(eyeY-eyeRy)+' L'+(ex-eyeRx-1)+','+(eyeY-eyeRy)+' Z" fill="'+rgb(fur)+'" opacity="'+(0.55*lidF).toFixed(2)+'"/>'; }
+    return p;
+  }
+  s+=eye(-1)+eye(1);
+
+  // ===== nose + mouth =====
+  const ny0=170;
+  s+='<path d="M139,'+ny0+' Q150,'+(ny0-4)+' 161,'+ny0+' Q156,'+(ny0+9)+' 150,'+(ny0+11)+' Q144,'+(ny0+9)+' 139,'+ny0+' Z" fill="'+rgb(nose)+'" stroke="'+ink+'" stroke-width="2.5" stroke-linejoin="round"/>';
+  s+='<ellipse cx="146" cy="'+(ny0+1)+'" rx="3" ry="2" fill="#fff" opacity="0.55"/>';
+  const m=lerp(7,15,ny);
+  s+='<path d="M150,'+(ny0+11)+' L150,'+(ny0+17)+'" stroke="'+ink+'" stroke-width="3"/>';
+  s+='<path d="M150,'+(ny0+17)+' Q'+(cx-15)+','+(ny0+17+m)+' '+(cx-26)+','+(ny0+11)+'" fill="none" stroke="'+ink+'" stroke-width="3" stroke-linecap="round"/>';
+  s+='<path d="M150,'+(ny0+17)+' Q'+(cx+15)+','+(ny0+17+m)+' '+(cx+26)+','+(ny0+11)+'" fill="none" stroke="'+ink+'" stroke-width="3" stroke-linecap="round"/>';
+
+  // ===== whiskers =====
+  s+='<g stroke="'+ink+'" stroke-width="2" stroke-linecap="round" opacity="0.75">';
+  for(let i=0;i<3;i++){const wy=170+i*9;
+    s+='<path d="M'+(cx-30)+','+wy+' q-28,'+(i*5-5)+' -50,'+(i*6-3)+'"/>';
+    s+='<path d="M'+(cx+30)+','+wy+' q28,'+(i*5-5)+' 50,'+(i*6-3)+'"/>';
+  }
+  s+='</g>';
+  s+='</svg>';
+  return s;
+}
+// 八角形レーダー（8軸）scores:0-10[8], labels:string[8]
+function octaRadar(scores,labels){
+  const W=420,H=380,cx=210,cy=188,R=120;
+  const ang=i=>-Math.PI/2+i*Math.PI/4;
+  const pt=(v,i)=>[cx+R*v/10*Math.cos(ang(i)), cy+R*v/10*Math.sin(ang(i))];
+  const poly=v=>{let p='';for(let i=0;i<8;i++){const q=pt(v,i);p+=(i?' L':'M')+q[0].toFixed(1)+','+q[1].toFixed(1);}return p+' Z';};
+  let s='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg"><style>text{font-family:\'Noto Sans CJK JP\',sans-serif;}</style>';
+  s+='<rect width="'+W+'" height="'+H+'" fill="#ffffff"/>';
+  // grid rings
+  [2,4,6,8,10].forEach(r=>{s+='<path d="'+poly(r)+'" fill="none" stroke="'+(r===10?'#9aa6bd':'#e1e6f0')+'" stroke-width="'+(r===10?2:1)+'"/>';});
+  // spokes
+  for(let i=0;i<8;i++){const q=pt(10,i);s+='<line x1="'+cx+'" y1="'+cy+'" x2="'+q[0].toFixed(1)+'" y2="'+q[1].toFixed(1)+'" stroke="#e1e6f0" stroke-width="1"/>';}
+  // data polygon
+  s+='<path d="'+poly(0)+'" fill="none"/>';
+  let dp='';for(let i=0;i<8;i++){const q=pt(scores[i],i);dp+=(i?' L':'M')+q[0].toFixed(1)+','+q[1].toFixed(1);}dp+=' Z';
+  s+='<path d="'+dp+'" fill="rgba(192,0,0,.20)" stroke="#C00000" stroke-width="2.5" stroke-linejoin="round"/>';
+  for(let i=0;i<8;i++){const q=pt(scores[i],i);s+='<circle cx="'+q[0].toFixed(1)+'" cy="'+q[1].toFixed(1)+'" r="3.5" fill="#C00000"/>';}
+  // labels
+  for(let i=0;i<8;i++){const a=ang(i),lx=cx+(R+26)*Math.cos(a),ly=cy+(R+26)*Math.sin(a);
+    let anc='middle'; if(Math.cos(a)>0.4)anc='start'; else if(Math.cos(a)<-0.4)anc='end';
+    s+='<text x="'+lx.toFixed(1)+'" y="'+(ly+4).toFixed(1)+'" text-anchor="'+anc+'" font-size="12.5" font-weight="bold" fill="#1F3864">'+labels[i]+'</text>';
+    s+='<text x="'+lx.toFixed(1)+'" y="'+(ly+19).toFixed(1)+'" text-anchor="'+anc+'" font-size="11" fill="#C00000">'+scores[i].toFixed(0)+'</text>';
+  }
+  s+='</svg>';return s;
+}
+// 「あなたのまち」の象徴を描く背景（viewBox 0 0 300 210 前提の内側SVG）
+var REGIONS={
+ fuji:{name:'富士・山あるまち'},city:{name:'都会・タワー'},sea:{name:'海辺のまち'},
+ sato:{name:'里山・田園'},castle:{name:'城下町'},north:{name:'北国・雪'}
+};
+function regionBG(key){
+ if(key==='fuji')return '<rect width="300" height="210" fill="#cfeaf5"/><circle cx="248" cy="42" r="19" fill="#fff2bf"/>'
+   +'<path d="M20,178 L150,58 L280,178 Z" fill="#8ea9c9"/><path d="M116,96 L150,58 L184,96 Q150,80 116,96 Z" fill="#fff"/>'
+   +'<rect y="176" width="300" height="34" fill="#bcd3a6"/>'
+   +'<g stroke="#c0392b" stroke-width="7" stroke-linecap="round"><path d="M42,205 V150"/><path d="M92,205 V150"/></g><rect x="30" y="140" width="74" height="9" rx="2" fill="#c0392b"/><rect x="34" y="152" width="66" height="7" fill="#a52a20"/>';
+ if(key==='city')return '<rect width="300" height="210" fill="#dce8f3"/>'
+   +'<g fill="#9fb2c9"><rect x="14" y="120" width="34" height="90"/><rect x="56" y="90" width="30" height="120"/><rect x="150" y="110" width="34" height="100"/><rect x="196" y="80" width="30" height="130"/><rect x="234" y="128" width="34" height="82"/></g>'
+   +'<g fill="#7f93ad"><rect x="98" y="52" width="40" height="158"/></g><path d="M108,52 L118,20 L128,52 Z" fill="#7f93ad"/>'
+   +'<g fill="#eef4fb" opacity="0.8"><rect x="104" y="70" width="8" height="10"/><rect x="120" y="70" width="8" height="10"/><rect x="104" y="92" width="8" height="10"/><rect x="120" y="92" width="8" height="10"/></g>';
+ if(key==='sea')return '<rect width="300" height="210" fill="#d7edf6"/><circle cx="60" cy="46" r="17" fill="#fff2bf"/>'
+   +'<rect y="150" width="300" height="60" fill="#7ec5df"/><path d="M0,158 q20,8 40,0 t40,0 t40,0 t40,0 t40,0 t40,0 t40,0" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.6"/>'
+   +'<rect x="228" y="96" width="22" height="72" fill="#f2f2f2" stroke="#c9c9c9"/><g fill="#d94b4b"><rect x="228" y="104" width="22" height="10"/><rect x="228" y="126" width="22" height="10"/></g><rect x="224" y="88" width="30" height="10" fill="#c9c9c9"/><circle cx="239" cy="84" r="6" fill="#ffe08a"/>';
+ if(key==='sato')return '<rect width="300" height="210" fill="#dff0f6"/>'
+   +'<path d="M0,120 Q80,86 160,116 T300,110 V210 H0 Z" fill="#a9cf86"/><path d="M0,150 Q90,124 180,150 T300,146 V210 H0 Z" fill="#8bbe6a"/>'
+   +'<g stroke="#6fa551" stroke-width="2" opacity="0.7"><path d="M0,168 q150,-12 300,0 M0,182 q150,-12 300,0 M0,196 q150,-12 300,0"/></g>'
+   +'<g><rect x="30" y="120" width="40" height="26" fill="#f0e6d2" stroke="#7a6a4a" stroke-width="2"/><path d="M26,120 L50,102 L74,120 Z" fill="#9a6b4a" stroke="#7a6a4a" stroke-width="2"/></g>';
+ if(key==='castle')return '<rect width="300" height="210" fill="#f6dbe6"/><circle cx="250" cy="46" r="18" fill="#ffe3ef"/>'
+   +'<rect y="176" width="300" height="34" fill="#b9c7a0"/>'
+   +'<g fill="#5b6b86" stroke="#3a4763" stroke-width="2"><rect x="126" y="120" width="48" height="56"/><rect x="134" y="96" width="32" height="26"/><rect x="140" y="74" width="20" height="24"/></g>'
+   +'<g fill="#39465f"><path d="M120,120 h60 l-10,-10 h-40 z"/><path d="M130,96 h40 l-8,-9 h-24 z"/><path d="M138,74 h24 l-6,-8 h-12 z"/></g>'
+   +'<g fill="#ff9ec4" opacity="0.85"><circle cx="40" cy="60" r="5"/><circle cx="70" cy="90" r="4"/><circle cx="240" cy="120" r="5"/><circle cx="270" cy="150" r="4"/><circle cx="30" cy="130" r="4"/></g>';
+ if(key==='north')return '<rect width="300" height="210" fill="#e7f1f7"/>'
+   +'<path d="M0,150 L70,80 L140,150 Z" fill="#cdd8e2"/><path d="M110,150 L190,70 L270,150 Z" fill="#dbe4ec"/>'
+   +'<path d="M40,120 L70,80 L96,116 Q70,104 40,120 Z" fill="#fff"/><path d="M158,110 L190,70 L220,108 Q190,96 158,110 Z" fill="#fff"/>'
+   +'<rect y="150" width="300" height="60" fill="#f3f7fb"/>'
+   +'<g><rect x="40" y="150" width="46" height="28" fill="#c98a6a" stroke="#7a5238" stroke-width="2"/><path d="M34,150 L63,124 L92,150 Z" fill="#8a5a3a" stroke="#7a5238" stroke-width="2"/><path d="M34,150 L63,124 L92,150" fill="#fff" opacity="0.6"/></g>'
+   +'<g fill="#ffffff"><circle cx="120" cy="60" r="3"/><circle cx="220" cy="90" r="3"/><circle cx="90" cy="120" r="3"/><circle cx="260" cy="140" r="3"/><circle cx="160" cy="170" r="3"/></g>';
+ return '';
+}
+if(typeof module!=='undefined'&&module.exports){module.exports={catSVG:catSVG,octaRadar:octaRadar,KITS:KITS,regionBG:regionBG,REGIONS:REGIONS};}
+root.regionBG=regionBG; root.REGIONS=REGIONS;
+root.catSVG=catSVG; root.octaRadar=octaRadar; root.KITS=KITS;
+})(typeof window!=='undefined'?window:globalThis);
+
+</script>
+<script>
+var QUAD={"halfP": {"name": "半野良（公）", "light": "#E2EFDA", "banner": "#5a7d3a"}, "cage": {"name": "公営の檻", "light": "#D9E1F2", "banner": "#3a5a8c"}, "halfV": {"name": "半野良（私）", "light": "#FFF2CC", "banner": "#b58f2a"}, "house": {"name": "ハイテク室内飼い", "light": "#FCE4D6", "banner": "#b5663a"}};
+var RECORDS=[];      // 表示順（新しい順）
+var TYByName={}, TYByCat={};
+const SHARED_API="https://script.google.com/macros/s/AKfycbzBaagdobV2ixb6GwVpAFDmCN4tOwmvAseuPq8OvXnZsoOcUJ5kwD8Ih11TOKjYSf8U/exec";
+function quadKey(x,y){var p=x>=5.5,d=y>=5.5;return d?(p?'house':'cage'):(p?'halfV':'halfP');}
+function catsUrl(){return SHARED_API?SHARED_API+(SHARED_API.indexOf('?')<0?'?':'&')+'what=cats':'';}
+function getLocal(){try{return JSON.parse(localStorage.getItem('catmap_stock')||'[]');}catch(e){return [];}}
+function num(v){var n=parseFloat(v);return isFinite(n)?n:null;}
+function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+// ---- CSV parse（家猫_データソース.csv からチュール等を取得）----
+function parseCSV(text){var rows=[],row=[],cur='',q=false;for(var i=0;i<text.length;i++){var c=text[i];if(q){if(c==='"'){if(text[i+1]==='"'){cur+='"';i++;}else q=false;}else cur+=c;}else{if(c==='"')q=true;else if(c===','){row.push(cur);cur='';}else if(c==='\n'){row.push(cur);rows.push(row);row=[];cur='';}else if(c==='\r'){}else cur+=c;}}if(cur!==''||row.length){row.push(cur);rows.push(row);}return rows;}
+var HMAP={'no':'no','番号':'no','領域':'cluster','タイプ名':'name','名称':'name','猫ネーム':'catname','キャッチ':'catch','家猫化ポイント':'point','x':'x','y':'y','チュール':'churu','キャットタワー':'tower','改善策':'kaizen','またたび策':'kaizen','副作用':'side','出典':'source','url':'url','引用元url':'url'};
+function nrm(s){return (s||'').replace(/[\s　]/g,'').replace(/[（(][^）)]*[）)]/g,'').toLowerCase();}
+function loadTypes(){return fetch('家猫_データソース.csv',{cache:'no-store'}).then(function(r){return r.text();}).then(function(t){
+  var rows=parseCSV(t.replace(/^﻿/,'')).filter(function(r){return r.some(function(c){return c!=='';});});
+  if(rows.length<2)return; var head=rows[0].map(function(h){return HMAP[nrm(h)]||nrm(h);});
+  TYByName={};TYByCat={};
+  for(var i=1;i<rows.length;i++){var o={};head.forEach(function(k,j){o[k]=(rows[i][j]||'').trim();});if(!o.name)continue;o.x=parseFloat(o.x)||5;o.y=parseFloat(o.y)||5;TYByName[o.name]=o;if(o.catname)TYByCat[o.catname]=o;}
+}).catch(function(){});}
+
+function norm(o){var x=num(o.x!=null?o.x:o.X),y=num(o.y!=null?o.y:o.Y);if(x==null||y==null)return null;
+  return {x:x,y:y,typeName:o.typeName||o.nearestName||o.name||'',catname:o.catname||o.catName||'',persona:o.persona||o.quad||'',kit:o.kit||'',ts:o.ts||''};}
+function parseRemote(text){text=(text||'').replace(/^﻿/,'').trim();if(!text)return [];
+  if(text[0]==='['){try{return JSON.parse(text).map(norm).filter(Boolean);}catch(e){}}
+  if(text[0]==='{'){var out=[];text.split('\n').forEach(function(ln){ln=ln.trim();if(!ln)return;try{var r=norm(JSON.parse(ln));if(r)out.push(r);}catch(e){}});return out;}
+  var rows=parseCSV(text).filter(function(r){return r.some(function(c){return c!=='';});});if(rows.length<2)return [];
+  var head=rows[0].map(function(h){return (h||'').trim();});var o2=[];for(var i=1;i<rows.length;i++){var o={};head.forEach(function(k,j){o[k]=(rows[i][j]||'').trim();});var r=norm(o);if(r)o2.push(r);}return o2;}
+function fetchText(u){return fetch(u,{cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.text();});}
+
+function reloadAll(){
+  var recs=[]; getLocal().forEach(function(o){var r=norm(o);if(r)recs.push(r);});
+  var apiOk=null;
+  var jobs=[loadTypes()];
+  var u=catsUrl();
+  var ns=document.getElementById('netstat');if(ns)ns.innerHTML='⏳ 共有サーバに接続中…';
+  if(u)jobs.push(fetchText(u).then(function(t){parseRemote(t).forEach(function(r){recs.push(r);});apiOk=true;}).catch(function(){apiOk=false;}));
+  else apiOk=false;
+  jobs.push(fetchText('data/results.jsonl').then(function(t){parseRemote(t).forEach(function(r){recs.push(r);});}).catch(function(){}));
+  Promise.all(jobs).then(function(){
+    if(ns)ns.innerHTML=apiOk?'🟢 共有サーバに接続OK（全端末の結果を表示中）':'🔴 共有サーバに接続できません。GASの「アクセス：全員」と再デプロイ（新バージョン）をご確認ください。この端末の結果のみ表示しています。';
+    // 新しい順
+    recs.sort(function(a,b){return (b.ts||'').localeCompare(a.ts||'');});
+    RECORDS=recs; render();
+  });
+}
+
+function seedOf(r){return Math.round(r.x*7+r.y*13);}
+function typeOf(r){return TYByName[r.typeName]||TYByCat[r.catname]||{};}
+
+function render(){
+  var S=Math.min(560,Math.max(320,(document.querySelector('.maparea').clientWidth-28)));
+  var pad=46,inner=S-2*pad;
+  function px(x){return pad+(x-1)/9*inner;} function py(y){return S-pad-(y-1)/9*inner;}
+  var qc={halfP:0,cage:0,halfV:0,house:0},qsum={halfP:{sx:0,sy:0},cage:{sx:0,sy:0},halfV:{sx:0,sy:0},house:{sx:0,sy:0}},typeCount={};
+  RECORDS.forEach(function(r){var k=quadKey(r.x,r.y);qc[k]++;qsum[k].sx+=r.x;qsum[k].sy+=r.y;if(r.typeName)typeCount[r.typeName]=(typeCount[r.typeName]||0)+1;});
+  var N=RECORDS.length;
+
+  var s='<svg viewBox="0 0 '+S+' '+S+'" width="'+S+'" height="'+S+'" xmlns="http://www.w3.org/2000/svg" style="max-width:100%">';
+  var midx=px(5.5),midy=py(5.5);
+  s+='<rect x="'+pad+'" y="'+pad+'" width="'+(midx-pad)+'" height="'+(midy-pad)+'" fill="'+QUAD.cage.light+'"/>';
+  s+='<rect x="'+midx+'" y="'+pad+'" width="'+(pad+inner-midx)+'" height="'+(midy-pad)+'" fill="'+QUAD.house.light+'"/>';
+  s+='<rect x="'+pad+'" y="'+midy+'" width="'+(midx-pad)+'" height="'+(pad+inner-midy)+'" fill="'+QUAD.halfP.light+'"/>';
+  s+='<rect x="'+midx+'" y="'+midy+'" width="'+(pad+inner-midx)+'" height="'+(pad+inner-midy)+'" fill="'+QUAD.halfV.light+'"/>';
+  s+='<text x="'+(pad+6)+'" y="'+(pad+16)+'" font-size="11" fill="#3a5a8c" font-weight="bold">公営の檻</text>';
+  s+='<text x="'+(pad+inner-6)+'" y="'+(pad+16)+'" font-size="11" fill="#b5663a" font-weight="bold" text-anchor="end">ハイテク室内飼い</text>';
+  s+='<text x="'+(pad+6)+'" y="'+(pad+inner-8)+'" font-size="11" fill="#5a7d3a" font-weight="bold">半野良（公）</text>';
+  s+='<text x="'+(pad+inner-6)+'" y="'+(pad+inner-8)+'" font-size="11" fill="#b58f2a" font-weight="bold" text-anchor="end">半野良（私）</text>';
+  s+='<g stroke="#cfd6e0" stroke-width="1">';
+  for(var g=1;g<=10;g++){s+='<line x1="'+px(g)+'" y1="'+pad+'" x2="'+px(g)+'" y2="'+(pad+inner)+'"/><line x1="'+pad+'" y1="'+py(g)+'" x2="'+(pad+inner)+'" y2="'+py(g)+'"/>';}
+  s+='</g>';
+  s+='<line x1="'+midx+'" y1="'+pad+'" x2="'+midx+'" y2="'+(pad+inner)+'" stroke="#8894a6" stroke-width="1.5" stroke-dasharray="5 4"/>';
+  s+='<line x1="'+pad+'" y1="'+midy+'" x2="'+(pad+inner)+'" y2="'+midy+'" stroke="#8894a6" stroke-width="1.5" stroke-dasharray="5 4"/>';
+  s+='<rect x="'+pad+'" y="'+pad+'" width="'+inner+'" height="'+inner+'" fill="none" stroke="#333" stroke-width="2"/>';
+  function jit(i,m){var v=Math.sin(i*12.9898)*43758.5453;v=v-Math.floor(v);return (v-0.5)*2*m;}
+  RECORDS.forEach(function(r,i){var k=quadKey(r.x,r.y);var cx=px(r.x)+jit(i+1,7),cy=py(r.y)+jit(i+7,7);
+    s+='<circle cx="'+cx.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="6" fill="'+QUAD[k].banner+'" fill-opacity="0.78" stroke="#fff" stroke-width="1.2" style="cursor:pointer" onclick="openDetail('+i+')"><title>'+esc(r.typeName)+(r.catname?'（'+esc(r.catname)+'）':'')+'  X'+r.x+' Y'+r.y+'</title></circle>';});
+  s+='<text x="'+(pad+inner/2)+'" y="'+(S-10)+'" text-anchor="middle" font-size="13" font-weight="bold" fill="#333">飼い主：公的 ←〜→ 私的</text>';
+  s+='<text transform="translate(14,'+(pad+inner/2)+') rotate(-90)" text-anchor="middle" font-size="13" font-weight="bold" fill="#333">家猫度：半野良 ←〜→ 純血家猫</text>';
+  s+='</svg>';
+  document.getElementById('mapHost').innerHTML=N?s:s+'<div class="empty">まだ猫がいません。診断アプリで猫を生成すると、ここに溜まっていきます🐾</div>';
+
+  var avgx=N?(RECORDS.reduce(function(a,r){return a+r.x;},0)/N):0,avgy=N?(RECORDS.reduce(function(a,r){return a+r.y;},0)/N):0;
+  var st='<div class="chip">合計<b>'+N+' 匹</b></div><div class="chip">平均の位置<b>X '+avgx.toFixed(1)+' / Y '+avgy.toFixed(1)+'</b></div>';
+  var domK=Object.keys(qc).sort(function(a,b){return qc[b]-qc[a];})[0];
+  st+='<div class="chip">いちばん多い象限<b style="font-size:1.05rem">'+(N?QUAD[domK].name:'—')+'</b></div>';
+  document.getElementById('stat').innerHTML=st;
+
+  var order=['cage','house','halfP','halfV'],qh='';
+  order.forEach(function(k){var c=qc[k],pct=N?Math.round(c/N*100):0;
+    var cx=c?qsum[k].sx/c:(k==='cage'?3:k==='house'?8:k==='halfP'?3:8);var cy=c?qsum[k].sy/c:(k==='cage'||k==='house'?8:3);
+    var tc={};RECORDS.forEach(function(r){if(quadKey(r.x,r.y)===k&&r.typeName)tc[r.typeName]=(tc[r.typeName]||0)+1;});
+    var top=Object.keys(tc).sort(function(a,b){return tc[b]-tc[a];}).slice(0,2).map(function(t){return esc(t)+'('+tc[t]+')';}).join('、')||'—';
+    qh+='<div class="qcard"><div class="qcat">'+catSVG(cx,cy,Math.round(cx*7+cy*13),'')+'</div><div><h3 style="color:'+QUAD[k].banner+'">'+QUAD[k].name+'</h3><div class="pct" style="color:'+QUAD[k].banner+'">'+pct+'%<span style="font-size:.9rem;color:#666"> ／ '+c+'匹</span></div><div class="tp">多いタイプ：'+top+'</div></div></div>';});
+  document.getElementById('qcards').innerHTML=qh;
+
+  var tks=Object.keys(typeCount).sort(function(a,b){return typeCount[b]-typeCount[a];}).slice(0,10);
+  var rh='<b>この地区に多い家猫タイプ TOP10</b>';
+  if(tks.length){rh+='<ol>';tks.forEach(function(t){rh+='<li>'+esc(t)+' <span class="n">'+typeCount[t]+'匹</span></li>';});rh+='</ol>';}else rh+='<div class="note" style="margin-top:6px">データがたまるとランキングが出ます。</div>';
+  document.getElementById('rank').innerHTML=rh;
+
+  // ギャラリー（全カード）
+  var gh='';
+  RECORDS.slice(0,400).forEach(function(r,i){var q=QUAD[quadKey(r.x,r.y)];
+    gh+='<div class="gcard" onclick="openDetail('+i+')"><div class="gart" style="background:'+q.light+'">'+catSVG(r.x,r.y,seedOf(r),r.kit||'')+'</div><div class="gnm">'+esc(r.catname||'（無名の猫）')+'</div><div class="gty">'+esc(r.typeName||'')+'</div></div>';});
+  document.getElementById('gallery').innerHTML=N?gh:'<div class="empty" style="grid-column:1/-1">まだカードがありません🐾</div>';
+}
+
+function openDetail(i){var r=RECORDS[i];if(!r)return;var t=typeOf(r);var q=QUAD[quadKey(r.x,r.y)];
+  var h='<button class="dx" onclick="closeDetail()">×</button>';
+  h+='<div class="dart" style="background:'+q.light+';border:2px solid '+q.banner+'">'+catSVG(r.x,r.y,seedOf(r),r.kit||'')+'</div>';
+  h+='<span class="badge" style="background:'+q.banner+'">'+q.name+'</span>';
+  h+='<h2 style="margin:.3em 0 .1em">'+esc(r.catname||'（無名の猫）')+'</h2>';
+  h+='<div class="note" style="margin-bottom:6px">'+esc(r.typeName||'')+(r.persona?'　｜　'+esc(r.persona):'')+'　｜　X'+r.x+'・Y'+r.y+'</div>';
+  if(t.catch)h+='<div class="kv">'+esc(t.catch)+'</div>';
+  h+='<div class="kv"><b>🍶 ごきげんチュール：</b>'+esc(t.churu||'（データ未登録）')+'</div>';
+  h+='<div class="kv"><b>🪜 キャットタワー：</b>'+esc(t.tower||'（データ未登録）')+'</div>';
+  h+='<div class="kv"><b>🌿 またたび：</b>'+esc(t.kaizen||'（データ未登録）')+'</div>';
+  if(t.side)h+='<div class="kv"><b>🐾 そっと気をつけたいこと：</b>'+esc(t.side)+'</div>';
+  if(t.source)h+='<div class="kv" style="font-size:.8rem;color:#666"><b>📚 出典：</b>'+esc(t.source)+(t.url?' ／ <a href="'+t.url+'" target="_blank" rel="noopener">引用元</a>':'')+'</div>';
+  var _sg=(typeof SONG_BY_NAME!=='undefined')&&(SONG_BY_NAME[r.typeName]||SONG_BY_CAT[r.catname]);
+  if(_sg){h+='<div class="kv"><b>🎵 テーマソング：</b>'+esc(_sg.title)+(_sg.sub?' <span style="color:#c0392b;font-size:.72rem">（※「'+esc(_sg.sub)+'」の代用）</span>':'')+' <button class="dj-mini" onclick="closeDetail();openDJ('+_sg.no+')">'+DJ_SPOT+'この曲からDJ</button></div>';}
+  document.getElementById('dinner').innerHTML=h;document.getElementById('modal').classList.add('on');}
+function closeDetail(){document.getElementById('modal').classList.remove('on');}
+window.openDetail=openDetail;window.closeDetail=closeDetail;
+
+function exportJSON(){var a=getLocal();var blob=new Blob([JSON.stringify(a,null,2)],{type:'application/json'});var u=URL.createObjectURL(blob);var el=document.createElement('a');el.href=u;el.download='iemeko_stock.json';document.body.appendChild(el);el.click();setTimeout(function(){el.remove();URL.revokeObjectURL(u);},100);}
+function importJSON(inp){var f=inp.files&&inp.files[0];if(!f)return;var rd=new FileReader();rd.onload=function(){try{var arr=JSON.parse(rd.result);if(!Array.isArray(arr))throw 0;var cur=getLocal();localStorage.setItem('catmap_stock',JSON.stringify(cur.concat(arr).slice(-3000)));reloadAll();alert('読み込みました（'+arr.length+'件を追加）');}catch(e){alert('JSONを読み込めませんでした。');}};rd.readAsText(f);}
+function clearLocal(){if(confirm('この端末に保存された猫のストックを消します。よろしいですか？（共有データには影響しません）')){localStorage.removeItem('catmap_stock');reloadAll();}}
+window.reloadAll=reloadAll;window.exportJSON=exportJSON;window.importJSON=importJSON;window.clearLocal=clearLocal;
+window.addEventListener('resize',function(){clearTimeout(window._rz);window._rz=setTimeout(render,200);});
+reloadAll();
+</script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+
+<script>
+/* ===== 🎧 DJ家猫 Drop the beat!（Spotify 2デッキ・オートMIX クロスフェード） ===== */
+var SONGS=[
+{"no": 1, "cat": "実家ぬくぬく猫", "type": "パラサイト・シングル(親密圏依存)", "title": "Mother - John Lennon", "sid": "43Ud1IajwtBvw6ONj6aK2Q", "yt": "https://www.youtube.com/watch?v=bSRJJNXxvPo"},
+{"no": 2, "cat": "次の一歩まち猫", "type": "ニート(NEET)", "title": "Waiting for the Day - George Michael", "sid": "44LRgmkoGQUIlLvHAOvmKZ", "yt": "https://www.youtube.com/watch?v=JT1GGUbAvW0"},
+{"no": 3, "cat": "おうち安心猫", "type": "ひきこもり", "title": "The Sound of Silence - Simon & Garfunkel", "sid": "3YfS47QufnLDFA71FUsgCM", "yt": "https://www.youtube.com/watch?v=4zLfCnGVeL4"},
+{"no": 4, "cat": "おうち長期滞在猫", "type": "中高年ひきこもり(8050問題)", "title": "Time After Time - Cyndi Lauper", "sid": "7o9uu2GDtVDr9nsR7ZRN73", "yt": "https://www.youtube.com/watch?v=VdQY7BusJNU"},
+{"no": 5, "cat": "自由時間満喫猫", "type": "FIRE早期リタイア層", "title": "Freedom - Pharrell Williams", "sid": "6RB9YvNyP0RZfCUcMtZELH", "yt": "https://www.youtube.com/watch?v=vRiQCbzaEUQ"},
+{"no": 6, "cat": "安心ベース待ち猫", "type": "ベーシックインカム待望者", "title": "Imagine - John Lennon", "sid": "0sKVgEEApbh4EmJJyoUmBB", "yt": "https://www.youtube.com/watch?v=YkgkThdzX-8"},
+{"no": 7, "cat": "ひなたで充電猫", "type": "ぶら下がり社員(社内失業)", "title": "Lazy Song - Bruno Mars", "sid": "4ZS9gLtPWfNr2a2TwXjz3y", "yt": "https://www.youtube.com/watch?v=fLexgOxsZu0"},
+{"no": 8, "cat": "アプリ活用猫", "type": "ギグワーカー(プラットフォーム依存)", "title": "Highway to Hell - AC/DC", "sid": "2zYzyRzz6pRmhPzyfMEC8s", "yt": "https://www.youtube.com/watch?v=l482T0yNkeo"},
+{"no": 9, "cat": "おすすめ発見猫", "type": "レコメンド任せ(フィルターバブル)", "title": "Pretender - Official髭男dism", "sid": "15HNdxGKNCIO9pgaY4n7FU", "yt": "https://www.youtube.com/watch?v=GRUxOYhxwMM", "sub": "Recommend - Official髭男dism"},
+{"no": 10, "cat": "いいね励み猫", "type": "SNS承認依存", "title": "1-2-3 - Gloria Estefan", "sid": "0EZWczlEGnrm3nCcX0FU7a", "yt": "https://www.youtube.com/watch?v=T4IWlFutwXo&list=RDT4IWlFutwXo&start_radio=1"},
+{"no": 11, "cat": "借りぐらし上手猫", "type": "サブスク全部入り(非所有)", "title": "借りてきた猫 - 筋肉少女帯", "sid": "2Efdmr7O7bQHgEATOYYTTh", "yt": "https://www.youtube.com/watch?v=3q0Gfxq5xJA"},
+{"no": 12, "cat": "まず聞いてみる猫", "type": "認知アウトソース(AI思考代行)", "title": "Everybody wants to rule the world - Tears For Fears", "sid": "4RvWPyQ5RL0ao9LPZeSouE", "yt": "https://www.youtube.com/watch?v=aGCdLKXNF3w&list=RDaGCdLKXNF3w&start_radio=1"},
+{"no": 13, "cat": "仮想世界おでかけ猫", "type": "メタバース/ゲーム没入", "title": "Virtual Insanity - Jamiroquai", "sid": "0xRf0aeTsHnj6OubE7YU2U", "yt": "https://www.youtube.com/watch?v=4JkIs37a2JE"},
+{"no": 14, "cat": "お取り寄せ上手猫", "type": "EC・デリバリー完結生活", "title": "Deliver Me - Sarah Brightman", "sid": "1XyJaNDXDhFg8NhJSw7XzA", "yt": "https://www.youtube.com/watch?v=5G3ZJw6kKOM"},
+{"no": 15, "cat": "投票きっかけ待ち猫", "type": "無関心・棄権層", "title": "Jump - Van Halen", "sid": "6Fba9RZtC6vTY814JToDtP", "yt": "https://www.youtube.com/watch?v=SwYN7mTi6HM&list=RDSwYN7mTi6HM&start_radio=1"},
+{"no": 16, "cat": "相談先さがし猫", "type": "お上任せ・公助依存", "title": "Help! - The Beatles", "sid": "6EdSN1iGtLPhcz43QDRkdK", "yt": "https://www.youtube.com/watch?v=2Q_ZzBGPdqE"},
+{"no": 17, "cat": "声を届けたい猫", "type": "お客様・クレーマー型市民(自動販売機モデル)", "title": "Crazy - Alanis Morissette", "sid": "0WTYBoRiOOAyXm2bKkie3v", "yt": "https://www.youtube.com/watch?v=Lu0fTmHsDqE&list=RDLu0fTmHsDqE&start_radio=1"},
+{"no": 18, "cat": "ご近所大事猫", "type": "NIMBY", "title": "Under Pressure - Queen and David Bowie", "sid": "1mSClObliRtgPVT399COQH", "yt": "https://www.youtube.com/watch?v=a01QQZyl-_I&list=RDa01QQZyl-_I&start_radio=1"},
+{"no": 19, "cat": "どうせ…から一歩猫", "type": "政治的無力感(学習性無力感)", "title": "Change the world - Eric Clapton", "sid": "6BQNJ0JFKh8sWjQLI6Zudi", "yt": "https://www.youtube.com/watch?v=nXB4xBnP22o&list=RDnXB4xBnP22o&start_radio=1"},
+{"no": 20, "cat": "空気を読む猫", "type": "同調・空気読み", "title": "Don't Stop Me Now - Queen", "sid": "43DHLzDkncpby82Po5jlOZ", "yt": "https://www.youtube.com/watch?v=HgzGwKwLmgM"},
+{"no": 21, "cat": "きちんと従う猫", "type": "権威主義的従順", "title": "Killing Me Softly - Fugees", "sid": "0Q0IVlqMV64kNLlwjPj0Hl", "yt": "https://www.youtube.com/watch?v=vSoUEKfPFnY"},
+{"no": 22, "cat": "支えを使う猫", "type": "生活保護の長期依存", "title": "Stand By Me - Ben E. King", "sid": "3SdTKo2uVsxFblQjpScoHy", "yt": "https://www.youtube.com/watch?v=hwZNL7QVJjE"},
+{"no": 23, "cat": "からだ相談猫", "type": "過剰受診・医療化", "title": "Doctor Doctor - Thompson Twins", "sid": "15PC4RTMeQa2Gv4nnwSrwc", "yt": "https://www.youtube.com/watch?v=LGJr6c0b_w0"},
+{"no": 24, "cat": "見守られ安心猫", "type": "施設・社会的入院依存(高齢)", "title": "Beautiful day- U2", "sid": "1VuBmEauSZywQVtqbxNqka", "yt": "https://www.youtube.com/watch?v=vCqlrhnl68g&list=RDvCqlrhnl68g&start_radio=1"},
+{"no": 25, "cat": "箱入り安心猫", "type": "過保護の子(ヘリコプターペアレント下)", "title": "Overprotected - Britney Spears", "sid": "5p0KCAuu5nrHpTuAIhHdLw", "yt": "https://www.youtube.com/watch?v=InAoMa-DaPY"},
+{"no": 26, "cat": "ぬくぬく安心猫", "type": "コンフォートゾーン固着", "title": "Comfortable - John Mayer", "sid": "26PnyFUmYdeRG7nQrsTpHc", "yt": "https://www.youtube.com/watch?v=mJAfbWzBNb4"},
+{"no": 27, "cat": "安定だいじ猫", "type": "安定至上(大企業・公務員志向)", "title": "Pride-U2", "sid": "24rv66H94QGVqIXHjA3kn6", "yt": "https://www.youtube.com/watch?v=Jn6wRE43dAY&list=RDJn6wRE43dAY&start_radio=1"},
+{"no": 28, "cat": "おまかせ上手猫", "type": "決断疲れ・おすすめ任せ", "title": "Let Me Entertain You - Robbie Williams", "sid": "0SLtqCrXBRrnkxSOMA3X4W", "yt": "https://www.youtube.com/watch?v=y3XSMEQg9IQ"},
+{"no": 29, "cat": "がんばり背負い猫", "type": "自己責任論の内面化・諦観", "title": "Carry That Weight - The Beatles", "sid": "5eZrW59C3UgBhkqNlowEID", "yt": "https://www.youtube.com/watch?v=3V5HLRdGOYQ"},
+{"no": 30, "cat": "推しと生きる猫", "type": "推し活没入(現実退避)", "title": "Obsessed - Mariah Carey", "sid": "3IcIIZMMS7UArJJPtEHXG8", "yt": "https://www.youtube.com/watch?v=mfSamCkiNFY"},
+{"no": 31, "cat": "手ぶら身軽猫", "type": "ミニマリスト(他者インフラ依存)", "title": "Lovefool - The Cardigans", "sid": "6xjyk6NiOaeUigFQYz6Lny", "yt": "https://www.youtube.com/watch?v=c1-FbdEfkDw", "sub": "Minimum - The Cardigans"},
+{"no": 32, "cat": "おうちゆったり猫", "type": "座りっぱなし・室内完結(身体不活動)", "title": "Sitting on the Dock of the Bay - Otis Redding", "sid": "3zBhihYUHBmGd2bcQIobrF", "yt": "https://www.youtube.com/watch?v=rTVjnBo96Ug"},
+{"no": 33, "cat": "さっとごはん猫", "type": "超加工食品依存", "title": "Fast Food Song - Fast Food Rockers", "sid": "5fRAvz6qCeSKbAi4LELOor", "yt": "https://www.youtube.com/watch?v=vrkTKSBxSSw"},
+{"no": 34, "cat": "快適チューニング猫", "type": "快適環境最適化マニア", "title": "Robot Rock - Daft Punk", "sid": "7LL40F6YdZgeiQ6en1c7Lk", "yt": "https://www.youtube.com/watch?v=gAjR4_CbPpQ"},
+{"no": 35, "cat": "ひとり気まま猫", "type": "孤立だが快適(つながり放棄)", "title": "I Am a Rock - Simon & Garfunkel", "sid": "0byOqNZN9ailhoORv5Ps0Z", "yt": "https://www.youtube.com/watch?v=JoSWVhEmHc4"},
+{"no": 36, "cat": "家庭を守る猫", "type": "完全専業依存(配偶者扶養)", "title": "The House That Built Me - Miranda Lambert", "sid": "02eD9ymfJOJOhM97HYp5R9", "yt": "https://www.youtube.com/watch?v=RDC7bMIblTk"},
+{"no": 37, "cat": "便利さ歓迎猫", "type": "監視に喜んで従う", "title": "Every Breath You Take - The Police", "sid": "1JSTJqkT5qHq8MDJnJbRE1", "yt": "https://www.youtube.com/watch?v=OMOGaugKpzs"},
+{"no": 38, "cat": "するっと選ぶ猫", "type": "ナッジ誘導の最適化人間", "title": "Go With the Flow - Queens of the Stone Age", "sid": "0wzRcekWyVCSyPtlPOeJau", "yt": "https://www.youtube.com/watch?v=yzwbSInCdlA"},
+{"no": 39, "cat": "ぬるま湯ごきげん猫", "type": "幸福な家畜(快楽的従属)", "title": "Don't Worry, Be Happy - Bobby McFerrin", "sid": "4hObp5bmIJ3PP3cKA9K9GY", "yt": "https://www.youtube.com/watch?v=d-diB65scQU"},
+{"no": 40, "cat": "飼われ心地よし猫", "type": "自己家畜化を肯定する人", "title": "Almost Cut My Hair - David Crosby", "sid": "0gCJkpD0RhF2rjiALLHBQL", "yt": "https://www.youtube.com/watch?v=D8rlTzKlnMs", "sub": "Domesticated Animal - David Crosby"},
+{"no": 41, "cat": "働き方見直し猫", "type": "ポスト労働・脱労働志向", "title": "Black or white - Michael Jackson", "sid": "7EsjkelQuoUlJXEw7SeVV4", "yt": "https://www.youtube.com/watch?v=F2AitTPI5U0&list=RDF2AitTPI5U0&start_radio=1"},
+{"no": 42, "cat": "からだアップデート猫", "type": "身体放棄(トランスヒューマニズム)", "title": "Viva la vida - Coldplay", "sid": "1mea3bSkSGXuIRvnydlB5b", "yt": "https://www.youtube.com/watch?v=dvgZkm1xWPE&list=RDdvgZkm1xWPE&start_radio=1"},
+{"no": 43, "cat": "ロボ見守り猫", "type": "ケアロボ前提の老後設計", "title": "Mr. Roboto - Styx", "sid": "7C0rG4oWO7VeZcffyW1sK9", "yt": "https://www.youtube.com/watch?v=uc6f_2nPSX8"},
+{"no": 44, "cat": "暮らし整え猫", "type": "終活・縮小均衡(守りの撤退)", "title": "Life Is a Cabaret - Liza Minnelli", "sid": "7AFy1aN1RQVgGOXzCtrK87", "yt": "https://www.youtube.com/watch?v=Qor2JqoNL1M"},
+{"no": 45, "cat": "通知にそわそわ猫", "type": "スマホ・アテンション中毒(ドゥームスクロール)", "title": "Rossana- Toto", "sid": "0GTLSJRogaeoDpkZ5hppOu", "yt": "https://www.youtube.com/watch?v=qmOLtTGvsbM&list=RDqmOLtTGvsbM&start_radio=1"},
+{"no": 46, "cat": "アプリで出会う猫", "type": "マッチング依存(出会いの外注)", "title": "Take my breathe away - Berlin", "sid": "3PnygBQ2ruykkHgrCWV3jt", "yt": "https://www.youtube.com/watch?v=Bx51eegLTY8&list=RDBx51eegLTY8&start_radio=1"},
+];
+
+var SONG_BY_NAME={}, SONG_BY_CAT={};
+SONGS.forEach(function(s){SONG_BY_NAME[s.type]=s; SONG_BY_CAT[s.cat]=s;});
+var DJ={queue:[],idx:0,shuffle:false,active:'a',apiLoaded:false,_loading:false,_cbs:[],
+  playing:false,crossing:false,wasPlaying:false,userPaused:false,OVERLAP:6000,
+  decks:{a:{ctrl:null,ready:false,pend:false},b:{ctrl:null,ready:false,pend:false}}};
+var DJ_SPOT='<svg width="13" height="13" viewBox="0 0 24 24" style="vertical-align:-2px;margin-right:4px"><circle cx="12" cy="12" r="12" fill="#1DB954"/><path d="M6 9.4c4-1 8.2-.7 11.2 1.1M6.8 13c3-.8 6.4-.4 8.8 1M7.6 16.3c2.3-.6 4.7-.3 6.7.9" stroke="#fff" stroke-width="1.7" fill="none" stroke-linecap="round"/></svg>';
+function djEsc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function djBuildQueue(){DJ.queue=SONGS.slice();}
+function djShuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+function djOther(k){return k==='a'?'b':'a';}
+function djSid(i){var s=DJ.queue[((i%DJ.queue.length)+DJ.queue.length)%DJ.queue.length];return s?s.sid:SONGS[0].sid;}
+function openDJ(startNo){
+  if(!DJ.queue.length){djBuildQueue();if(DJ.shuffle)djShuffle(DJ.queue);}
+  if(startNo!=null){var k=DJ.queue.findIndex(function(s){return s.no===startNo;});if(k>=0)DJ.idx=k;}
+  document.getElementById('djmodal').classList.add('on');
+  var sf=document.getElementById('dj-shuf');if(sf)sf.classList.toggle('act',DJ.shuffle);
+  showDeck(DJ.active);renderDJList();updateNowPlaying();
+  DJ.userPaused=false;
+  loadSpotifyApi(function(){
+    var d=DJ.decks[DJ.active];if(!d.ctrl)return;
+    if(d.ready){try{d.ctrl.loadUri('spotify:track:'+djSid(DJ.idx));d.ctrl.play();}catch(e){}}
+    else{d.pend=true;}
+  });
+}
+function closeDJ(){
+  document.getElementById('djmodal').classList.remove('on');
+  ['a','b'].forEach(function(k){if(DJ.decks[k].ctrl){try{DJ.decks[k].ctrl.pause();}catch(e){}}});
+  DJ.playing=false;updatePlayBtn();
+}
+function loadSpotifyApi(cb){
+  if(DJ.apiLoaded){cb&&cb();return;}
+  if(DJ._loading){DJ._cbs.push(cb);return;}
+  DJ._loading=true;DJ._cbs=[cb];
+  window.onSpotifyIframeApiReady=function(API){
+    var made=0;function done(){made++;if(made>=2){DJ.apiLoaded=true;DJ._cbs.forEach(function(f){f&&f();});DJ._cbs=[];}}
+    createDeck(API,'a',djSid(DJ.idx),done);
+    createDeck(API,'b',djSid(DJ.idx+1),done);
+  };
+  var sc=document.createElement('script');sc.src='https://open.spotify.com/embed/iframe-api/v1';sc.async=true;document.head.appendChild(sc);
+}
+function createDeck(API,key,sid,done){
+  var el=document.getElementById('dj-embed-'+key);if(!el){done();return;}
+  API.createController(el,{uri:'spotify:track:'+sid,width:'100%',height:'80'},function(ctrl){
+    DJ.decks[key].ctrl=ctrl;
+    ctrl.addListener('ready',function(){DJ.decks[key].ready=true;if(DJ.decks[key].pend){DJ.decks[key].pend=false;try{ctrl.play();}catch(e){}}});
+    ctrl.addListener('playback_update',function(e){onUpdate(key,e.data||{});});
+    done();
+  });
+}
+function onUpdate(key,d){
+  if(key!==DJ.active)return;
+  DJ.playing=!d.isPaused;updatePlayBtn();
+  djProgress(d.position||0,d.duration||0);
+  if(DJ.queue.length>1 && !DJ.crossing){
+    if(d.duration>0 && d.position>0 && d.position>=d.duration-DJ.OVERLAP){
+      djTransition(DJ.idx+1, DJ.OVERLAP);           // フル尺: 終わり際にクロスフェード
+    } else if(DJ.wasPlaying && d.isPaused && !DJ.userPaused && (d.position===0 || (d.duration>0 && d.position>=d.duration-1500))){
+      djTransition(DJ.idx+1, 800);                  // プレビュー終了/曲切れ: 即つなぐ
+    }
+  }
+  DJ.wasPlaying=!d.isPaused;
+}
+function djTransition(nextIdxRaw, overlap){
+  if(DJ.crossing || DJ.queue.length<1)return;
+  var nextIdx=((nextIdxRaw%DJ.queue.length)+DJ.queue.length)%DJ.queue.length;
+  DJ.crossing=true;DJ.userPaused=false;
+  var other=djOther(DJ.active);var od=DJ.decks[other];
+  if(od&&od.ctrl){try{od.ctrl.loadUri('spotify:track:'+djSid(nextIdx));if(od.ready){od.ctrl.play();}else{od.pend=true;}}catch(e){}}
+  showDeck(other);updateNowPlaying(nextIdx);
+  setTimeout(function(){
+    var old=DJ.active;if(DJ.decks[old].ctrl){try{DJ.decks[old].ctrl.pause();}catch(e){}}
+    DJ.active=other;DJ.idx=nextIdx;DJ.crossing=false;DJ.wasPlaying=true;
+    updateNowPlaying();renderDJList();
+  }, Math.max(250,overlap));
+}
+function showDeck(key){var a=document.getElementById('deck-a'),b=document.getElementById('deck-b');if(a)a.classList.toggle('hidden',key!=='a');if(b)b.classList.toggle('hidden',key!=='b');}
+function djNext(){djTransition(DJ.idx+1,800);}
+function djPrev(){djTransition(DJ.idx-1,800);}
+function djPlayIdx(i){if(i!==DJ.idx)djTransition(i,800);}
+function djToggle(){var d=DJ.decks[DJ.active];if(!d.ctrl)return;DJ.userPaused=DJ.playing;try{d.ctrl.togglePlay();}catch(e){}}
+function djToggleShuffle(){
+  if(DJ.crossing)return;var cur=DJ.queue[DJ.idx];DJ.shuffle=!DJ.shuffle;djBuildQueue();if(DJ.shuffle)djShuffle(DJ.queue);
+  var k=DJ.queue.findIndex(function(s){return cur&&s.no===cur.no;});DJ.idx=k>=0?k:0;
+  document.getElementById('dj-shuf').classList.toggle('act',DJ.shuffle);renderDJList();updateNowPlaying();
+}
+function updateNowPlaying(optIdx){var i=(optIdx!=null)?optIdx:DJ.idx;var s=DJ.queue[i];if(!s)return;var el=document.getElementById('dj-now');if(!el)return;
+  var subN=s.sub?'<div style="color:#c0392b;font-size:.74rem;margin-top:2px">※「'+djEsc(s.sub)+'」はSpotify未収録のため、同アーティストの代表曲で代用</div>':'';
+  var mix=DJ.crossing?'<span class="dj-mixbadge">🎚️ MIX中…</span>':'';
+  el.innerHTML='<div class="nptype">'+djEsc(s.type)+'</div><div class="npcat">'+djEsc(s.cat)+mix+'</div><div class="nsong">🎵 '+djEsc(s.title)+'</div>'+subN+'<div class="dj-prog"><div id="dj-bar"></div></div>';
+}
+function renderDJList(){var el=document.getElementById('dj-queue');if(!el)return;var h='';
+  DJ.queue.forEach(function(s,i){var sb=s.sub?' <span style="color:#c0392b;font-size:.68rem;font-weight:700">※代用</span>':'';h+='<div class="dj-item'+(i===DJ.idx?' cur':'')+'" onclick="djPlayIdx('+i+')"><span class="qn">'+(i+1)+'</span><span><span class="qcat">'+djEsc(s.cat)+'</span><br><span class="qtitle">'+djEsc(s.title)+'</span>'+sb+'</span><a class="qsp" href="https://open.spotify.com/track/'+s.sid+'" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="Spotifyで開く">↗</a></div>';});
+  el.innerHTML=h;
+  var cur=el.querySelector('.dj-item.cur');if(cur&&cur.scrollIntoView){cur.scrollIntoView({block:'nearest'});}
+}
+function djProgress(pos,dur){var b=document.getElementById('dj-bar');if(b&&dur>0){b.style.width=Math.min(100,pos/dur*100)+'%';}}
+function updatePlayBtn(){var btn=document.getElementById('dj-play');if(btn)btn.textContent=DJ.playing?'⏸':'▶';var hd=document.getElementById('dj-head');if(hd)hd.classList.toggle('playing',DJ.playing);}
+window.openDJ=openDJ;window.closeDJ=closeDJ;window.djPrev=djPrev;window.djNext=djNext;window.djToggle=djToggle;window.djPlayIdx=djPlayIdx;window.djToggleShuffle=djToggleShuffle;
+var DJ_CAT_SVG='<svg class="djeneko" viewBox="0 0 240 200" xmlns="http://www.w3.org/2000/svg"><path d="M182,116 q34,6 30,46" fill="none" stroke="#9aa2ad" stroke-width="9" stroke-linecap="round"/><path d="M78,44 L86,12 L108,42 Z" fill="#aeb6c1" stroke="#2b2b2b" stroke-width="3" stroke-linejoin="round"/><path d="M162,44 L154,12 L132,42 Z" fill="#aeb6c1" stroke="#2b2b2b" stroke-width="3" stroke-linejoin="round"/><path d="M84,40 L89,20 L102,40 Z" fill="#e79aa0"/><path d="M156,40 L151,20 L138,40 Z" fill="#e79aa0"/><circle cx="120" cy="72" r="46" fill="#aeb6c1" stroke="#2b2b2b" stroke-width="4"/><path d="M74,60 Q120,4 166,60" fill="none" stroke="#2b2b2b" stroke-width="8" stroke-linecap="round"/><rect x="58" y="56" width="22" height="36" rx="10" fill="#2b2b2b"/><rect x="64" y="65" width="10" height="18" rx="5" fill="#ff7aa8"/><rect x="160" y="56" width="22" height="36" rx="10" fill="#2b2b2b"/><rect x="166" y="65" width="10" height="18" rx="5" fill="#ff7aa8"/><ellipse cx="104" cy="70" rx="10" ry="13" fill="#fff" stroke="#2b2b2b" stroke-width="2.5"/><ellipse cx="136" cy="70" rx="10" ry="13" fill="#fff" stroke="#2b2b2b" stroke-width="2.5"/><circle cx="105" cy="72" r="4.6" fill="#1c1c1c"/><circle cx="137" cy="72" r="4.6" fill="#1c1c1c"/><circle cx="102" cy="68" r="1.7" fill="#fff"/><circle cx="134" cy="68" r="1.7" fill="#fff"/><path d="M116,84 L124,84 L120,90 Z" fill="#e79aa0" stroke="#2b2b2b" stroke-width="1.5" stroke-linejoin="round"/><path d="M120,90 q-7,7 -14,3 M120,90 q7,7 14,3" fill="none" stroke="#2b2b2b" stroke-width="2" stroke-linecap="round"/><g stroke="#2b2b2b" stroke-width="1.5" stroke-linecap="round" opacity="0.7"><path d="M92,82 h-18"/><path d="M92,90 h-17"/><path d="M148,82 h18"/><path d="M148,90 h17"/></g><rect x="8" y="150" width="224" height="46" rx="7" fill="#26293a"/><rect x="8" y="150" width="224" height="8" rx="4" fill="#3a3f57"/><g class="rec-eye"><circle cx="56" cy="173" r="22" fill="#1e1e26"/><circle cx="56" cy="173" r="15" fill="none" stroke="#3a3d47" stroke-width="1"/><rect x="55" y="153" width="2" height="8" fill="#6d6d6d"/><circle cx="56" cy="173" r="6" fill="#B8763E"/><circle cx="56" cy="173" r="1.6" fill="#e9e2d0"/></g><line x1="72" y1="157" x2="60" y2="171" stroke="#c9ccd6" stroke-width="2" stroke-linecap="round"/><g class="rec-eye"><circle cx="184" cy="173" r="22" fill="#1e1e26"/><circle cx="184" cy="173" r="15" fill="none" stroke="#3a3d47" stroke-width="1"/><rect x="183" y="153" width="2" height="8" fill="#6d6d6d"/><circle cx="184" cy="173" r="6" fill="#B8763E"/><circle cx="184" cy="173" r="1.6" fill="#e9e2d0"/></g><line x1="200" y1="157" x2="188" y2="171" stroke="#c9ccd6" stroke-width="2" stroke-linecap="round"/><rect x="104" y="158" width="32" height="30" rx="3" fill="#3a3f57"/><circle cx="112" cy="167" r="2.6" fill="#ff7aa8"/><circle cx="128" cy="167" r="2.6" fill="#7ad0ff"/><rect x="110" y="176" width="20" height="4" rx="2" fill="#8a90a6"/><ellipse cx="92" cy="150" rx="10" ry="7" fill="#aeb6c1" stroke="#2b2b2b" stroke-width="2"/><ellipse cx="148" cy="150" rx="10" ry="7" fill="#aeb6c1" stroke="#2b2b2b" stroke-width="2"/></svg>';
+(function(){var a=document.getElementById('djcat-art');if(a)a.innerHTML=DJ_CAT_SVG;var m=document.getElementById('djcat-mini');if(m)m.innerHTML=DJ_CAT_SVG;})();
+djBuildQueue();
+</script>
+
+</body></html>
