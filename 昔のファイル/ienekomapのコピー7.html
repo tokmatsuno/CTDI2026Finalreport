@@ -420,17 +420,8 @@ function loadTypes(){return fetch('家猫_データソース.csv',{cache:'no-sto
   for(var i=1;i<rows.length;i++){var o={};head.forEach(function(k,j){o[k]=(rows[i][j]||'').trim();});if(!o.name)continue;o.x=parseFloat(o.x)||5;o.y=parseFloat(o.y)||5;TYByName[o.name]=o;if(o.catname)TYByCat[o.catname]=o;}
 }).catch(function(){});}
 
-function norm(o){
-  var x=num(o.x!=null?o.x:o.X),y=num(o.y!=null?o.y:o.Y);
-  // 列ずれ救済：古いcatsヘッダーの下に record 形式が入った場合
-  // 例: x=nearestNo, y=nearestName, quad=catname, typeName=x, catname=y, persona=kit, kit=quad, holo=mode
-  if((x==null||x>10||y==null) && o && num(o.typeName)!=null && num(o.catname)!=null){
-    x=num(o.typeName); y=num(o.catname);
-    return {x:x,y:y,typeName:o.y||o.nearestName||o.name||'',catname:o.quad||o.catName||'',persona:o.kit||'',cardName:o.cardName||o.displayName||'',kit:o.persona||'',ts:o.ts||''};
-  }
-  if(x==null||y==null||x>10||y>10)return null;
-  return {x:x,y:y,typeName:o.typeName||o.nearestName||o.name||'',catname:o.catname||o.catName||'',persona:o.persona||o.quad||'',cardName:o.cardName||o.displayName||'',kit:o.kit||'',ts:o.ts||''};
-}
+function norm(o){var x=num(o.x!=null?o.x:o.X),y=num(o.y!=null?o.y:o.Y);if(x==null||y==null)return null;
+  return {x:x,y:y,typeName:o.typeName||o.nearestName||o.name||'',catname:o.catname||o.catName||'',persona:o.persona||o.quad||'',kit:o.kit||'',ts:o.ts||''};}
 function parseRemote(text){text=(text||'').replace(/^﻿/,'').trim();if(!text)return [];
   if(text[0]==='['){try{return JSON.parse(text).map(norm).filter(Boolean);}catch(e){}}
   if(text[0]==='{'){
@@ -459,8 +450,6 @@ function reloadAll(){
 
 function seedOf(r){return Math.round(r.x*7+r.y*13);}
 function typeOf(r){return TYByName[r.typeName]||TYByCat[r.catname]||{};}
-function cardNameOf(r){return r.cardName||r.persona||r.catname||'（無名の猫）';}
-function typeLabelOf(r){return r.typeName ? (r.catname ? r.typeName+'（'+r.catname+'）' : r.typeName) : (r.catname||'');}
 
 function render(){
   var S=Math.min(560,Math.max(320,(document.querySelector('.maparea').clientWidth-28)));
@@ -488,7 +477,7 @@ function render(){
   s+='<rect x="'+pad+'" y="'+pad+'" width="'+inner+'" height="'+inner+'" fill="none" stroke="#333" stroke-width="2"/>';
   function jit(i,m){var v=Math.sin(i*12.9898)*43758.5453;v=v-Math.floor(v);return (v-0.5)*2*m;}
   RECORDS.forEach(function(r,i){var k=quadKey(r.x,r.y);var cx=px(r.x)+jit(i+1,7),cy=py(r.y)+jit(i+7,7);
-    s+='<circle cx="'+cx.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="6" fill="'+QUAD[k].banner+'" fill-opacity="0.78" stroke="#fff" stroke-width="1.2" style="cursor:pointer" onclick="openDetail('+i+')"><title>'+esc(cardNameOf(r))+' / '+esc(typeLabelOf(r))+'  X'+r.x+' Y'+r.y+'</title></circle>';});
+    s+='<circle cx="'+cx.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="6" fill="'+QUAD[k].banner+'" fill-opacity="0.78" stroke="#fff" stroke-width="1.2" style="cursor:pointer" onclick="openDetail('+i+')"><title>'+esc(r.typeName)+(r.catname?'（'+esc(r.catname)+'）':'')+'  X'+r.x+' Y'+r.y+'</title></circle>';});
   s+='<text x="'+(pad+inner/2)+'" y="'+(S-10)+'" text-anchor="middle" font-size="13" font-weight="bold" fill="#333">飼い主：公的 ←〜→ 私的</text>';
   s+='<text transform="translate(14,'+(pad+inner/2)+') rotate(-90)" text-anchor="middle" font-size="13" font-weight="bold" fill="#333">家猫度：まち猫 ←〜→ まち猫</text>';
   s+='</svg>';
@@ -516,7 +505,7 @@ function render(){
   // ギャラリー（全カード）
   var gh='';
   RECORDS.slice(0,400).forEach(function(r,i){var q=QUAD[quadKey(r.x,r.y)];
-    gh+='<div class="gcard" onclick="openDetail('+i+')"><div class="gart" style="background:'+q.light+'">'+catSVG(r.x,r.y,seedOf(r),r.kit||'')+'</div><div class="gnm">'+esc(cardNameOf(r))+'</div><div class="gty">'+esc(typeLabelOf(r))+'</div></div>';});
+    gh+='<div class="gcard" onclick="openDetail('+i+')"><div class="gart" style="background:'+q.light+'">'+catSVG(r.x,r.y,seedOf(r),r.kit||'')+'</div><div class="gnm">'+esc(r.catname||'（無名の猫）')+'</div><div class="gty">'+esc(r.typeName||'')+'</div></div>';});
   document.getElementById('gallery').innerHTML=N?gh:'<div class="empty" style="grid-column:1/-1">まだカードがありません🐾</div>';
 }
 
@@ -524,8 +513,8 @@ function openDetail(i){var r=RECORDS[i];if(!r)return;var t=typeOf(r);var q=QUAD[
   var h='<button class="dx" onclick="closeDetail()">×</button>';
   h+='<div class="dart" style="background:'+q.light+';border:2px solid '+q.banner+'">'+catSVG(r.x,r.y,seedOf(r),r.kit||'')+'</div>';
   h+='<span class="badge" style="background:'+q.banner+'">'+q.name+'</span>';
-  h+='<h2 style="margin:.3em 0 .1em">'+esc(cardNameOf(r))+'</h2>';
-  h+='<div class="note" style="margin-bottom:6px">'+esc(typeLabelOf(r))+'　｜　X'+r.x+'・Y'+r.y+'</div>';
+  h+='<h2 style="margin:.3em 0 .1em">'+esc(r.catname||'（無名の猫）')+'</h2>';
+  h+='<div class="note" style="margin-bottom:6px">'+esc(r.typeName||'')+(r.persona?'　｜　'+esc(r.persona):'')+'　｜　X'+r.x+'・Y'+r.y+'</div>';
   if(t.catch)h+='<div class="kv">'+esc(t.catch)+'</div>';
   h+='<div class="kv"><b>🍶 ごきげんチュール：</b>'+esc(t.churu||'（データ未登録）')+'</div>';
   h+='<div class="kv"><b>🪜 キャットタワー：</b>'+esc(t.tower||'（データ未登録）')+'</div>';

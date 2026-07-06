@@ -299,7 +299,7 @@ a{color:var(--blue)}
 </style></head>
 <body><div id="splash"><div id="splashCat"></div><div class="sload">Loading<span class="sdots"></span></div><div class="scd">あと <b id="spNum">2</b> びょう</div></div><div class="wrap">
 <section class="city-hero">
-  <div style="position:relative;z-index:2;font-size:10pt;color:var(--muted);letter-spacing:.04em;margin-bottom:2px">v5.02 csv-fix</div>
+  <div style="position:relative;z-index:2;font-size:10pt;color:var(--muted);letter-spacing:.04em;margin-bottom:2px">v5.01</div>
   <div class="title">
     <h1 class="brand">
       <svg class="catmark" viewBox="0 0 60 60" aria-hidden="true">
@@ -751,40 +751,15 @@ function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');}
 // ---- 匿名データ記録（GAS中継→Sheet＋GitHub）----
 function cfg(){try{return localStorage.getItem('catlog_endpoint')||'';}catch(e){return '';}}
 function clientId(){try{let id=localStorage.getItem('catlog_cid');if(!id){id='c'+Math.random().toString(36).slice(2)+Date.now().toString(36);localStorage.setItem('catlog_cid',id);}return id;}catch(e){return 'c0';}}
-function normalizeCatRecord(p){
-  p=p||{};
-  // cats シートの正規列順に合わせて、index 側から送るキーを固定する。
-  // 正規列: ts,cid,mode,x,y,quad,typeName,catname,persona,kit,holo
-  var typeName = p.typeName || p.nearestName || p.name || '';
-  var catname = p.catname || p.catName || '';
-  var mode = p.mode || '2axis';
-  if(mode==='2軸') mode='2axis';
-  if(mode==='8軸') mode='8axis';
-  var x = Number(p.x); if(!isFinite(x)) x=''; else x=+x.toFixed(2);
-  var y = Number(p.y); if(!isFinite(y)) y=''; else y=+y.toFixed(2);
-  return {
-    action:'record',
-    ts:new Date().toISOString(),
-    cid:clientId(),
-    mode:mode,
-    x:x,
-    y:y,
-    quad:p.quad || '',
-    typeName:typeName,
-    catname:catname,
-    persona:p.persona || '',
-    kit:p.kit || '',
-    holo:(p.holo===true || p.holo===1 || p.holo==='1') ? 1 : 0
-  };
-}
 function logResult(p, cardObj){
-  var rec=normalizeCatRecord(p);
+  p.ts=new Date().toISOString();p.cid=clientId();p.app='家猫カードジェネレーター';p.ver='4.01';
   var url=(typeof apiUrl==='function'&&apiUrl())||cfg();
   if(!url) return false;
-  // 記録はGETで一度だけ。送信キーは normalizeCatRecord() で固定し、列ずれを防ぐ。
-  if(typeof apiSend==='function'){ apiSend(rec); return true; }
+  p.action='record';   // GAS側は action=record で猫を記録＆Discord通知
+  // 記録はGETで一度だけ（レスポンスを読めて確実・重複なし）。カード画像のDiscord投稿は各Shareボタンから個別に。
+  if(typeof apiSend==='function'){ apiSend(p); return true; }
   try{
-    var q=Object.keys(rec).map(function(k){return encodeURIComponent(k)+'='+encodeURIComponent(rec[k]==null?'':rec[k]);}).join('&');
+    var q=Object.keys(p).map(function(k){return encodeURIComponent(k)+'='+encodeURIComponent(p[k]==null?'':(typeof p[k]==='object'?JSON.stringify(p[k]):p[k]));}).join('&');
     fetch(url+(url.indexOf('?')<0?'?':'&')+q,{cache:'no-store'}).catch(function(){});
   }catch(e){}
   return true;}
@@ -825,8 +800,8 @@ function diagnoseAPI(){
       toastMsg('ok','① ping成功', 'GAS応答: '+JSON.stringify(pj));
       // Step 2: 実際に record を軽く叩いてみる（画像なし）
       setTimeout(function(){
-        var testPayload={action:'record',ts:new Date().toISOString(),cid:clientId(),mode:'DIAG',
-          x:5,y:5,quad:'-',typeName:'DIAG_疎通確認',catname:'テスト猫',persona:'',kit:'',holo:0};
+        var testPayload={action:'record',mode:'DIAG',ts:new Date().toISOString(),cid:clientId(),
+          no:0,name:'DIAG_疎通確認',catname:'テスト猫',x:5,y:5,total:0,quad:'-',app:'diagnose'};
         toastMsg('','② record 送信中…','name=DIAG_疎通確認');
         // GET で叩く（画像なし record も GAS で受けられる）
         var q=Object.keys(testPayload).map(function(k){return encodeURIComponent(k)+'='+encodeURIComponent(testPayload[k]);}).join('&');
@@ -1465,12 +1440,11 @@ window.buildRefs=buildRefs;
 const SHARED_API="https://script.google.com/macros/s/AKfycbzBaagdobV2ixb6GwVpAFDmCN4tOwmvAseuPq8OvXnZsoOcUJ5kwD8Ih11TOKjYSf8U/exec";  // ← 新GAS共有API（全員の端末で共有＋Discord連携）
 function apiUrl(){try{return SHARED_API||localStorage.getItem('catlog_api')||'';}catch(e){return SHARED_API||'';}}
 // 送受信はすべてGET（レスポンスを読める＝確実／CORSの事前確認が起きない）
-// cats記録は normalizeCatRecord() により固定列順で送信する。
 function apiSend(params){var url=apiUrl();if(!url){
   if(window.toastMsg)window.toastMsg('err','⚠ SHARED_API 未設定','apiUrl() が空。index.html の SHARED_API 定数を確認');
   return Promise.resolve({ok:false,error:'no url'});}
   params.cid=clientId();params.ts=new Date().toISOString();
-  var q=Object.keys(params).map(function(k){var v=params[k];return encodeURIComponent(k)+'='+encodeURIComponent(v==null?'':(typeof v==='object'?JSON.stringify(v):v));}).join('&');
+  var q=Object.keys(params).map(function(k){return encodeURIComponent(k)+'='+encodeURIComponent(params[k]==null?'':params[k]);}).join('&');
   var fullUrl=url+(url.indexOf('?')<0?'?':'&')+q;
   return fetch(fullUrl,{cache:'no-store'})
     .then(function(r){
@@ -1682,8 +1656,8 @@ document.getElementById('submit').addEventListener('click',()=>{
       res.innerHTML=h;
       resolveCovers();
       res.insertAdjacentHTML('beforeend','<div class="sub center" id="lognote2" style="margin-top:8px"></div>');
-      logResult({mode:'2軸',x:+x.toFixed(2),y:+y.toFixed(2),quad:q.name,persona:per.n,answers:answers.join(''),cntA:c.A,cntB:c.B,cntC:c.C,cntD:c.D,nearestNo:near.no,nearestName:near.name,typeName:near.name,catname:near.catname,kit:ans9q.v,holo:holo?1:0}, Object.assign({},near,{x:+x.toFixed(2),y:+y.toFixed(2),persona:per.n,kit:ans9q.v,holo:holo}));
-      var stkN=stockLocal({mode:'2axis',x:+x.toFixed(2),y:+y.toFixed(2),quad:q.name,persona:per.n,cardName:per.n,nearestNo:near.no,typeName:near.name,catname:near.catname,kit:ans9q.v,holo:holo?1:0,ts:new Date().toISOString()});
+      logResult({mode:'2軸',x:+x.toFixed(2),y:+y.toFixed(2),quad:q.name,persona:per.n,answers:answers.join(''),cntA:c.A,cntB:c.B,cntC:c.C,cntD:c.D,nearestNo:near.no,nearestName:near.name,catname:near.catname,kit:ans9q.v}, Object.assign({},near,{x:+x.toFixed(2),y:+y.toFixed(2),persona:per.n,kit:ans9q.v,holo:holo}));
+      var stkN=stockLocal({x:+x.toFixed(2),y:+y.toFixed(2),quad:q.name,persona:per.n,nearestNo:near.no,typeName:near.name,catname:near.catname,kit:ans9q.v,holo:holo?1:0,ts:new Date().toISOString()});
       logNote('lognote2');
       res.insertAdjacentHTML('beforeend','<div class="center" style="margin-top:6px"><span class="sub">🗺 この猫を地区マップに追加しました（この端末に '+stkN+' 匹）</span><br><a class="ghost" style="display:inline-block;margin-top:6px;text-decoration:none;line-height:1.9" href="ienekomap.html" target="_blank" rel="noopener">🗺 シビックテック学創成町マップを見る</a></div>');
       document.getElementById('submit').disabled=false;
@@ -1789,7 +1763,7 @@ document.getElementById('submit8').addEventListener('click',()=>{
   resolveCovers();
   document.getElementById('res8').insertAdjacentHTML('beforeend','<div class="sub center" id="lognote8" style="margin-top:8px"></div>');
   const sObj={};AX8.forEach((a,i)=>sObj['ax_'+a]=scores[i]);
-  logResult(Object.assign({mode:'8軸',x:x,y:y,total:+mean.toFixed(2),quad:q.name,persona:q.name,nearestNo:near.no,nearestName:near.name,typeName:near.name,catname:near.catname,scores:scores.join(',')},sObj), {title:q.name,catname:'あなたの8軸プロファイル',desc:q.desc,x:x,y:y,seed:Math.round(x*7+y*13),kit:ans9.v});
+  logResult(Object.assign({mode:'8軸',x:x,y:y,total:+mean.toFixed(2),quad:q.name,nearestNo:near.no,nearestName:near.name,catname:near.catname,scores:scores.join(',')},sObj), {title:q.name,catname:'あなたの8軸プロファイル',desc:q.desc,x:x,y:y,seed:Math.round(x*7+y*13),kit:ans9.v});
   logNote('lognote8');
   document.getElementById('res8').scrollIntoView({behavior:'smooth'});
 });
