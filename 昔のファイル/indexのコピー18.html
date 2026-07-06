@@ -239,8 +239,6 @@ a{color:var(--blue)}
 .songart{color:#7a5a6a;font-size:.82rem;margin:2px 0 7px}
 .songlink{display:inline-flex;align-items:center;gap:5px;background:#ff0000;color:#fff !important;text-decoration:none;font-weight:700;font-size:.8rem;padding:5px 12px;border-radius:999px}
 .songlink:hover{background:#cc0000}
-.songlink.spot{background:#1DB954;margin-left:6px}
-.songlink.spot:hover{background:#169c46}
 
 /* ─── 🎧 DJ家猫 Drop the beat!（index 統合） ─── */
 #djmodal .dwrap{max-width:540px;padding:16px 18px}
@@ -301,7 +299,7 @@ a{color:var(--blue)}
 </style></head>
 <body><div id="splash"><div id="splashCat"></div><div class="sload">Loading<span class="sdots"></span></div><div class="scd">あと <b id="spNum">2</b> びょう</div></div><div class="wrap">
 <section class="city-hero">
-  <div style="position:relative;z-index:2;font-size:10pt;color:var(--muted);letter-spacing:.04em;margin-bottom:2px">v5.02 csv-fix</div>
+  <div style="position:relative;z-index:2;font-size:10pt;color:var(--muted);letter-spacing:.04em;margin-bottom:2px">v5.03-namefix</div>
   <div class="title">
     <h1 class="brand">
       <svg class="catmark" viewBox="0 0 60 60" aria-hidden="true">
@@ -756,9 +754,10 @@ function clientId(){try{let id=localStorage.getItem('catlog_cid');if(!id){id='c'
 function normalizeCatRecord(p){
   p=p||{};
   // cats シートの正規列順に合わせて、index 側から送るキーを固定する。
-  // 正規列: ts,cid,mode,x,y,quad,typeName,catname,persona,kit,holo
+  // 正規列: ts,cid,mode,x,y,quad,typeName,catname,persona,kit,holo,displayName,churu,tower,matatabi,kaizen
   var typeName = p.typeName || p.nearestName || p.name || '';
   var catname = p.catname || p.catName || '';
+  var displayName = p.displayName || p.cardName || p.persona || p.quad || catname || typeName || '';
   var mode = p.mode || '2axis';
   if(mode==='2軸') mode='2axis';
   if(mode==='8軸') mode='8axis';
@@ -775,12 +774,18 @@ function normalizeCatRecord(p){
     typeName:typeName,
     catname:catname,
     persona:p.persona || '',
+    displayName:displayName,
+    cardName:displayName,
     kit:p.kit || '',
-    holo:(p.holo===true || p.holo===1 || p.holo==='1') ? 1 : 0
+    holo:(p.holo===true || p.holo===1 || p.holo==='1') ? 1 : 0,
+    churu:p.churu || p.treat || p.treatText || '',
+    tower:p.tower || '',
+    matatabi:p.matatabi || p.kaizen || '',
+    kaizen:p.kaizen || p.matatabi || ''
   };
 }
 function logResult(p, cardObj){
-  var rec=normalizeCatRecord(p);
+  var rec=normalizeCatRecord(Object.assign({}, cardObj||{}, p||{}));
   var url=(typeof apiUrl==='function'&&apiUrl())||cfg();
   if(!url) return false;
   // 記録はGETで一度だけ。送信キーは normalizeCatRecord() で固定し、列ずれを防ぐ。
@@ -1097,11 +1102,9 @@ function songBlockHTML(t){
   var h='<div class="box songbox2"><div class="songcap">🎵 そんなあなたへのおすすめソング</div><div class="songrow">';
   h+='<div class="songjacket"><img class="songcover" style="display:none" data-pending="1" data-title="'+ae(title)+'" data-artist="'+ae(artist)+'" alt=""><div class="songjph">🎵</div></div>';
   h+='<div class="songinfo"><div class="songttl">'+esc(title)+'</div>'+(artist?'<div class="songart">'+esc(artist)+'</div>':'<div class="songart"></div>');
-  var sp=(t.spotify||t.spotifylink||t.spotifyUrl||'').trim();
   h+=(yt?'<a class="songlink" href="'+ae(yt)+'" target="_blank" rel="noopener">▶ YouTubeで聴く</a>':'');
-  h+=(sp?'<a class="songlink spot" href="'+ae(sp)+'" target="_blank" rel="noopener">'+DJ_SPOT+'Spotifyで聴く</a>':'');
   h+=' <button class="dj-mini" onclick="openDJ('+((t&&t.no)||0)+')">'+DJ_SPOT+'この曲からDJ</button>';
-  if(!sp){h+='<div style="font-size:.72rem;color:#c0392b;margin-top:4px">※CSVのSpotifyリンク列が空です。DJリストには入りません。</div>';}
+  if(typeof SONG_BY_NO!=='undefined' && t && SONG_BY_NO[t.no] && SONG_BY_NO[t.no].sub){h+='<div style="font-size:.72rem;color:#c0392b;margin-top:4px">※Spotifyでは「'+esc(SONG_BY_NO[t.no].title)+'」で代用</div>';}
   h+='</div></div></div>';
   return h;
 }
@@ -1686,8 +1689,8 @@ document.getElementById('submit').addEventListener('click',()=>{
       res.innerHTML=h;
       resolveCovers();
       res.insertAdjacentHTML('beforeend','<div class="sub center" id="lognote2" style="margin-top:8px"></div>');
-      logResult({mode:'2軸',x:+x.toFixed(2),y:+y.toFixed(2),quad:q.name,persona:per.n,answers:answers.join(''),cntA:c.A,cntB:c.B,cntC:c.C,cntD:c.D,nearestNo:near.no,nearestName:near.name,typeName:near.name,catname:near.catname,kit:ans9q.v,holo:holo?1:0}, Object.assign({},near,{x:+x.toFixed(2),y:+y.toFixed(2),persona:per.n,kit:ans9q.v,holo:holo}));
-      var stkN=stockLocal({mode:'2axis',x:+x.toFixed(2),y:+y.toFixed(2),quad:q.name,persona:per.n,cardName:per.n,nearestNo:near.no,typeName:near.name,catname:near.catname,kit:ans9q.v,holo:holo?1:0,ts:new Date().toISOString()});
+      logResult({mode:'2軸',x:+x.toFixed(2),y:+y.toFixed(2),quad:q.name,persona:per.n,displayName:per.n,cardName:per.n,answers:answers.join(''),cntA:c.A,cntB:c.B,cntC:c.C,cntD:c.D,nearestNo:near.no,nearestName:near.name,typeName:near.name,catname:near.catname,churu:near.churu,tower:near.tower,matatabi:near.kaizen,kaizen:near.kaizen,kit:ans9q.v,holo:holo?1:0}, Object.assign({},near,{x:+x.toFixed(2),y:+y.toFixed(2),persona:per.n,kit:ans9q.v,holo:holo}));
+      var stkN=stockLocal({mode:'2axis',x:+x.toFixed(2),y:+y.toFixed(2),quad:q.name,persona:per.n,displayName:per.n,cardName:per.n,nearestNo:near.no,typeName:near.name,catname:near.catname,churu:near.churu,tower:near.tower,matatabi:near.kaizen,kaizen:near.kaizen,kit:ans9q.v,holo:holo?1:0,ts:new Date().toISOString()});
       logNote('lognote2');
       res.insertAdjacentHTML('beforeend','<div class="center" style="margin-top:6px"><span class="sub">🗺 この猫を地区マップに追加しました（この端末に '+stkN+' 匹）</span><br><a class="ghost" style="display:inline-block;margin-top:6px;text-decoration:none;line-height:1.9" href="ienekomap.html" target="_blank" rel="noopener">🗺 シビックテック学創成町マップを見る</a></div>');
       document.getElementById('submit').disabled=false;
@@ -1793,7 +1796,7 @@ document.getElementById('submit8').addEventListener('click',()=>{
   resolveCovers();
   document.getElementById('res8').insertAdjacentHTML('beforeend','<div class="sub center" id="lognote8" style="margin-top:8px"></div>');
   const sObj={};AX8.forEach((a,i)=>sObj['ax_'+a]=scores[i]);
-  logResult(Object.assign({mode:'8軸',x:x,y:y,total:+mean.toFixed(2),quad:q.name,persona:q.name,nearestNo:near.no,nearestName:near.name,typeName:near.name,catname:near.catname,scores:scores.join(',')},sObj), {title:q.name,catname:'あなたの8軸プロファイル',desc:q.desc,x:x,y:y,seed:Math.round(x*7+y*13),kit:ans9.v});
+  logResult(Object.assign({mode:'8軸',x:x,y:y,total:+mean.toFixed(2),quad:q.name,persona:q.name,displayName:q.name,cardName:q.name,nearestNo:near.no,nearestName:near.name,typeName:near.name,catname:near.catname,churu:near.churu,tower:near.tower,matatabi:near.kaizen,kaizen:near.kaizen,scores:scores.join(',')},sObj), {title:q.name,catname:'あなたの8軸プロファイル',desc:q.desc,x:x,y:y,seed:Math.round(x*7+y*13),kit:ans9.v,churu:near.churu,tower:near.tower,matatabi:near.kaizen,kaizen:near.kaizen});
   logNote('lognote8');
   document.getElementById('res8').scrollIntoView({behavior:'smooth'});
 });
@@ -1852,14 +1855,14 @@ loadMeeting();checkApi();
     <button id="dj-shuf" onclick="djToggleShuffle()" title="シャッフル">🔀</button>
   </div>
   <div class="dj-queue" id="dj-queue"></div>
-  <div class="dj-note">🎚️ 曲の終わり際に次の曲を重ねて繋ぐ<b>オートMIX（クロスフェード）</b>で連続再生します。<br>※ DJリストは <b>家猫_データソース.csv</b> の <b>Spotifyリンク</b> 列から生成します。Spotify未ログイン時は各曲<b>30秒プレビュー</b>。フル尺＆滑らかな繋ぎには、同じブラウザで <a href="https://open.spotify.com" target="_blank" rel="noopener">Spotifyにログイン</a> してください（Spotifyの仕様上、音量フェードは非対応のため2曲を短く重ねて繋ぎます）。各曲の <span style="color:#1DB954;font-weight:800">↗</span> でSpotifyを開けます。</div>
+  <div class="dj-note">🎚️ 曲の終わり際に次の曲を重ねて繋ぐ<b>オートMIX（クロスフェード）</b>で連続再生します。<br>※ Spotify未ログイン時は各曲<b>30秒プレビュー</b>。フル尺＆滑らかな繋ぎには、同じブラウザで <a href="https://open.spotify.com" target="_blank" rel="noopener">Spotifyにログイン</a> してください（Spotifyの仕様上、音量フェードは非対応のため2曲を短く重ねて繋ぎます）。各曲の <span style="color:#1DB954;font-weight:800">↗</span> でSpotifyを開けます。</div>
 </div></div>
 
 
 <script>
 /* ===== 🎧 DJ家猫 Drop the beat!（Spotify 2デッキ・オートMIX クロスフェード） ===== */
-var SONGS_FALLBACK=[]; // DJリストは埋め込みではなく、家猫_データソース.csv の Spotifyリンク列だけから生成する。
-var SONG_FALLBACK_BY_NO={};
+var SONGS_FALLBACK=[{"no":1,"sid":"43Ud1IajwtBvw6ONj6aK2Q","sub":"CSVにSpotifyリンクが無い場合の予備"},{"no":2,"sid":"44LRgmkoGQUIlLvHAOvmKZ"},{"no":3,"sid":"3YfS47QufnLDFA71FUsgCM"},{"no":4,"sid":"7o9uu2GDtVDr9nsR7ZRN73"},{"no":5,"sid":"6RB9YvNyP0RZfCUcMtZELH","sub":"CSV曲名がFreeの場合はFreedomで代用"},{"no":6,"sid":"0sKVgEEApbh4EmJJyoUmBB"},{"no":7,"sid":"4ZS9gLtPWfNr2a2TwXjz3y"},{"no":8,"sid":"2zYzyRzz6pRmhPzyfMEC8s"},{"no":9,"sid":"15HNdxGKNCIO9pgaY4n7FU","sub":"CSVにSpotifyリンクが無い場合の予備"},{"no":10,"sid":"0EZWczlEGnrm3nCcX0FU7a"},{"no":11,"sid":"2Efdmr7O7bQHgEATOYYTTh","sub":"CSVにSpotifyリンクが無い場合の予備"},{"no":12,"sid":"4RvWPyQ5RL0ao9LPZeSouE"},{"no":13,"sid":"0xRf0aeTsHnj6OubE7YU2U"},{"no":14,"sid":"1XyJaNDXDhFg8NhJSw7XzA"},{"no":15,"sid":"6Fba9RZtC6vTY814JToDtP"},{"no":16,"sid":"6EdSN1iGtLPhcz43QDRkdK"},{"no":17,"sid":"0WTYBoRiOOAyXm2bKkie3v"},{"no":18,"sid":"1mSClObliRtgPVT399COQH"},{"no":19,"sid":"6BQNJ0JFKh8sWjQLI6Zudi"},{"no":20,"sid":"43DHLzDkncpby82Po5jlOZ"},{"no":21,"sid":"0Q0IVlqMV64kNLlwjPj0Hl"},{"no":22,"sid":"3SdTKo2uVsxFblQjpScoHy"},{"no":23,"sid":"15PC4RTMeQa2Gv4nnwSrwc"},{"no":24,"sid":"1VuBmEauSZywQVtqbxNqka"},{"no":25,"sid":"5p0KCAuu5nrHpTuAIhHdLw"},{"no":26,"sid":"26PnyFUmYdeRG7nQrsTpHc"},{"no":27,"sid":"24rv66H94QGVqIXHjA3kn6"},{"no":28,"sid":"0SLtqCrXBRrnkxSOMA3X4W"},{"no":29,"sid":"5eZrW59C3UgBhkqNlowEID"},{"no":30,"sid":"3IcIIZMMS7UArJJPtEHXG8"},{"no":31,"sid":"6xjyk6NiOaeUigFQYz6Lny","sub":"Spotify未収録時の予備"},{"no":32,"sid":"3zBhihYUHBmGd2bcQIobrF"},{"no":33,"sid":"5fRAvz6qCeSKbAi4LELOor"},{"no":34,"sid":"7LL40F6YdZgeiQ6en1c7Lk"},{"no":35,"sid":"0byOqNZN9ailhoORv5Ps0Z"},{"no":36,"sid":"02eD9ymfJOJOhM97HYp5R9"},{"no":37,"sid":"1JSTJqkT5qHq8MDJnJbRE1"},{"no":38,"sid":"0wzRcekWyVCSyPtlPOeJau"},{"no":39,"sid":"4hObp5bmIJ3PP3cKA9K9GY"},{"no":40,"sid":"0gCJkpD0RhF2rjiALLHBQL","sub":"Spotify未収録時の予備"},{"no":41,"sid":"7EsjkelQuoUlJXEw7SeVV4"},{"no":42,"sid":"1mea3bSkSGXuIRvnydlB5b"},{"no":43,"sid":"7C0rG4oWO7VeZcffyW1sK9"},{"no":44,"sid":"7AFy1aN1RQVgGOXzCtrK87"},{"no":45,"sid":"0GTLSJRogaeoDpkZ5hppOu"},{"no":46,"sid":"3PnygBQ2ruykkHgrCWV3jt"}];
+var SONG_FALLBACK_BY_NO={};SONGS_FALLBACK.forEach(function(s){SONG_FALLBACK_BY_NO[s.no]=s;});
 var SONGS=[]; // 互換用。DJの本命リストはCSVの TYPES から毎回生成する。
 
 var DJ={queue:[],idx:0,shuffle:false,active:'a',apiLoaded:false,_loading:false,_cbs:[],
@@ -1876,41 +1879,23 @@ function djSpotifyId(v){
   if(/^[A-Za-z0-9]{18,30}$/.test(v))return v;
   return '';
 }
-function djSpotifyUrl(s){return s&&s.spotifyUrl?s.spotifyUrl:(s&&s.sid?('https://open.spotify.com/track/'+s.sid):'#');}
+function djSpotifyUrl(s){return s&&s.sid?('https://open.spotify.com/track/'+s.sid):(s&&s.spotifyUrl?s.spotifyUrl:'#');}
 function djLiveTypes(){
   var arr=null;
   if(typeof TYPES!=='undefined'&&TYPES&&TYPES.length)arr=TYPES;
   else if(typeof TYByName!=='undefined'){arr=[];for(var k in TYByName)arr.push(TYByName[k]);}
   if(!arr)return null;
   var out=[];
-  arr.forEach(function(t){
-    var no=parseInt(t.no)||0;
-    var title=((t.song||'')+'').trim();
-    var spotifyUrl=((t.spotify||t.spotifylink||t.spotifyUrl||'')+'').trim();
-    var sid=djSpotifyId(spotifyUrl);
-    if(!title||!sid)return;
-    out.push({no:no,cat:(t.catname||''),type:(t.name||t.typeName||''),title:title,sid:sid,spotifyUrl:spotifyUrl,yt:(t.ytlink||''),fromCsv:true});
-  });
+  arr.forEach(function(t){var no=parseInt(t.no)||0;var title=((t.song||'')+'').trim();var sid=djSpotifyId(t.spotify||t.spotifylink||t.spotifyUrl||'');var sub='';if(!sid){var fb=SONG_FALLBACK_BY_NO[no];if(fb){sid=fb.sid;sub=fb.sub||'CSVにSpotifyリンクが無いため予備トラックで再生';}}if(!title||!sid)return;out.push({no:no,cat:(t.catname||''),type:(t.name||t.typeName||''),title:title,sid:sid,yt:(t.ytlink||''),sub:sub,fromCsv:!!(t.spotify)});});
   out.sort(function(a,b){return a.no-b.no;});
   return out.length?out:null;
 }
-function djBuildQueue(){
-  var live=djLiveTypes();
-  DJ.queue=(live&&live.length)?live:[];
-}
+function djBuildQueue(){var live=djLiveTypes();DJ.queue=(live&&live.length)?live:SONGS_FALLBACK.map(function(s){var t=(typeof TYPES!=='undefined'&&TYPES[s.no-1])||{};return {no:s.no,cat:(t.catname||('No.'+s.no)),type:(t.name||''),title:(t.song||'Spotify track '+s.no),sid:s.sid,sub:s.sub||'CSV未読込時の予備'};});}
 function djShuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
 function djOther(k){return k==='a'?'b':'a';}
-function djSid(i){if(!DJ.queue.length)return '';var s=DJ.queue[((i%DJ.queue.length)+DJ.queue.length)%DJ.queue.length];return s?s.sid:'';}
+function djSid(i){var s=DJ.queue[((i%DJ.queue.length)+DJ.queue.length)%DJ.queue.length];return s?s.sid:SONGS_FALLBACK[0].sid;}
 function openDJ(startNo){
-  djBuildQueue();
-  if(DJ.shuffle)djShuffle(DJ.queue);
-  if(!DJ.queue.length){
-    document.getElementById('djmodal').classList.add('on');
-    var now=document.getElementById('dj-now');
-    if(now)now.innerHTML='<div class="nptype">CSVから読み込み</div><div class="npcat">Spotifyリンク列が見つかりません</div><div class="nsong">家猫_データソース.csv の「Spotifyリンク」列に open.spotify.com/track/... を入れてください。</div>';
-    var q=document.getElementById('dj-queue'); if(q)q.innerHTML='';
-    return;
-  }
+  if(!DJ.queue.length){djBuildQueue();if(DJ.shuffle)djShuffle(DJ.queue);}
   if(startNo!=null){var k=DJ.queue.findIndex(function(s){return s.no===startNo;});if(k>=0)DJ.idx=k;}
   document.getElementById('djmodal').classList.add('on');
   var sf=document.getElementById('dj-shuf');if(sf)sf.classList.toggle('act',DJ.shuffle);
@@ -1933,10 +1918,8 @@ function loadSpotifyApi(cb){
   DJ._loading=true;DJ._cbs=[cb];
   window.onSpotifyIframeApiReady=function(API){
     var made=0;function done(){made++;if(made>=2){DJ.apiLoaded=true;DJ._cbs.forEach(function(f){f&&f();});DJ._cbs=[];}}
-    var sid0=djSid(DJ.idx), sid1=djSid(DJ.idx+1);
-    if(!sid0){done();done();return;}
-    createDeck(API,'a',sid0,done);
-    createDeck(API,'b',sid1||sid0,done);
+    createDeck(API,'a',djSid(DJ.idx),done);
+    createDeck(API,'b',djSid(DJ.idx+1),done);
   };
   var sc=document.createElement('script');sc.src='https://open.spotify.com/embed/iframe-api/v1';sc.async=true;document.head.appendChild(sc);
 }
