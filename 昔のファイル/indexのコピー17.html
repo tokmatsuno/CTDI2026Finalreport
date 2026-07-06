@@ -299,7 +299,7 @@ a{color:var(--blue)}
 </style></head>
 <body><div id="splash"><div id="splashCat"></div><div class="sload">Loading<span class="sdots"></span></div><div class="scd">あと <b id="spNum">2</b> びょう</div></div><div class="wrap">
 <section class="city-hero">
-  <div style="position:relative;z-index:2;font-size:10pt;color:var(--muted);letter-spacing:.04em;margin-bottom:2px">v5.03-namefix</div>
+  <div style="position:relative;z-index:2;font-size:10pt;color:var(--muted);letter-spacing:.04em;margin-bottom:2px">v5.02 csv-fix</div>
   <div class="title">
     <h1 class="brand">
       <svg class="catmark" viewBox="0 0 60 60" aria-hidden="true">
@@ -754,10 +754,9 @@ function clientId(){try{let id=localStorage.getItem('catlog_cid');if(!id){id='c'
 function normalizeCatRecord(p){
   p=p||{};
   // cats シートの正規列順に合わせて、index 側から送るキーを固定する。
-  // 正規列: ts,cid,mode,x,y,quad,typeName,catname,persona,kit,holo,displayName,churu,tower,matatabi,kaizen
+  // 正規列: ts,cid,mode,x,y,quad,typeName,catname,persona,kit,holo
   var typeName = p.typeName || p.nearestName || p.name || '';
   var catname = p.catname || p.catName || '';
-  var displayName = p.displayName || p.cardName || p.persona || p.quad || catname || typeName || '';
   var mode = p.mode || '2axis';
   if(mode==='2軸') mode='2axis';
   if(mode==='8軸') mode='8axis';
@@ -774,18 +773,12 @@ function normalizeCatRecord(p){
     typeName:typeName,
     catname:catname,
     persona:p.persona || '',
-    displayName:displayName,
-    cardName:displayName,
     kit:p.kit || '',
-    holo:(p.holo===true || p.holo===1 || p.holo==='1') ? 1 : 0,
-    churu:p.churu || p.treat || p.treatText || '',
-    tower:p.tower || '',
-    matatabi:p.matatabi || p.kaizen || '',
-    kaizen:p.kaizen || p.matatabi || ''
+    holo:(p.holo===true || p.holo===1 || p.holo==='1') ? 1 : 0
   };
 }
 function logResult(p, cardObj){
-  var rec=normalizeCatRecord(Object.assign({}, cardObj||{}, p||{}));
+  var rec=normalizeCatRecord(p);
   var url=(typeof apiUrl==='function'&&apiUrl())||cfg();
   if(!url) return false;
   // 記録はGETで一度だけ。送信キーは normalizeCatRecord() で固定し、列ずれを防ぐ。
@@ -867,7 +860,7 @@ function stockLocal(p){try{var a=JSON.parse(localStorage.getItem('catmap_stock')
 // ---- データソース（公開Google Sheets CSV）----
 function dataUrl(){try{return localStorage.getItem('catdata_csv')||'';}catch(e){return '';}}
 function parseCSV(text){var rows=[],row=[],cur='',q=false;for(var i=0;i<text.length;i++){var c=text[i];if(q){if(c==='"'){if(text[i+1]==='"'){cur+='"';i++;}else q=false;}else cur+=c;}else{if(c==='"')q=true;else if(c===','){row.push(cur);cur='';}else if(c==='\n'){row.push(cur);rows.push(row);row=[];cur='';}else if(c==='\r'){}else cur+=c;}}if(cur!==''||row.length){row.push(cur);rows.push(row);}return rows;}
-var HMAP={'no':'no','番号':'no','領域':'cluster','クラスタ':'cluster','タイプ名':'name','名称':'name','猫ネーム':'catname','キャッチ':'catch','ひとことキャッチ':'catch','家猫化ポイント':'point','ポイント':'point','x':'x','y':'y','チュール':'churu','キャットタワー':'tower','改善策':'kaizen','またたび策':'kaizen','副作用':'side','出典タイプ':'stype','出典分類':'stype','出典':'source','url':'url','引用元url':'url','引用元':'url','おすすめ曲':'song','おすすめ曲名':'song','曲':'song','youtubeリンク':'ytlink','youtube':'ytlink','曲リンク':'ytlink','ytリンク':'ytlink','spotifyリンク':'spotify','spotify':'spotify','spotifyurl':'spotify','spotifyリンクurl':'spotify','spotifytrack':'spotify'};
+var HMAP={'no':'no','番号':'no','領域':'cluster','クラスタ':'cluster','タイプ名':'name','名称':'name','猫ネーム':'catname','キャッチ':'catch','ひとことキャッチ':'catch','家猫化ポイント':'point','ポイント':'point','x':'x','y':'y','チュール':'churu','キャットタワー':'tower','改善策':'kaizen','またたび策':'kaizen','副作用':'side','出典タイプ':'stype','出典分類':'stype','出典':'source','url':'url','引用元url':'url','引用元':'url','おすすめ曲':'song','おすすめ曲名':'song','曲':'song','youtubeリンク':'ytlink','youtube':'ytlink','曲リンク':'ytlink','ytリンク':'ytlink'};
 function nrm(s){return (s||'').replace(/[\s　]/g,'').replace(/[（(][^）)]*[）)]/g,'').toLowerCase();}
 function parseTypes(text){var rows=parseCSV(text).filter(function(r){return r.some(function(c){return c!=='';});});if(rows.length<2)return null;var head=rows[0].map(function(h){return HMAP[nrm(h)]||nrm(h);});var out=[];for(var i=1;i<rows.length;i++){var r=rows[i],o={};head.forEach(function(k,j){o[k]=(r[j]||'').trim();});if(!o.name)continue;o.no=parseInt(o.no)||i;o.x=parseFloat(o.x)||5;o.y=parseFloat(o.y)||5;out.push(o);}return out.length?out:null;}
 function loadData(){var custom=dataUrl();var url=custom||DEFAULT_CSV;return fetch(url,{cache:'no-store'}).then(function(r){return r.text();}).then(function(t){var p=parseTypes(t);if(p&&p.length>=5){TYPES=p;return custom?'sheet':'repo';}TYPES=TYPES_EMBED.slice();return 'embedded';}).catch(function(){TYPES=TYPES_EMBED.slice();return 'embedded';});}
@@ -1689,8 +1682,8 @@ document.getElementById('submit').addEventListener('click',()=>{
       res.innerHTML=h;
       resolveCovers();
       res.insertAdjacentHTML('beforeend','<div class="sub center" id="lognote2" style="margin-top:8px"></div>');
-      logResult({mode:'2軸',x:+x.toFixed(2),y:+y.toFixed(2),quad:q.name,persona:per.n,displayName:per.n,cardName:per.n,answers:answers.join(''),cntA:c.A,cntB:c.B,cntC:c.C,cntD:c.D,nearestNo:near.no,nearestName:near.name,typeName:near.name,catname:near.catname,churu:near.churu,tower:near.tower,matatabi:near.kaizen,kaizen:near.kaizen,kit:ans9q.v,holo:holo?1:0}, Object.assign({},near,{x:+x.toFixed(2),y:+y.toFixed(2),persona:per.n,kit:ans9q.v,holo:holo}));
-      var stkN=stockLocal({mode:'2axis',x:+x.toFixed(2),y:+y.toFixed(2),quad:q.name,persona:per.n,displayName:per.n,cardName:per.n,nearestNo:near.no,typeName:near.name,catname:near.catname,churu:near.churu,tower:near.tower,matatabi:near.kaizen,kaizen:near.kaizen,kit:ans9q.v,holo:holo?1:0,ts:new Date().toISOString()});
+      logResult({mode:'2軸',x:+x.toFixed(2),y:+y.toFixed(2),quad:q.name,persona:per.n,answers:answers.join(''),cntA:c.A,cntB:c.B,cntC:c.C,cntD:c.D,nearestNo:near.no,nearestName:near.name,typeName:near.name,catname:near.catname,kit:ans9q.v,holo:holo?1:0}, Object.assign({},near,{x:+x.toFixed(2),y:+y.toFixed(2),persona:per.n,kit:ans9q.v,holo:holo}));
+      var stkN=stockLocal({mode:'2axis',x:+x.toFixed(2),y:+y.toFixed(2),quad:q.name,persona:per.n,cardName:per.n,nearestNo:near.no,typeName:near.name,catname:near.catname,kit:ans9q.v,holo:holo?1:0,ts:new Date().toISOString()});
       logNote('lognote2');
       res.insertAdjacentHTML('beforeend','<div class="center" style="margin-top:6px"><span class="sub">🗺 この猫を地区マップに追加しました（この端末に '+stkN+' 匹）</span><br><a class="ghost" style="display:inline-block;margin-top:6px;text-decoration:none;line-height:1.9" href="ienekomap.html" target="_blank" rel="noopener">🗺 シビックテック学創成町マップを見る</a></div>');
       document.getElementById('submit').disabled=false;
@@ -1796,7 +1789,7 @@ document.getElementById('submit8').addEventListener('click',()=>{
   resolveCovers();
   document.getElementById('res8').insertAdjacentHTML('beforeend','<div class="sub center" id="lognote8" style="margin-top:8px"></div>');
   const sObj={};AX8.forEach((a,i)=>sObj['ax_'+a]=scores[i]);
-  logResult(Object.assign({mode:'8軸',x:x,y:y,total:+mean.toFixed(2),quad:q.name,persona:q.name,displayName:q.name,cardName:q.name,nearestNo:near.no,nearestName:near.name,typeName:near.name,catname:near.catname,churu:near.churu,tower:near.tower,matatabi:near.kaizen,kaizen:near.kaizen,scores:scores.join(',')},sObj), {title:q.name,catname:'あなたの8軸プロファイル',desc:q.desc,x:x,y:y,seed:Math.round(x*7+y*13),kit:ans9.v,churu:near.churu,tower:near.tower,matatabi:near.kaizen,kaizen:near.kaizen});
+  logResult(Object.assign({mode:'8軸',x:x,y:y,total:+mean.toFixed(2),quad:q.name,persona:q.name,nearestNo:near.no,nearestName:near.name,typeName:near.name,catname:near.catname,scores:scores.join(',')},sObj), {title:q.name,catname:'あなたの8軸プロファイル',desc:q.desc,x:x,y:y,seed:Math.round(x*7+y*13),kit:ans9.v});
   logNote('lognote8');
   document.getElementById('res8').scrollIntoView({behavior:'smooth'});
 });
@@ -1861,39 +1854,77 @@ loadMeeting();checkApi();
 
 <script>
 /* ===== 🎧 DJ家猫 Drop the beat!（Spotify 2デッキ・オートMIX クロスフェード） ===== */
-var SONGS_FALLBACK=[{"no":1,"sid":"43Ud1IajwtBvw6ONj6aK2Q","sub":"CSVにSpotifyリンクが無い場合の予備"},{"no":2,"sid":"44LRgmkoGQUIlLvHAOvmKZ"},{"no":3,"sid":"3YfS47QufnLDFA71FUsgCM"},{"no":4,"sid":"7o9uu2GDtVDr9nsR7ZRN73"},{"no":5,"sid":"6RB9YvNyP0RZfCUcMtZELH","sub":"CSV曲名がFreeの場合はFreedomで代用"},{"no":6,"sid":"0sKVgEEApbh4EmJJyoUmBB"},{"no":7,"sid":"4ZS9gLtPWfNr2a2TwXjz3y"},{"no":8,"sid":"2zYzyRzz6pRmhPzyfMEC8s"},{"no":9,"sid":"15HNdxGKNCIO9pgaY4n7FU","sub":"CSVにSpotifyリンクが無い場合の予備"},{"no":10,"sid":"0EZWczlEGnrm3nCcX0FU7a"},{"no":11,"sid":"2Efdmr7O7bQHgEATOYYTTh","sub":"CSVにSpotifyリンクが無い場合の予備"},{"no":12,"sid":"4RvWPyQ5RL0ao9LPZeSouE"},{"no":13,"sid":"0xRf0aeTsHnj6OubE7YU2U"},{"no":14,"sid":"1XyJaNDXDhFg8NhJSw7XzA"},{"no":15,"sid":"6Fba9RZtC6vTY814JToDtP"},{"no":16,"sid":"6EdSN1iGtLPhcz43QDRkdK"},{"no":17,"sid":"0WTYBoRiOOAyXm2bKkie3v"},{"no":18,"sid":"1mSClObliRtgPVT399COQH"},{"no":19,"sid":"6BQNJ0JFKh8sWjQLI6Zudi"},{"no":20,"sid":"43DHLzDkncpby82Po5jlOZ"},{"no":21,"sid":"0Q0IVlqMV64kNLlwjPj0Hl"},{"no":22,"sid":"3SdTKo2uVsxFblQjpScoHy"},{"no":23,"sid":"15PC4RTMeQa2Gv4nnwSrwc"},{"no":24,"sid":"1VuBmEauSZywQVtqbxNqka"},{"no":25,"sid":"5p0KCAuu5nrHpTuAIhHdLw"},{"no":26,"sid":"26PnyFUmYdeRG7nQrsTpHc"},{"no":27,"sid":"24rv66H94QGVqIXHjA3kn6"},{"no":28,"sid":"0SLtqCrXBRrnkxSOMA3X4W"},{"no":29,"sid":"5eZrW59C3UgBhkqNlowEID"},{"no":30,"sid":"3IcIIZMMS7UArJJPtEHXG8"},{"no":31,"sid":"6xjyk6NiOaeUigFQYz6Lny","sub":"Spotify未収録時の予備"},{"no":32,"sid":"3zBhihYUHBmGd2bcQIobrF"},{"no":33,"sid":"5fRAvz6qCeSKbAi4LELOor"},{"no":34,"sid":"7LL40F6YdZgeiQ6en1c7Lk"},{"no":35,"sid":"0byOqNZN9ailhoORv5Ps0Z"},{"no":36,"sid":"02eD9ymfJOJOhM97HYp5R9"},{"no":37,"sid":"1JSTJqkT5qHq8MDJnJbRE1"},{"no":38,"sid":"0wzRcekWyVCSyPtlPOeJau"},{"no":39,"sid":"4hObp5bmIJ3PP3cKA9K9GY"},{"no":40,"sid":"0gCJkpD0RhF2rjiALLHBQL","sub":"Spotify未収録時の予備"},{"no":41,"sid":"7EsjkelQuoUlJXEw7SeVV4"},{"no":42,"sid":"1mea3bSkSGXuIRvnydlB5b"},{"no":43,"sid":"7C0rG4oWO7VeZcffyW1sK9"},{"no":44,"sid":"7AFy1aN1RQVgGOXzCtrK87"},{"no":45,"sid":"0GTLSJRogaeoDpkZ5hppOu"},{"no":46,"sid":"3PnygBQ2ruykkHgrCWV3jt"}];
-var SONG_FALLBACK_BY_NO={};SONGS_FALLBACK.forEach(function(s){SONG_FALLBACK_BY_NO[s.no]=s;});
-var SONGS=[]; // 互換用。DJの本命リストはCSVの TYPES から毎回生成する。
+var SONGS=[
+{"no": 1, "cat": "実家ぬくぬく猫", "type": "パラサイト・シングル(親密圏依存)", "title": "Mother - John Lennon", "sid": "43Ud1IajwtBvw6ONj6aK2Q", "yt": "https://www.youtube.com/watch?v=bSRJJNXxvPo"},
+{"no": 2, "cat": "次の一歩まち猫", "type": "ニート(NEET)", "title": "Waiting for the Day - George Michael", "sid": "44LRgmkoGQUIlLvHAOvmKZ", "yt": "https://www.youtube.com/watch?v=JT1GGUbAvW0"},
+{"no": 3, "cat": "おうち安心猫", "type": "ひきこもり", "title": "The Sound of Silence - Simon & Garfunkel", "sid": "3YfS47QufnLDFA71FUsgCM", "yt": "https://www.youtube.com/watch?v=4zLfCnGVeL4"},
+{"no": 4, "cat": "おうち長期滞在猫", "type": "中高年ひきこもり(8050問題)", "title": "Time After Time - Cyndi Lauper", "sid": "7o9uu2GDtVDr9nsR7ZRN73", "yt": "https://www.youtube.com/watch?v=VdQY7BusJNU"},
+{"no": 5, "cat": "自由時間満喫猫", "type": "FIRE早期リタイア層", "title": "Freedom - Pharrell Williams", "sid": "6RB9YvNyP0RZfCUcMtZELH", "yt": "https://www.youtube.com/watch?v=vRiQCbzaEUQ"},
+{"no": 6, "cat": "安心ベース待ち猫", "type": "ベーシックインカム待望者", "title": "Imagine - John Lennon", "sid": "0sKVgEEApbh4EmJJyoUmBB", "yt": "https://www.youtube.com/watch?v=YkgkThdzX-8"},
+{"no": 7, "cat": "ひなたで充電猫", "type": "ぶら下がり社員(社内失業)", "title": "Lazy Song - Bruno Mars", "sid": "4ZS9gLtPWfNr2a2TwXjz3y", "yt": "https://www.youtube.com/watch?v=fLexgOxsZu0"},
+{"no": 8, "cat": "アプリ活用猫", "type": "ギグワーカー(プラットフォーム依存)", "title": "Highway to Hell - AC/DC", "sid": "2zYzyRzz6pRmhPzyfMEC8s", "yt": "https://www.youtube.com/watch?v=l482T0yNkeo"},
+{"no": 9, "cat": "おすすめ発見猫", "type": "レコメンド任せ(フィルターバブル)", "title": "Pretender - Official髭男dism", "sid": "15HNdxGKNCIO9pgaY4n7FU", "yt": "https://www.youtube.com/watch?v=GRUxOYhxwMM", "sub": "Recommend - Official髭男dism"},
+{"no": 10, "cat": "いいね励み猫", "type": "SNS承認依存", "title": "1-2-3 - Gloria Estefan", "sid": "0EZWczlEGnrm3nCcX0FU7a", "yt": "https://www.youtube.com/watch?v=T4IWlFutwXo&list=RDT4IWlFutwXo&start_radio=1"},
+{"no": 11, "cat": "借りぐらし上手猫", "type": "サブスク全部入り(非所有)", "title": "借りてきた猫 - 筋肉少女帯", "sid": "2Efdmr7O7bQHgEATOYYTTh", "yt": "https://www.youtube.com/watch?v=3q0Gfxq5xJA"},
+{"no": 12, "cat": "まず聞いてみる猫", "type": "認知アウトソース(AI思考代行)", "title": "Everybody wants to rule the world - Tears For Fears", "sid": "4RvWPyQ5RL0ao9LPZeSouE", "yt": "https://www.youtube.com/watch?v=aGCdLKXNF3w&list=RDaGCdLKXNF3w&start_radio=1"},
+{"no": 13, "cat": "仮想世界おでかけ猫", "type": "メタバース/ゲーム没入", "title": "Virtual Insanity - Jamiroquai", "sid": "0xRf0aeTsHnj6OubE7YU2U", "yt": "https://www.youtube.com/watch?v=4JkIs37a2JE"},
+{"no": 14, "cat": "お取り寄せ上手猫", "type": "EC・デリバリー完結生活", "title": "Deliver Me - Sarah Brightman", "sid": "1XyJaNDXDhFg8NhJSw7XzA", "yt": "https://www.youtube.com/watch?v=5G3ZJw6kKOM"},
+{"no": 15, "cat": "投票きっかけ待ち猫", "type": "無関心・棄権層", "title": "Jump - Van Halen", "sid": "6Fba9RZtC6vTY814JToDtP", "yt": "https://www.youtube.com/watch?v=SwYN7mTi6HM&list=RDSwYN7mTi6HM&start_radio=1"},
+{"no": 16, "cat": "相談先さがし猫", "type": "お上任せ・公助依存", "title": "Help! - The Beatles", "sid": "6EdSN1iGtLPhcz43QDRkdK", "yt": "https://www.youtube.com/watch?v=2Q_ZzBGPdqE"},
+{"no": 17, "cat": "声を届けたい猫", "type": "お客様・クレーマー型市民(自動販売機モデル)", "title": "Crazy - Alanis Morissette", "sid": "0WTYBoRiOOAyXm2bKkie3v", "yt": "https://www.youtube.com/watch?v=Lu0fTmHsDqE&list=RDLu0fTmHsDqE&start_radio=1"},
+{"no": 18, "cat": "ご近所大事猫", "type": "NIMBY", "title": "Under Pressure - Queen and David Bowie", "sid": "1mSClObliRtgPVT399COQH", "yt": "https://www.youtube.com/watch?v=a01QQZyl-_I&list=RDa01QQZyl-_I&start_radio=1"},
+{"no": 19, "cat": "どうせ…から一歩猫", "type": "政治的無力感(学習性無力感)", "title": "Change the world - Eric Clapton", "sid": "6BQNJ0JFKh8sWjQLI6Zudi", "yt": "https://www.youtube.com/watch?v=nXB4xBnP22o&list=RDnXB4xBnP22o&start_radio=1"},
+{"no": 20, "cat": "空気を読む猫", "type": "同調・空気読み", "title": "Don't Stop Me Now - Queen", "sid": "43DHLzDkncpby82Po5jlOZ", "yt": "https://www.youtube.com/watch?v=HgzGwKwLmgM"},
+{"no": 21, "cat": "きちんと従う猫", "type": "権威主義的従順", "title": "Killing Me Softly - Fugees", "sid": "0Q0IVlqMV64kNLlwjPj0Hl", "yt": "https://www.youtube.com/watch?v=vSoUEKfPFnY"},
+{"no": 22, "cat": "支えを使う猫", "type": "生活保護の長期依存", "title": "Stand By Me - Ben E. King", "sid": "3SdTKo2uVsxFblQjpScoHy", "yt": "https://www.youtube.com/watch?v=hwZNL7QVJjE"},
+{"no": 23, "cat": "からだ相談猫", "type": "過剰受診・医療化", "title": "Doctor Doctor - Thompson Twins", "sid": "15PC4RTMeQa2Gv4nnwSrwc", "yt": "https://www.youtube.com/watch?v=LGJr6c0b_w0"},
+{"no": 24, "cat": "見守られ安心猫", "type": "施設・社会的入院依存(高齢)", "title": "Beautiful day- U2", "sid": "1VuBmEauSZywQVtqbxNqka", "yt": "https://www.youtube.com/watch?v=vCqlrhnl68g&list=RDvCqlrhnl68g&start_radio=1"},
+{"no": 25, "cat": "箱入り安心猫", "type": "過保護の子(ヘリコプターペアレント下)", "title": "Overprotected - Britney Spears", "sid": "5p0KCAuu5nrHpTuAIhHdLw", "yt": "https://www.youtube.com/watch?v=InAoMa-DaPY"},
+{"no": 26, "cat": "ぬくぬく安心猫", "type": "コンフォートゾーン固着", "title": "Comfortable - John Mayer", "sid": "26PnyFUmYdeRG7nQrsTpHc", "yt": "https://www.youtube.com/watch?v=mJAfbWzBNb4"},
+{"no": 27, "cat": "安定だいじ猫", "type": "安定至上(大企業・公務員志向)", "title": "Pride-U2", "sid": "24rv66H94QGVqIXHjA3kn6", "yt": "https://www.youtube.com/watch?v=Jn6wRE43dAY&list=RDJn6wRE43dAY&start_radio=1"},
+{"no": 28, "cat": "おまかせ上手猫", "type": "決断疲れ・おすすめ任せ", "title": "Let Me Entertain You - Robbie Williams", "sid": "0SLtqCrXBRrnkxSOMA3X4W", "yt": "https://www.youtube.com/watch?v=y3XSMEQg9IQ"},
+{"no": 29, "cat": "がんばり背負い猫", "type": "自己責任論の内面化・諦観", "title": "Carry That Weight - The Beatles", "sid": "5eZrW59C3UgBhkqNlowEID", "yt": "https://www.youtube.com/watch?v=3V5HLRdGOYQ"},
+{"no": 30, "cat": "推しと生きる猫", "type": "推し活没入(現実退避)", "title": "Obsessed - Mariah Carey", "sid": "3IcIIZMMS7UArJJPtEHXG8", "yt": "https://www.youtube.com/watch?v=mfSamCkiNFY"},
+{"no": 31, "cat": "手ぶら身軽猫", "type": "ミニマリスト(他者インフラ依存)", "title": "Lovefool - The Cardigans", "sid": "6xjyk6NiOaeUigFQYz6Lny", "yt": "https://www.youtube.com/watch?v=c1-FbdEfkDw", "sub": "Minimum - The Cardigans"},
+{"no": 32, "cat": "おうちゆったり猫", "type": "座りっぱなし・室内完結(身体不活動)", "title": "Sitting on the Dock of the Bay - Otis Redding", "sid": "3zBhihYUHBmGd2bcQIobrF", "yt": "https://www.youtube.com/watch?v=rTVjnBo96Ug"},
+{"no": 33, "cat": "さっとごはん猫", "type": "超加工食品依存", "title": "Fast Food Song - Fast Food Rockers", "sid": "5fRAvz6qCeSKbAi4LELOor", "yt": "https://www.youtube.com/watch?v=vrkTKSBxSSw"},
+{"no": 34, "cat": "快適チューニング猫", "type": "快適環境最適化マニア", "title": "Robot Rock - Daft Punk", "sid": "7LL40F6YdZgeiQ6en1c7Lk", "yt": "https://www.youtube.com/watch?v=gAjR4_CbPpQ"},
+{"no": 35, "cat": "ひとり気まま猫", "type": "孤立だが快適(つながり放棄)", "title": "I Am a Rock - Simon & Garfunkel", "sid": "0byOqNZN9ailhoORv5Ps0Z", "yt": "https://www.youtube.com/watch?v=JoSWVhEmHc4"},
+{"no": 36, "cat": "家庭を守る猫", "type": "完全専業依存(配偶者扶養)", "title": "The House That Built Me - Miranda Lambert", "sid": "02eD9ymfJOJOhM97HYp5R9", "yt": "https://www.youtube.com/watch?v=RDC7bMIblTk"},
+{"no": 37, "cat": "便利さ歓迎猫", "type": "監視に喜んで従う", "title": "Every Breath You Take - The Police", "sid": "1JSTJqkT5qHq8MDJnJbRE1", "yt": "https://www.youtube.com/watch?v=OMOGaugKpzs"},
+{"no": 38, "cat": "するっと選ぶ猫", "type": "ナッジ誘導の最適化人間", "title": "Go With the Flow - Queens of the Stone Age", "sid": "0wzRcekWyVCSyPtlPOeJau", "yt": "https://www.youtube.com/watch?v=yzwbSInCdlA"},
+{"no": 39, "cat": "ぬるま湯ごきげん猫", "type": "幸福な家畜(快楽的従属)", "title": "Don't Worry, Be Happy - Bobby McFerrin", "sid": "4hObp5bmIJ3PP3cKA9K9GY", "yt": "https://www.youtube.com/watch?v=d-diB65scQU"},
+{"no": 40, "cat": "飼われ心地よし猫", "type": "自己家畜化を肯定する人", "title": "Almost Cut My Hair - David Crosby", "sid": "0gCJkpD0RhF2rjiALLHBQL", "yt": "https://www.youtube.com/watch?v=D8rlTzKlnMs", "sub": "Domesticated Animal - David Crosby"},
+{"no": 41, "cat": "働き方見直し猫", "type": "ポスト労働・脱労働志向", "title": "Black or white - Michael Jackson", "sid": "7EsjkelQuoUlJXEw7SeVV4", "yt": "https://www.youtube.com/watch?v=F2AitTPI5U0&list=RDF2AitTPI5U0&start_radio=1"},
+{"no": 42, "cat": "からだアップデート猫", "type": "身体放棄(トランスヒューマニズム)", "title": "Viva la vida - Coldplay", "sid": "1mea3bSkSGXuIRvnydlB5b", "yt": "https://www.youtube.com/watch?v=dvgZkm1xWPE&list=RDdvgZkm1xWPE&start_radio=1"},
+{"no": 43, "cat": "ロボ見守り猫", "type": "ケアロボ前提の老後設計", "title": "Mr. Roboto - Styx", "sid": "7C0rG4oWO7VeZcffyW1sK9", "yt": "https://www.youtube.com/watch?v=uc6f_2nPSX8"},
+{"no": 44, "cat": "暮らし整え猫", "type": "終活・縮小均衡(守りの撤退)", "title": "Life Is a Cabaret - Liza Minnelli", "sid": "7AFy1aN1RQVgGOXzCtrK87", "yt": "https://www.youtube.com/watch?v=Qor2JqoNL1M"},
+{"no": 45, "cat": "通知にそわそわ猫", "type": "スマホ・アテンション中毒(ドゥームスクロール)", "title": "Rossana- Toto", "sid": "0GTLSJRogaeoDpkZ5hppOu", "yt": "https://www.youtube.com/watch?v=qmOLtTGvsbM&list=RDqmOLtTGvsbM&start_radio=1"},
+{"no": 46, "cat": "アプリで出会う猫", "type": "マッチング依存(出会いの外注)", "title": "Take my breathe away - Berlin", "sid": "3PnygBQ2ruykkHgrCWV3jt", "yt": "https://www.youtube.com/watch?v=Bx51eegLTY8&list=RDBx51eegLTY8&start_radio=1"},
+];
 
+var SONG_BY_NO={};
+SONGS.forEach(function(s){SONG_BY_NO[s.no]=s;});
+var SPOTIFY_BY_NO={};SONGS.forEach(function(s){SPOTIFY_BY_NO[s.no]={sid:s.sid,sub:s.sub};});
 var DJ={queue:[],idx:0,shuffle:false,active:'a',apiLoaded:false,_loading:false,_cbs:[],
   playing:false,crossing:false,wasPlaying:false,userPaused:false,OVERLAP:6000,
   decks:{a:{ctrl:null,ready:false,pend:false},b:{ctrl:null,ready:false,pend:false}}};
 var DJ_SPOT='<svg width="13" height="13" viewBox="0 0 24 24" style="vertical-align:-2px;margin-right:4px"><circle cx="12" cy="12" r="12" fill="#1DB954"/><path d="M6 9.4c4-1 8.2-.7 11.2 1.1M6.8 13c3-.8 6.4-.4 8.8 1M7.6 16.3c2.3-.6 4.7-.3 6.7.9" stroke="#fff" stroke-width="1.7" fill="none" stroke-linecap="round"/></svg>';
 function djEsc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-
-function djSpotifyId(v){
-  v=(v||'').trim();
-  if(!v)return '';
-  var m=v.match(/open\.spotify\.com\/track\/([A-Za-z0-9]+)/); if(m)return m[1];
-  m=v.match(/spotify:track:([A-Za-z0-9]+)/); if(m)return m[1];
-  if(/^[A-Za-z0-9]{18,30}$/.test(v))return v;
-  return '';
-}
-function djSpotifyUrl(s){return s&&s.sid?('https://open.spotify.com/track/'+s.sid):(s&&s.spotifyUrl?s.spotifyUrl:'#');}
 function djLiveTypes(){
   var arr=null;
   if(typeof TYPES!=='undefined'&&TYPES&&TYPES.length)arr=TYPES;
   else if(typeof TYByName!=='undefined'){arr=[];for(var k in TYByName)arr.push(TYByName[k]);}
   if(!arr)return null;
   var out=[];
-  arr.forEach(function(t){var no=parseInt(t.no)||0;var title=((t.song||'')+'').trim();var sid=djSpotifyId(t.spotify||t.spotifylink||t.spotifyUrl||'');var sub='';if(!sid){var fb=SONG_FALLBACK_BY_NO[no];if(fb){sid=fb.sid;sub=fb.sub||'CSVにSpotifyリンクが無いため予備トラックで再生';}}if(!title||!sid)return;out.push({no:no,cat:(t.catname||''),type:(t.name||t.typeName||''),title:title,sid:sid,yt:(t.ytlink||''),sub:sub,fromCsv:!!(t.spotify)});});
+  arr.forEach(function(t){var no=parseInt(t.no)||0;var title=((t.song||'')+'').trim();var sp=SPOTIFY_BY_NO[no];if(!title||!sp)return;out.push({no:no,cat:(t.catname||''),type:(t.name||t.typeName||''),title:title,sid:sp.sid,yt:(t.ytlink||''),sub:sp.sub});});
   out.sort(function(a,b){return a.no-b.no;});
   return out.length?out:null;
 }
-function djBuildQueue(){var live=djLiveTypes();DJ.queue=(live&&live.length)?live:SONGS_FALLBACK.map(function(s){var t=(typeof TYPES!=='undefined'&&TYPES[s.no-1])||{};return {no:s.no,cat:(t.catname||('No.'+s.no)),type:(t.name||''),title:(t.song||'Spotify track '+s.no),sid:s.sid,sub:s.sub||'CSV未読込時の予備'};});}
+function djBuildQueue(){var live=djLiveTypes();DJ.queue=(live&&live.length)?live:SONGS.slice();}
 function djShuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
 function djOther(k){return k==='a'?'b':'a';}
-function djSid(i){var s=DJ.queue[((i%DJ.queue.length)+DJ.queue.length)%DJ.queue.length];return s?s.sid:SONGS_FALLBACK[0].sid;}
+function djSid(i){var s=DJ.queue[((i%DJ.queue.length)+DJ.queue.length)%DJ.queue.length];return s?s.sid:SONGS[0].sid;}
 function openDJ(startNo){
   if(!DJ.queue.length){djBuildQueue();if(DJ.shuffle)djShuffle(DJ.queue);}
   if(startNo!=null){var k=DJ.queue.findIndex(function(s){return s.no===startNo;});if(k>=0)DJ.idx=k;}
@@ -1974,7 +2005,7 @@ function updateNowPlaying(optIdx){var i=(optIdx!=null)?optIdx:DJ.idx;var s=DJ.qu
   el.innerHTML='<div class="nptype">'+djEsc(s.type)+'</div><div class="npcat">'+djEsc(s.cat)+mix+'</div><div class="nsong">🎵 '+djEsc(s.title)+'</div>'+subN+'<div class="dj-prog"><div id="dj-bar"></div></div>';
 }
 function renderDJList(){var el=document.getElementById('dj-queue');if(!el)return;var h='';
-  DJ.queue.forEach(function(s,i){var sb=s.sub?' <span style="color:#c0392b;font-size:.68rem;font-weight:700">※代用</span>':'';h+='<div class="dj-item'+(i===DJ.idx?' cur':'')+'" onclick="djPlayIdx('+i+')"><span class="qn">'+(i+1)+'</span><span><span class="qcat">'+djEsc(s.cat)+'</span><br><span class="qtitle">'+djEsc(s.title)+'</span>'+sb+'</span><a class="qsp" href="'+djSpotifyUrl(s)+'" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="Spotifyで開く">↗</a></div>';});
+  DJ.queue.forEach(function(s,i){var sb=s.sub?' <span style="color:#c0392b;font-size:.68rem;font-weight:700">※代用</span>':'';h+='<div class="dj-item'+(i===DJ.idx?' cur':'')+'" onclick="djPlayIdx('+i+')"><span class="qn">'+(i+1)+'</span><span><span class="qcat">'+djEsc(s.cat)+'</span><br><span class="qtitle">'+djEsc(s.title)+'</span>'+sb+'</span><a class="qsp" href="https://open.spotify.com/track/'+s.sid+'" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="Spotifyで開く">↗</a></div>';});
   el.innerHTML=h;
   var cur=el.querySelector('.dj-item.cur');if(cur&&cur.scrollIntoView){cur.scrollIntoView({block:'nearest'});}
 }

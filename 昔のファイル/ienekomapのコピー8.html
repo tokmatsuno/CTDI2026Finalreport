@@ -80,7 +80,7 @@ button.pri{background:var(--navy);color:#fff}
 </style></head>
 <body><div class="wrap">
 <section class="map-hero">
-  <div style="position:relative;z-index:2;font-size:.72rem;color:#999;letter-spacing:.04em;margin-bottom:2px">v1.2.1-namefix · 自治会エディション</div>
+  <div style="position:relative;z-index:2;font-size:.72rem;color:#999;letter-spacing:.04em;margin-bottom:2px">v1.2.0 · 自治会エディション</div>
   <div style="position:relative;z-index:2">
     <div style="font-size:.78rem;color:#7A3E5F;font-weight:700;letter-spacing:.08em;margin-bottom:2px">TOKYO UNIVERSITY · CIVIC TECH DISTRICT</div>
     <h1>
@@ -404,10 +404,6 @@ var RECORDS=[];      // 表示順（新しい順）
 var TYByName={}, TYByCat={};
 const SHARED_API="https://script.google.com/macros/s/AKfycbzBaagdobV2ixb6GwVpAFDmCN4tOwmvAseuPq8OvXnZsoOcUJ5kwD8Ih11TOKjYSf8U/exec";
 function quadKey(x,y){var p=x>=5.5,d=y>=5.5;return d?(p?'house':'cage'):(p?'halfV':'halfP');}
-function personaName(x,y){var genki=y<=4.2,mattari=y>=6.4,priv=x>=5.5;
- if(genki)return priv?{n:'自由きまま ハンター猫'}:{n:'まちの世話やき猫'};
- if(mattari)return priv?{n:'おうち大好き ぬくぬく猫'}:{n:'甘え上手 ごろごろ猫'};
- return priv?{n:'かしこ便利 バランス猫'}:{n:'きまぐれ バランス猫'};}
 function catsUrl(){return SHARED_API?SHARED_API+(SHARED_API.indexOf('?')<0?'?':'&')+'what=cats':'';}
 function getLocal(){try{return JSON.parse(localStorage.getItem('catmap_stock')||'[]');}catch(e){return [];}}
 function num(v){var n=parseFloat(v);return isFinite(n)?n:null;}
@@ -430,15 +426,10 @@ function norm(o){
   // 例: x=nearestNo, y=nearestName, quad=catname, typeName=x, catname=y, persona=kit, kit=quad, holo=mode
   if((x==null||x>10||y==null) && o && num(o.typeName)!=null && num(o.catname)!=null){
     x=num(o.typeName); y=num(o.catname);
-    var dn0=o.displayName||o.cardName||o.kit||'';
-    return {x:x,y:y,mode:o.mode||'',typeName:o.y||o.nearestName||o.name||'',catname:o.quad||o.catName||'',persona:o.kit||'',displayName:dn0,cardName:dn0,kit:o.persona||'',ts:o.ts||'',churu:o.churu||'',tower:o.tower||'',matatabi:o.matatabi||o.kaizen||'',kaizen:o.kaizen||o.matatabi||''};
+    return {x:x,y:y,typeName:o.y||o.nearestName||o.name||'',catname:o.quad||o.catName||'',persona:o.kit||'',cardName:o.cardName||o.displayName||'',kit:o.persona||'',ts:o.ts||''};
   }
   if(x==null||y==null||x>10||y>10)return null;
-  var mode=o.mode||'';
-  var persona=o.persona||'';
-  var displayName=o.displayName||o.cardName||persona||'';
-  if(!displayName){ displayName = (String(mode).indexOf('8')>=0) ? (o.quad||'') : personaName(x,y).n; }
-  return {x:x,y:y,mode:mode,typeName:o.typeName||o.nearestName||o.name||'',catname:o.catname||o.catName||'',persona:persona,displayName:displayName,cardName:displayName,kit:o.kit||'',ts:o.ts||'',churu:o.churu||'',tower:o.tower||'',matatabi:o.matatabi||o.kaizen||'',kaizen:o.kaizen||o.matatabi||''};
+  return {x:x,y:y,typeName:o.typeName||o.nearestName||o.name||'',catname:o.catname||o.catName||'',persona:o.persona||o.quad||'',cardName:o.cardName||o.displayName||'',kit:o.kit||'',ts:o.ts||''};
 }
 function parseRemote(text){text=(text||'').replace(/^﻿/,'').trim();if(!text)return [];
   if(text[0]==='['){try{return JSON.parse(text).map(norm).filter(Boolean);}catch(e){}}
@@ -467,9 +458,8 @@ function reloadAll(){
 }
 
 function seedOf(r){return Math.round(r.x*7+r.y*13);}
-function nearestTypeByXY(r){var best=null,bd=1e9;Object.keys(TYByName).forEach(function(k){var t=TYByName[k];var dx=(parseFloat(t.x)||5)-r.x,dy=(parseFloat(t.y)||5)-r.y,d=dx*dx+dy*dy;if(d<bd){bd=d;best=t;}});return best||{};}
-function typeOf(r){return TYByName[r.typeName]||TYByCat[r.catname]||nearestTypeByXY(r)||{};}
-function cardNameOf(r){return r.displayName||r.cardName||r.persona||((String(r.mode||'').indexOf('8')<0)?personaName(r.x,r.y).n:'')||r.catname||'（無名の猫）';}
+function typeOf(r){return TYByName[r.typeName]||TYByCat[r.catname]||{};}
+function cardNameOf(r){return r.cardName||r.persona||r.catname||'（無名の猫）';}
 function typeLabelOf(r){return r.typeName ? (r.catname ? r.typeName+'（'+r.catname+'）' : r.typeName) : (r.catname||'');}
 
 function render(){
@@ -537,12 +527,9 @@ function openDetail(i){var r=RECORDS[i];if(!r)return;var t=typeOf(r);var q=QUAD[
   h+='<h2 style="margin:.3em 0 .1em">'+esc(cardNameOf(r))+'</h2>';
   h+='<div class="note" style="margin-bottom:6px">'+esc(typeLabelOf(r))+'　｜　X'+r.x+'・Y'+r.y+'</div>';
   if(t.catch)h+='<div class="kv">'+esc(t.catch)+'</div>';
-  var churu=r.churu||t.churu||'（データ未登録）';
-  var tower=r.tower||t.tower||'（データ未登録）';
-  var matatabi=r.matatabi||r.kaizen||t.kaizen||'（データ未登録）';
-  h+='<div class="kv"><b>🍶 ごきげんチュール：</b>'+esc(churu)+'</div>';
-  h+='<div class="kv"><b>🪜 キャットタワー：</b>'+esc(tower)+'</div>';
-  h+='<div class="kv"><b>🌿 またたび：</b>'+esc(matatabi)+'</div>';
+  h+='<div class="kv"><b>🍶 ごきげんチュール：</b>'+esc(t.churu||'（データ未登録）')+'</div>';
+  h+='<div class="kv"><b>🪜 キャットタワー：</b>'+esc(t.tower||'（データ未登録）')+'</div>';
+  h+='<div class="kv"><b>🌿 またたび：</b>'+esc(t.kaizen||'（データ未登録）')+'</div>';
   if(t.side)h+='<div class="kv"><b>🐾 そっと気をつけたいこと：</b>'+esc(t.side)+'</div>';
   if(t.source)h+='<div class="kv" style="font-size:.8rem;color:#666"><b>📚 出典：</b>'+esc(t.source)+(t.url?' ／ <a href="'+t.url+'" target="_blank" rel="noopener">引用元</a>':'')+'</div>';
   h+=songBlockHTML(t);
