@@ -835,6 +835,98 @@ function saveData(){try{localStorage.setItem('catdata_csv',document.getElementBy
 function clearData(){try{localStorage.removeItem('catdata_csv');document.getElementById('dataInput').value='';}catch(e){}loadData().then(function(s){buildZukan();buildRefs();dataStatus(s);});}
 window.saveData=saveData;window.clearData=clearData;
 
+
+// ── いえ猫度(1〜10)に応じた背景シーン（10段階の描き分け）──
+// 1街路 2歩道 3門・塀 4庭 5玄関 6縁側 7ベランダ 8窓辺 9リビング 10こたつ
+function sceneBGInner(level){
+  var lv=Math.max(1,Math.min(10,Math.ceil(+level||1)));
+  var s='';var i;
+  function bg(c){return '<rect x="0" y="0" width="300" height="208" fill="'+c+'"/>';}
+  function gnd(y,c){return '<rect x="0" y="'+y+'" width="300" height="'+(208-y)+'" fill="'+c+'"/>';}
+  if(lv<=1){ // 街路
+    s+=bg('#cfe9f7');
+    s+='<ellipse cx="66" cy="40" rx="26" ry="11" fill="#ffffff" opacity="0.85"/><ellipse cx="220" cy="30" rx="30" ry="12" fill="#ffffff" opacity="0.8"/>';
+    s+='<g fill="#8894a8"><rect x="4" y="100" width="36" height="52"/><rect x="44" y="82" width="28" height="70"/><rect x="232" y="92" width="36" height="60"/><rect x="272" y="110" width="26" height="42"/></g>';
+    s+=gnd(150,'#9aa2ae');
+    s+='<rect x="40" y="70" width="5" height="80" fill="#4a5568"/><rect x="30" y="64" width="26" height="9" rx="3" fill="#4a5568"/><circle cx="43" cy="78" r="5" fill="#ffe08a"/>';
+    s+='<g fill="#f2f2f2">';for(i=0;i<5;i++){s+='<rect x="'+(24+i*62)+'" y="182" width="26" height="5" rx="2"/>';}s+='</g>';
+  } else if(lv<=2){ // 歩道・並木
+    s+=bg('#d3ecf6');
+    s+='<g><rect x="37" y="112" width="6" height="40" fill="#8a6a44"/><ellipse cx="40" cy="96" rx="26" ry="24" fill="#8bbe6a"/><rect x="117" y="110" width="7" height="42" fill="#8a6a44"/><ellipse cx="120" cy="90" rx="30" ry="26" fill="#7fb35e"/><rect x="247" y="112" width="6" height="40" fill="#8a6a44"/><ellipse cx="250" cy="96" rx="28" ry="24" fill="#8bbe6a"/></g>';
+    s+=gnd(150,'#c2c8d0');
+    s+='<rect x="0" y="150" width="300" height="12" fill="#a9cf86"/>';
+    s+='<rect x="40" y="166" width="66" height="14" rx="3" fill="#9a6b4a"/><rect x="46" y="180" width="6" height="18" fill="#7a5638"/><rect x="96" y="180" width="6" height="18" fill="#7a5638"/>';
+  } else if(lv<=3){ // 門・塀の外
+    s+=bg('#d8eef7');
+    s+=gnd(150,'#b7c48f');
+    s+='<rect x="0" y="118" width="300" height="36" fill="#e3d6bd"/><rect x="0" y="114" width="300" height="6" fill="#cbb891"/>';
+    s+='<path d="M112,96 L150,74 L188,96 Z" fill="#9a6b4a"/><rect x="120" y="96" width="60" height="58" fill="#c98a5a" stroke="#7a5638" stroke-width="2"/><rect x="146" y="98" width="8" height="56" fill="#7a5638"/>';
+    s+='<rect x="120" y="150" width="60" height="52" fill="#cdd0d2"/>';
+  } else if(lv<=4){ // 庭
+    s+=bg('#d3ecf6');
+    s+='<circle cx="252" cy="38" r="17" fill="#fff2bf"/>';
+    s+=gnd(118,'#a9cf86');
+    s+='<rect x="0" y="150" width="300" height="6" fill="#8bbe6a" opacity="0.5"/>';
+    s+='<rect x="238" y="66" width="8" height="60" fill="#8a6a44"/><ellipse cx="242" cy="60" rx="30" ry="27" fill="#7fb35e"/>';
+    s+='<g><rect x="6" y="120" width="66" height="7" fill="#c9b48c"/>';for(i=0;i<5;i++){s+='<rect x="'+(10+i*14)+'" y="112" width="4" height="16" fill="#b09a72"/>';}s+='</g>';
+    s+='<circle cx="28" cy="176" r="5" fill="#ef9ab0"/><circle cx="58" cy="186" r="5" fill="#ffd07a"/><circle cx="250" cy="184" r="5" fill="#ef9ab0"/><circle cx="278" cy="174" r="5" fill="#c79ae0"/>';
+    s+='<ellipse cx="150" cy="188" rx="18" ry="7" fill="#cdc6b2"/><ellipse cx="104" cy="198" rx="14" ry="6" fill="#cdc6b2"/><ellipse cx="198" cy="198" rx="14" ry="6" fill="#cdc6b2"/>';
+  } else if(lv<=5){ // 玄関ポーチ
+    s+=bg('#efe6d3');
+    s+='<rect x="0" y="0" width="300" height="18" fill="#c9b48c"/>';
+    s+=gnd(150,'#c9a06a');
+    s+='<path d="M116,46 L152,26 L188,46 Z" fill="#9a6b4a"/><rect x="120" y="46" width="64" height="104" rx="3" fill="#9a6b4a" stroke="#7a5638" stroke-width="2"/><rect x="128" y="54" width="48" height="96" fill="#b98a5e"/><circle cx="168" cy="104" r="3" fill="#3a2a18"/>';
+    s+='<rect x="118" y="150" width="68" height="10" fill="#7a5638"/>';
+    s+='<rect x="28" y="150" width="28" height="20" rx="3" fill="#c47a4a"/><path d="M42,150 q-12,-22 -3,-34 q5,12 3,34" fill="#5a9e5a"/>';
+    s+='<rect x="244" y="150" width="28" height="20" rx="3" fill="#c47a4a"/><path d="M258,150 q12,-22 3,-34 q-5,12 -3,34" fill="#5a9e5a"/>';
+    s+='<rect x="118" y="176" width="68" height="15" rx="3" fill="#b0653e" opacity="0.7"/>';
+  } else if(lv<=6){ // 縁側
+    s+='<rect x="0" y="0" width="300" height="118" fill="#cfe6d0"/>';
+    s+='<rect x="248" y="40" width="7" height="50" fill="#8a6a44"/><ellipse cx="251" cy="36" rx="26" ry="22" fill="#7fb35e"/>';
+    s+='<rect x="0" y="60" width="300" height="10" fill="#efe6d3"/>';
+    s+='<g fill="#f5efe0" stroke="#cbb891" stroke-width="2">';for(i=0;i<4;i++){s+='<rect x="'+(i*76)+'" y="10" width="76" height="50"/>';}s+='</g>';
+    s+='<rect x="0" y="118" width="300" height="10" fill="#8bbe6a"/>';
+    s+=gnd(128,'#d8b784');
+    s+='<g stroke="#b8935f" stroke-width="2">';for(i=1;i<7;i++){s+='<line x1="0" y1="'+(128+i*12)+'" x2="300" y2="'+(128+i*12)+'"/>';}s+='</g>';
+    s+='<rect x="120" y="184" width="24" height="8" rx="3" fill="#e07a7a"/><rect x="150" y="184" width="24" height="8" rx="3" fill="#7aa7e0"/>';
+  } else if(lv<=7){ // ベランダ
+    s+=bg('#cfe9f7');
+    s+='<g fill="#aeb8c6" opacity="0.65"><rect x="8" y="58" width="30" height="62"/><rect x="44" y="70" width="22" height="50"/><rect x="250" y="52" width="34" height="68"/></g>';
+    s+='<ellipse cx="150" cy="34" rx="34" ry="12" fill="#ffffff" opacity="0.8"/>';
+    s+=gnd(120,'#c7bba4');
+    s+='<rect x="0" y="112" width="300" height="8" fill="#9aa0a8"/>';
+    s+='<g fill="#b6bcc4">';for(i=0;i<11;i++){s+='<rect x="'+(6+i*28)+'" y="120" width="6" height="30"/>';}s+='</g>';
+    s+='<rect x="0" y="148" width="300" height="6" fill="#8a8f97"/>';
+    s+='<rect x="242" y="150" width="30" height="28" rx="3" fill="#c47a4a"/><path d="M257,150 q12,-26 3,-40 q-6,14 -3,40" fill="#5a9e5a"/>';
+  } else if(lv<=8){ // 窓辺の部屋
+    s+=bg('#f0e2c8');
+    s+='<rect x="150" y="28" width="122" height="82" rx="4" fill="#bfe0f2"/><rect x="150" y="28" width="122" height="82" rx="4" fill="none" stroke="#ffffff" stroke-width="6"/><rect x="208" y="28" width="6" height="82" fill="#ffffff"/><rect x="150" y="66" width="122" height="6" fill="#ffffff"/>';
+    s+='<path d="M150,24 q-28,10 -18,92 q-14,-4 -22,4 q12,-52 8,-96 Z" fill="#e79ab0" opacity="0.6"/>';
+    s+=gnd(150,'#cd9f6a');
+    s+='<rect x="24" y="150" width="28" height="26" rx="3" fill="#c47a4a"/><path d="M38,150 q-14,-26 -4,-42 q8,16 4,42" fill="#5a9e5a"/>';
+    s+='<ellipse cx="150" cy="192" rx="96" ry="16" fill="#d98da0" opacity="0.4"/>';
+  } else if(lv<=9){ // リビング
+    s+=bg('#f2e2c4');
+    s+='<ellipse cx="150" cy="-6" rx="130" ry="42" fill="#fff3c4" opacity="0.5"/>';
+    s+='<rect x="206" y="40" width="48" height="36" rx="2" fill="#ffffff" stroke="#c79a6a" stroke-width="3"/><path d="M230,48 l4,10 10,1 -8,7 3,10 -9,-6 -9,6 3,-10 -8,-7 10,-1 Z" fill="#ffd07a"/>';
+    s+=gnd(150,'#cd9f6a');
+    s+='<ellipse cx="150" cy="190" rx="112" ry="20" fill="#d98da0" opacity="0.5"/>';
+    s+='<g><rect x="10" y="118" width="92" height="62" rx="12" fill="#e08a8a"/><rect x="2" y="128" width="24" height="52" rx="9" fill="#c96f6f"/><rect x="86" y="128" width="24" height="52" rx="9" fill="#c96f6f"/><rect x="20" y="112" width="72" height="18" rx="8" fill="#eea0a0"/></g>';
+    s+='<rect x="250" y="150" width="30" height="24" rx="3" fill="#c47a4a"/><path d="M265,150 q12,-24 3,-38 q-6,14 -3,38" fill="#5a9e5a"/>';
+  } else { // こたつ・ぬくぬく
+    s+=bg('#efd9b8');
+    s+='<ellipse cx="150" cy="-4" rx="140" ry="48" fill="#ffdf9e" opacity="0.6"/>';
+    s+='<path d="M0,18 q30,10 22,124 l-30,0 Z" fill="#e79ab0" opacity="0.5"/><path d="M300,18 q-30,10 -22,124 l30,0 Z" fill="#e79ab0" opacity="0.5"/>';
+    s+=gnd(150,'#c98f5c');
+    s+='<ellipse cx="150" cy="192" rx="122" ry="20" fill="#d98da0" opacity="0.55"/>';
+    s+='<rect x="86" y="162" width="128" height="42" rx="6" fill="#e7623f" opacity="0.9"/><rect x="96" y="150" width="108" height="16" rx="3" fill="#8a5a3a"/>';
+    s+='<circle cx="252" cy="176" r="16" fill="#f0c27a"/><circle cx="252" cy="176" r="16" fill="none" stroke="#d9a441" stroke-width="3"/>';
+  }
+  return s;
+}
+function sceneBG(level){return '<svg class="scenebg" viewBox="0 0 300 208" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%;z-index:0">'+sceneBGInner(level)+'</svg>';}
+window.sceneBG=sceneBG;window.sceneBGInner=sceneBGInner;
+
 function cardHTML(o){
   // o: {title, catname, desc, x, y, seed}
   const k=quadKey(o.x,o.y), q=QUAD[k];
@@ -848,7 +940,7 @@ function cardHTML(o){
   h+='<div class="cbanner" style="background:'+q.banner+'">'+esc(o.title)+'</div>';
   var flag=(o.kit&&KITS[o.kit]&&KITS[o.kit].flag)?'<div class="flagbadge">'+KITS[o.kit].flag+'</div>':'';
   var holoFX=o.holo?'<div class="holosheen"></div><div class="holoribbon">✨SPECIAL✨</div><span class="spark" style="top:12px;left:32px;font-size:16px">✦</span><span class="spark" style="top:64px;right:22px;font-size:12px;animation-delay:.4s">✦</span><span class="spark" style="top:128px;left:18px;font-size:13px;animation-delay:.8s">✧</span><span class="spark" style="bottom:28px;right:38px;font-size:15px;animation-delay:.2s">✦</span>':'';
-  h+='<div class="cart" style="background:'+q.light+'">'+bgLayer+flag+'<div class="floor"></div><div class="catlayer">'+catBox+'</div>'+holoFX+'</div>';
+  h+='<div class="cart" style="background:'+q.light+'">'+sceneBG(o.y)+bgLayer+flag+'<div class="floor"></div><div class="catlayer">'+catBox+'</div>'+holoFX+'</div>';
   h+='<div class="cdesc"><div class="nm">'+esc(o.catname||'')+'</div>'+esc(o.desc||'')+'</div>';
   h+='<div class="cstats">';
   h+=statRow('SOCIAL',st.SOCIAL,'#e8627a');
@@ -873,6 +965,7 @@ function cardSVGFull(o){
   s+='<text x="'+(W/2)+'" y="92" text-anchor="middle" font-size="16" font-weight="bold" fill="#1F3864">'+esc(o.sub||'')+'</text>';
   s+='<rect x="24" y="104" width="'+(W-48)+'" height="240" rx="8" fill="'+q.light+'" stroke="#c9d2e0"/>';
   s+='<rect x="24" y="318" width="'+(W-48)+'" height="26" fill="rgba(0,0,0,.06)"/>';
+  s+='<svg x="24" y="104" width="'+(W-48)+'" height="240" viewBox="0 0 300 208" preserveAspectRatio="xMidYMid slice">'+sceneBGInner(o.y)+'</svg>';
   s+='<svg x="'+((W-240)/2)+'" y="104" width="240" height="240" viewBox="0 0 300 300">'+inner+'</svg>';
   if(o.kit&&KITS[o.kit]&&KITS[o.kit].flag){s+='<rect x="34" y="112" width="44" height="34" rx="6" fill="rgba(255,255,255,.88)" stroke="rgba(0,0,0,.12)"/><text x="56" y="138" text-anchor="middle" font-size="26">'+KITS[o.kit].flag+'</text>';}
   if(o.holo){s+='<rect x="'+(W-150)+'" y="150" width="146" height="26" rx="6" fill="#ffd84a"/><text x="'+(W-77)+'" y="168" text-anchor="middle" font-size="14" font-weight="bold" fill="#3a2a00">✨ SPECIAL ✨</text>';
@@ -947,12 +1040,12 @@ function persona(x,y){var genki=y<=4.2,mattari=y>=6.4,priv=x>=5.5;
  return priv?{n:'かしこ便利 バランス猫',t:'便利さも自分らしさも、いいとこ取り。',g:'状況に合わせて動ける柔軟さ'}
    :{n:'きまぐれ バランス猫',t:'気分でオン・オフ。自分のリズムを大事に。',g:'肩の力が抜けたほどよさ'};}
 window.persona=persona;
-// そとねこ⇔まちねこ度の直感メーター
+// まち猫⇔いえ猫度の直感メーター
 function meterHTML(y){var p=Math.max(2,Math.min(98,(y-1)/9*100));
   var t='';[10,25,50,75,90].forEach(function(v){t+='<div class="tick" style="left:'+v+'%"></div>';});
-  return '<div class="meter"><div class="meterrow"><span>🌿 そとねこ<br><span style="font-weight:400;color:#666">元気・自由</span></span><span style="text-align:right">まちねこ 🏠<br><span style="font-weight:400;color:#666">おうち大好き</span></span></div>'
+  return '<div class="meter"><div class="meterrow"><span>🌿 まち猫<br><span style="font-weight:400;color:#666">元気・自由</span></span><span style="text-align:right">いえ猫 🏠<br><span style="font-weight:400;color:#666">おうち大好き</span></span></div>'
     +'<div class="metertrack">'+t+'<div class="meterdot" style="left:'+p.toFixed(0)+'%">🐾</div></div>'
-    +'<div class="mval">そとねこ⇔まちねこ度：<b>'+y.toFixed(1)+'</b> / 10</div></div>';}
+    +'<div class="mval">まち猫⇔いえ猫度：<b>'+y.toFixed(1)+'</b> / 10</div></div>';}
 window.meterHTML=meterHTML;
 
 // ==== おすすめソング（Cover Art Archive ジャケット） ====
@@ -1534,7 +1627,7 @@ document.getElementById('submit').addEventListener('click',()=>{
     +'<div class="kv">'+esc(skill.d)+'</div>'
     +'<div class="kv"><b>🏙 地域での役割：</b>'+esc(skill.c)+'</div></div>';
   h+='<div class="box"><b>近いタイプ</b><div class="kv" style="color:var(--muted)">'+near2.map(t=>esc(t.name)+'（'+esc(t.catname)+'）').join('　／　')+'</div></div>';
-  window.lastO={title:per.n,sub:'あなたのねこタイプ',desc:per.t,x:+x.toFixed(1),y:+y.toFixed(1),seed:Math.round(x*7+y*13),kit:ans9q.v,holo:holo,footer:'そとねこ⇔まちねこ度 '+y.toFixed(1)+(KITS[ans9q.v]?'　🏆'+KITS[ans9q.v].name:'')};
+  window.lastO={title:per.n,sub:'あなたのねこタイプ',desc:per.t,x:+x.toFixed(1),y:+y.toFixed(1),seed:Math.round(x*7+y*13),kit:ans9q.v,holo:holo,footer:'まち猫⇔いえ猫度 '+y.toFixed(1)+(KITS[ans9q.v]?'　🏆'+KITS[ans9q.v].name:'')};
   window.lastD={quad:per.n,typeName:(near?near.name:''),catName:(near?near.catname:''),churu:(near?near.churu:''),skill:skill.n,kitName:(KITS[ans9q.v]?KITS[ans9q.v].name:'')};
   h+=shareRow('window.lastO','window.lastD','家猫カード');
   h+='<div class="center" style="margin-top:6px"><button class="ghost" onclick="restart()">もう一度</button></div>';
