@@ -135,7 +135,7 @@ button.pri{background:var(--navy);color:#fff}
         <g fill="#FFD98A"><circle cx="24" cy="30" r="2.5"/><circle cx="36" cy="30" r="2.5"/></g>
       </svg>東京大学 シビックテック学創成町 家猫マップ
     </h1>
-    <p class="lead">診断で生まれた猫たちを、<b>飼い主（公的⇔私的）</b>×<b>家猫度（半野良⇔純血家猫）</b>の2軸にプロット。この地区に暮らす猫の分布を、みんなで見守り、語り合う自治会マップです。</p>
+    <p class="lead">診断で生まれた猫たちを、<b>飼い主（公的⇔私的）</b>×<b>家猫度（まち猫⇔いえ猫）</b>の2軸にプロット。この地区に暮らす猫の分布を、みんなで見守り、語り合う自治会マップです。</p>
   </div>
   <svg class="skyline" viewBox="0 0 1200 60" preserveAspectRatio="none" aria-hidden="true">
     <g fill="rgba(31,56,100,.28)">
@@ -221,7 +221,7 @@ button.pri{background:var(--navy);color:#fff}
 
 <script>
 // 2軸パラメトリック猫顔ジェネレーター
-// x: 1(公的)..10(私的)   y: 1(半野良)..10(純血家猫)
+// x: 1(公的)..10(私的)   y: 1(まち猫)..10(いえ猫)
 (function(root){
 function lerp(a,b,t){return a+(b-a)*t;}
 function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
@@ -478,7 +478,7 @@ root.catSVG=catSVG; root.octaRadar=octaRadar; root.KITS=KITS;
 
 </script>
 <script>
-var QUAD={"halfP": {"name": "半野良（公）", "light": "#E2EFDA", "banner": "#5a7d3a"}, "cage": {"name": "公営の檻", "light": "#D9E1F2", "banner": "#3a5a8c"}, "halfV": {"name": "半野良（私）", "light": "#FFF2CC", "banner": "#b58f2a"}, "house": {"name": "ハイテク室内飼い", "light": "#FCE4D6", "banner": "#b5663a"}};
+var QUAD={"halfP": {"name": "まち猫（公）", "light": "#E2EFDA", "banner": "#5a7d3a"}, "cage": {"name": "公共のゆりかご（いえ猫）", "light": "#D9E1F2", "banner": "#3a5a8c"}, "halfV": {"name": "まち猫（私）", "light": "#FFF2CC", "banner": "#b58f2a"}, "house": {"name": "ハイテク室内飼い（いえ猫）", "light": "#FCE4D6", "banner": "#b5663a"}};
 var RECORDS=[];      // 表示順（新しい順）
 var TYByName={}, TYByCat={};
 const SHARED_API="https://script.google.com/macros/s/AKfycbzBaagdobV2ixb6GwVpAFDmCN4tOwmvAseuPq8OvXnZsoOcUJ5kwD8Ih11TOKjYSf8U/exec";
@@ -542,10 +542,10 @@ function render(){
   s+='<rect x="'+midx+'" y="'+pad+'" width="'+(pad+inner-midx)+'" height="'+(midy-pad)+'" fill="'+QUAD.house.light+'"/>';
   s+='<rect x="'+pad+'" y="'+midy+'" width="'+(midx-pad)+'" height="'+(pad+inner-midy)+'" fill="'+QUAD.halfP.light+'"/>';
   s+='<rect x="'+midx+'" y="'+midy+'" width="'+(pad+inner-midx)+'" height="'+(pad+inner-midy)+'" fill="'+QUAD.halfV.light+'"/>';
-  s+='<text x="'+(pad+6)+'" y="'+(pad+16)+'" font-size="11" fill="#3a5a8c" font-weight="bold">公営の檻</text>';
-  s+='<text x="'+(pad+inner-6)+'" y="'+(pad+16)+'" font-size="11" fill="#b5663a" font-weight="bold" text-anchor="end">ハイテク室内飼い</text>';
-  s+='<text x="'+(pad+6)+'" y="'+(pad+inner-8)+'" font-size="11" fill="#5a7d3a" font-weight="bold">半野良（公）</text>';
-  s+='<text x="'+(pad+inner-6)+'" y="'+(pad+inner-8)+'" font-size="11" fill="#b58f2a" font-weight="bold" text-anchor="end">半野良（私）</text>';
+  s+='<text x="'+(pad+6)+'" y="'+(pad+16)+'" font-size="11" fill="#3a5a8c" font-weight="bold">公共のゆりかご（いえ猫）</text>';
+  s+='<text x="'+(pad+inner-6)+'" y="'+(pad+16)+'" font-size="11" fill="#b5663a" font-weight="bold" text-anchor="end">ハイテク室内飼い（いえ猫）</text>';
+  s+='<text x="'+(pad+6)+'" y="'+(pad+inner-8)+'" font-size="11" fill="#5a7d3a" font-weight="bold">まち猫（公）</text>';
+  s+='<text x="'+(pad+inner-6)+'" y="'+(pad+inner-8)+'" font-size="11" fill="#b58f2a" font-weight="bold" text-anchor="end">まち猫（私）</text>';
   s+='<g stroke="#cfd6e0" stroke-width="1">';
   for(var g=1;g<=10;g++){s+='<line x1="'+px(g)+'" y1="'+pad+'" x2="'+px(g)+'" y2="'+(pad+inner)+'"/><line x1="'+pad+'" y1="'+py(g)+'" x2="'+(pad+inner)+'" y2="'+py(g)+'"/>';}
   s+='</g>';
@@ -556,7 +556,7 @@ function render(){
   RECORDS.forEach(function(r,i){var k=quadKey(r.x,r.y);var cx=px(r.x)+jit(i+1,7),cy=py(r.y)+jit(i+7,7);
     s+='<circle cx="'+cx.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="6" fill="'+QUAD[k].banner+'" fill-opacity="0.78" stroke="#fff" stroke-width="1.2" style="cursor:pointer" onclick="openDetail('+i+')"><title>'+esc(r.typeName)+(r.catname?'（'+esc(r.catname)+'）':'')+'  X'+r.x+' Y'+r.y+'</title></circle>';});
   s+='<text x="'+(pad+inner/2)+'" y="'+(S-10)+'" text-anchor="middle" font-size="13" font-weight="bold" fill="#333">飼い主：公的 ←〜→ 私的</text>';
-  s+='<text transform="translate(14,'+(pad+inner/2)+') rotate(-90)" text-anchor="middle" font-size="13" font-weight="bold" fill="#333">家猫度：半野良 ←〜→ 純血家猫</text>';
+  s+='<text transform="translate(14,'+(pad+inner/2)+') rotate(-90)" text-anchor="middle" font-size="13" font-weight="bold" fill="#333">家猫度：まち猫 ←〜→ いえ猫</text>';
   s+='</svg>';
   document.getElementById('mapHost').innerHTML=N?s:s+'<div class="empty">まだ猫がいません。診断アプリで猫を生成すると、ここに溜まっていきます🐾</div>';
 
