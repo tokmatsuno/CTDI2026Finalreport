@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ja"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>家猫カードジェネレーター ── 46タイプ図鑑＆診断</title>
+<title>いえネコカードジェネレーター ── いえネコ図鑑＆診断</title>
 <style>
 
 /* ─── デバッグトースト（右下） ─── */
@@ -317,7 +317,7 @@ a{color:var(--blue)}
         <circle cx="36" cy="30" r="2.6" fill="#FFD98A"/>
         <path d="M27 38 Q30 41 33 38" stroke="#FFD98A" stroke-width="1.6" fill="none" stroke-linecap="round"/>
       </svg>
-      家猫カードジェネレーター
+      いえネコカードジェネレーター
     </h1>
     <p class="brand-sub">この街に暮らす46の猫たち ─ 5つの問い＋応援する国で、あなたの「家猫度」カードが完成。診断結果には〈そんなあなたへのおすすめソング〉も添えて。結果は街の記録に加わり、みんなで語り合えます。</p>
   </div>
@@ -1337,7 +1337,7 @@ function shareDiscord(o,d,fname){
 }
 window.shareDiscord=shareDiscord;
 
-// ═══ LINE オープンチャット「まち猫カフェ」で共有（v3.9） ═══════
+// ═══ LINE オープンチャット「いえネコカフェ」で共有（v3.9） ═══════
 // LINEはブラウザからwebhook直投稿ができないため、
 // 「カード画像を保存」＋「オープンチャットへのリンクを新窓で開く」＋「キャプションをコピー」の3点セット
 var LINE_OPENCHAT="https://line.me/ti/g2/NH7iI3FM4JEfCN9GeUb9esGmu62tvHRv5MwlVQ?utm_source=invitation&utm_medium=link_copy&utm_campaign=default";
@@ -1365,13 +1365,13 @@ function shareMail(o,d,fname){
     if(!blob){btns.forEach(function(b,i){b.innerHTML='⚠ 画像失敗';});restore();return;}
     var caption=(typeof shareCaption==='function'?shareCaption(d):'');
     var siteU=(typeof siteUrl==='function'?siteUrl():'');
-    var body='まち猫カードをお送りします 🐾\n\n'
+    var body='いえネコカードをお送りします 🐾\n\n'
       +caption+'\n\n'
       +(siteU?('診断してみる: '+siteU+'\n'):'')
-      +(siteU?('🌿 みんなの家猫マップ: '+siteU+'ienekomap.html\n'):'')
+      +(siteU?('🌿 みんなのいえネコマップ: '+siteU+'ienekomap.html\n'):'')
       +'\n----\n東京大学シビックテック・デザイン学講座 team1（2026）\n'
-      +'まち猫カードジェネレーター';
-    var subject='🐾 まち猫カードが届きました 「'+((d&&d.catname)||'家猫')+'」';
+      +'いえネコカードジェネレーター';
+    var subject='🐾 いえネコカードが届きました 「'+((d&&d.catname)||'家猫')+'」';
     // ① スマホ等：Web Share API で画像を添付してメール送信できる
     if(navigator.canShare){
       var f=new File([blob],(fname||'ieneko_card')+'.png',{type:'image/png'});
@@ -1574,7 +1574,7 @@ function mtReviewHTML(t){
   h+='<h3 style="margin:.1em 0;color:var(--navy)">🌿 またたび会議 <span class="sub" style="font-weight:400">— この子に本当に効く？</span></h3>'+
   '<div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0"><span class="dchip">🍶 チュール議論</span><span class="dchip">🌿 またたび議論</span><span class="dchip" style="border-color:#7A3E5F;color:#7A3E5F">🏙 街の記録</span></div>';
   h+='<div class="kv" style="color:#555;font-size:.85rem">今のチュール／またたびが合ってるか、みんなで投票・アイデア。結果は<b>全員の端末で共有</b>されます。</div>';
-  h+='<div class="kv"><b>🍶 今のチュール：</b>'+esc(t.churu||'')+'</div>';
+  h+='<div class="kv"><b>🧁 今のチュール：</b>'+esc(t.churu||'')+'</div>';
   h+='<div class="kv"><b>🌿 今のまたたび：</b>'+esc(t.kaizen||'')+'</div>';
   h+='<div style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0">';
   h+='<button class="ghost" style="border-color:#2e9e5b;color:#1b7a4a" onclick="mtVote('+t.no+',\'👍効きそう\')">👍 効きそう</button>';
@@ -1604,7 +1604,7 @@ function showDetail(t){
     +'<div class="kv">'+esc(t.catch||'')+'</div>'
     +'<div class="kv"><b>家猫化のポイント：</b>'+esc(t.point||'')+'</div></div>';
   h+='<div class="box">'
-    +'<div class="kv"><b>🍶 ごきげんチュール（こう誘うと動きやすい）：</b>'+esc(t.churu||'')+'</div>'
+    +'<div class="kv"><b>🧁 ごきげんチュール（こう誘うと動きやすい）：</b>'+esc(t.churu||'')+'</div>'
     +'<div class="kv"><b>🪜 キャットタワー（好きな居場所）：</b>'+esc(t.tower||'')+'</div>'
     +'<div class="kv"><b>🌿 またたび（いっしょにできそうなこと）：</b>'+esc(t.kaizen||'')+'</div>'
     +'<div class="kv"><b>🐾 そっと気をつけたいこと：</b>'+esc(t.side||'')+'</div>'
@@ -1656,7 +1656,7 @@ document.getElementById('submit').addEventListener('click',()=>{
   h+='<div class="advice">';
   h+='<div class="box" style="background:#eafaf0;border-color:#7ac79a"><h3 style="margin:.1em 0;color:#1b7a4a">あなたは「'+esc(per.n)+'」！</h3><p style="margin:.2em 0 0">'+esc(per.t)+'</p><div class="kv"><b>いいところ：</b>'+esc(per.g)+'</div></div>';
   h+='<div class="box"><h3 style="margin:.1em 0;color:var(--navy)">🐾 近いのは：'+esc(near.name)+'（'+esc(near.catname)+'）</h3>';
-  h+='<div class="kv"><b>🍶 ごきげんチュール（こう誘うと動きやすい）：</b>'+esc(near.churu)+'</div>';
+  h+='<div class="kv"><b>🧁 ごきげんチュール（こう誘うと動きやすい）：</b>'+esc(near.churu)+'</div>';
   h+='<div class="kv"><b>🪜 キャットタワー（好きな居場所）：</b>'+esc(near.tower)+'</div>';
   h+='<div class="kv"><b>🌿 またたび（いっしょにできそうなこと）：</b>'+esc(near.kaizen)+'</div>';
   h+='<div class="kv"><b>🐾 そっと気をつけたいこと：</b>'+esc(near.side)+'</div>';
